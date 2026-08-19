@@ -7,6 +7,10 @@ still work in the primary workspace.
 This document describes **how we use `jj` here**, for humans and for agents
 working in parallel. It is not a `jj` tutorial.
 
+Intent (what is next, in flight, and done) lives on the planning board.
+That protocol is [`documentation/plan.md`](plan.md). This file is execution
+only: workspaces, stacks, rewrites, and publish.
+
 If you do not already know Jujutsu, start with the official material, then come
 back:
 
