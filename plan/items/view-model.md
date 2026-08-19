@@ -1,15 +1,17 @@
 ---
 id: view-model
 type: task
-status: ready
+status: blocked
 title: View-model types
 summary: View-model types and projection from engine facts plus viewerSeat.
 parent: mil-view-model
-blocked_by: []
+blocked_by:
+  - repo-setup
 discovered_from:
   - mil-presentation-contract
 relates:
   - engine-model
+  - repo-setup
 workspace: ""
 change_ids: []
 bookmark: ""

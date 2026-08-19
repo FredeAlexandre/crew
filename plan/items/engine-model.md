@@ -1,16 +1,18 @@
 ---
 id: engine-model
 type: task
-status: ready
+status: blocked
 title: Engine model
 summary: Stable identities, 40-card deck, and attempt state. No play loop yet.
 parent: mil-engine
-blocked_by: []
+blocked_by:
+  - repo-setup
 discovered_from:
   - mil-rules-guide
   - mil-presentation-contract
 relates:
   - view-model
+  - repo-setup
 workspace: ""
 change_ids: []
 bookmark: ""
