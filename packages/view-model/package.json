@@ -1,0 +1,33 @@
+{
+	"name": "@crew/view-model",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"default": "./src/index.ts"
+		},
+		"./fixtures": {
+			"types": "./src/fixtures/hello.ts",
+			"default": "./src/fixtures/hello.ts"
+		},
+		"./project": {
+			"types": "./src/project.ts",
+			"default": "./src/project.ts"
+		}
+	},
+	"scripts": {
+		"check-types": "tsc --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@crew/engine": "workspace:*",
+		"@crew/protocol": "workspace:*"
+	},
+	"devDependencies": {
+		"@crew/config": "workspace:*",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	}
+}

@@ -4,13 +4,11 @@ Items are source of truth. This snapshot is for a glance.
 
 ## In flight
 
-_(none)_
+- `repo-setup` — workspace `t3code-6c680eae` — monorepo from Better T Stack + Alchemy Room DO
 
 ## Next
 
-Unblocked tasks — claim one, then open a jj workspace.
-
-- `repo-setup` — monorepo, apps, packages, toolchain (`documentation/stack.md` lands here)
+Unblocked tasks after `repo-setup` closes: `engine-model` and `view-model` in parallel.
 
 Open milestones (not for claiming): `mil-engine`, `mil-view-model`, `mil-skin`.
 

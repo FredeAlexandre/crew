@@ -1,0 +1,11 @@
+{
+	"$schema": "https://unpkg.com/knip@5/schema.json",
+	"ignoreBinaries": ["nub", "nubx"],
+	"ignoreDependencies": [
+		"@cloudflare/workers-types",
+		"@biomejs/biome",
+		"cloudflare",
+		"dependency-cruiser"
+	],
+	"entry": ["dependency-cruiser.mjs"]
+}
