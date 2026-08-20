@@ -8,10 +8,6 @@
 			"types": "./src/index.ts",
 			"default": "./src/index.ts"
 		},
-		"./fixtures": {
-			"types": "./src/fixtures/hello.ts",
-			"default": "./src/fixtures/hello.ts"
-		},
 		"./project": {
 			"types": "./src/project.ts",
 			"default": "./src/project.ts"

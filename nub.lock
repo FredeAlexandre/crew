@@ -80,18 +80,12 @@ importers:
       '@crew/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@crew/engine':
-        specifier: workspace:*
-        version: link:../../packages/engine
       '@crew/env':
         specifier: workspace:*
         version: link:../../packages/env
       '@crew/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
-      '@crew/view-model':
-        specifier: workspace:*
-        version: link:../../packages/view-model
       hono:
         specifier: 'catalog:'
         version: 4.13.3
@@ -120,9 +114,6 @@ importers:
       '@crew/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
-      '@crew/view-model':
-        specifier: workspace:*
-        version: link:../../packages/view-model
       '@tanstack/react-router':
         specifier: ^1.170.18
         version: 1.170.30(react@19.2.8)(react-dom@19.2.8(react@19.2.8))

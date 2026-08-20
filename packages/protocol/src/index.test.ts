@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { echoFact, echoIntentSchema } from "./index.ts";
+import { CARD_IDS } from "./cards.ts";
+import { echoFact, echoIntentSchema, factSchema, intentSchema } from "./index.ts";
 
 describe("echoFact", () => {
 	it("assigns the next seq and keeps the payload", () => {
@@ -15,5 +16,33 @@ describe("echoFact", () => {
 			seq: 1,
 			payload: { ping: true },
 		});
+	});
+});
+
+describe("wire schemas", () => {
+	it("parses a card.play intent", () => {
+		const parsed = intentSchema.parse({
+			type: "card.play",
+			attemptId: "attempt-1",
+			seatId: 0,
+			cardId: "pink-7",
+		});
+		expect(parsed.type).toBe("card.play");
+	});
+
+	it("parses a card.played fact", () => {
+		const parsed = factSchema.parse({
+			type: "card.played",
+			attemptId: "attempt-1",
+			seq: 3,
+			seatId: 1,
+			cardId: "submarine-4",
+			trickOrder: 2,
+		});
+		expect(parsed.type).toBe("card.played");
+	});
+
+	it("names all 40 playing cards", () => {
+		expect(CARD_IDS).toHaveLength(40);
 	});
 });

@@ -23,7 +23,7 @@ nub run test
 ```
 
 `nub run dev` starts Vite + the Hono worker + D1 + the Room Durable Object.
-The playground route renders a hello fixture with no room. Boot can mint a
+The playground route is echo WS only until scene fixtures exist. Boot can mint a
 guest cookie. Playground echo WS hits `/room/:name`.
 
 Deploy: `cd packages/infra && nubx alchemy login --configure`, then

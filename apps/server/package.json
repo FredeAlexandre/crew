@@ -9,10 +9,8 @@
 	},
 	"dependencies": {
 		"@crew/auth": "workspace:*",
-		"@crew/engine": "workspace:*",
 		"@crew/env": "workspace:*",
 		"@crew/protocol": "workspace:*",
-		"@crew/view-model": "workspace:*",
 		"hono": "catalog:"
 	},
 	"devDependencies": {

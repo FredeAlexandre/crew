@@ -7,7 +7,6 @@ export default defineConfig({
 		port: 3001,
 		proxy: {
 			"/api": "http://localhost:3000",
-			"/hello-fixture": "http://localhost:3000",
 			"/room": {
 				target: "http://localhost:3000",
 				ws: true,

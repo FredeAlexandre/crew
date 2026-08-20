@@ -1,41 +1,77 @@
 import { z } from "zod";
+import type { EchoFact } from "./facts.ts";
+import type { Seq } from "./ids.ts";
+import { attemptIdSchema, seqSchema } from "./ids.ts";
+import type { EchoIntent } from "./intents.ts";
 
-/** Stable identities. Full deck and attempt types land with the engine. */
-export const playerIdSchema = z.string().min(1);
-export const attemptIdSchema = z.string().min(1);
-export const roomIdSchema = z.string().min(1);
-export const seqSchema = z.number().int().nonnegative();
-
-export type PlayerId = z.infer<typeof playerIdSchema>;
-export type AttemptId = z.infer<typeof attemptIdSchema>;
-export type RoomId = z.infer<typeof roomIdSchema>;
-export type Seq = z.infer<typeof seqSchema>;
-
-const wireMeta = {
-	attemptId: attemptIdSchema,
-	seq: seqSchema,
-};
-
-/** Stub intent. Real play intents land when the table is wired. */
-export const echoIntentSchema = z.object({
-	type: z.literal("echo"),
-	...wireMeta,
-	payload: z.unknown(),
-});
-
-export const echoFactSchema = z.object({
-	type: z.literal("echo"),
-	...wireMeta,
-	payload: z.unknown(),
-});
-
-export const intentSchema = z.discriminatedUnion("type", [echoIntentSchema]);
-export const factSchema = z.discriminatedUnion("type", [echoFactSchema]);
-
-export type EchoIntent = z.infer<typeof echoIntentSchema>;
-export type EchoFact = z.infer<typeof echoFactSchema>;
-export type Intent = z.infer<typeof intentSchema>;
-export type Fact = z.infer<typeof factSchema>;
+export type { CardId } from "./cards.ts";
+export {
+	CARD_IDS,
+	COLOR_SUITS,
+	COLOR_VALUES,
+	cardIdSchema,
+	isColorSuit,
+	SUBMARINE_VALUES,
+} from "./cards.ts";
+export type { IllegalReason } from "./errors.ts";
+export { illegalReasonSchema } from "./errors.ts";
+export type { EchoFact, Fact } from "./facts.ts";
+export { echoFactSchema, factSchema } from "./facts.ts";
+export type {
+	AttemptId,
+	ColorSuit,
+	DistressDirection,
+	MissionId,
+	PlayerId,
+	RoomId,
+	SeatId,
+	Seq,
+	SonarPosition,
+	Suit,
+	TaskId,
+	TaskInstanceId,
+	TrickId,
+} from "./ids.ts";
+export {
+	attemptIdSchema,
+	colorSuitSchema,
+	distressDirectionSchema,
+	missionIdSchema,
+	playerIdSchema,
+	roomIdSchema,
+	seatIdSchema,
+	seqSchema,
+	sonarPositionSchema,
+	suitSchema,
+	taskIdSchema,
+	taskInstanceIdSchema,
+	trickIdSchema,
+} from "./ids.ts";
+export type {
+	CardPlayIntent,
+	DistressActivateIntent,
+	DistressPassCardIntent,
+	DistressSkipIntent,
+	EchoIntent,
+	Intent,
+	PlayIntent,
+	SonarUseIntent,
+	TaskPassIntent,
+	TaskTakeIntent,
+} from "./intents.ts";
+export {
+	cardPlayIntentSchema,
+	distressActivateIntentSchema,
+	distressPassCardIntentSchema,
+	distressSkipIntentSchema,
+	echoIntentSchema,
+	intentSchema,
+	sonarUseIntentSchema,
+	taskPassIntentSchema,
+	taskTakeIntentSchema,
+} from "./intents.ts";
+export type { DifficultyByPlayers, TaskPublic } from "./tasks.ts";
+export { difficultyByPlayersSchema, taskPublicSchema } from "./tasks.ts";
 
 export const snapshotEnvelopeSchema = z.object({
 	attemptId: attemptIdSchema,

@@ -4,13 +4,6 @@
 	container-type: inline-size;
 }
 
-.fixture {
-	margin: 0;
-	padding: 1rem;
-	border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent);
-	white-space: pre-wrap;
-}
-
 .echo {
 	display: grid;
 	gap: 0.5rem;
