@@ -79,13 +79,17 @@ React + Vite + TypeScript. TanStack Router for `boot` (`/`), `lobby`,
 
 ## Backend (`apps/server`)
 
-Hono on a Cloudflare Worker. One **Durable Object per room**, defined the
-Alchemy Effect way (`Cloudflare.DurableObject`, two-phase `Effect.gen`,
-hibernatable WebSockets). The Worker stays an async Hono handler (Better T
-Stack DX). The Room class is bound with `Cloudflare.DurableObject<Room>("Room")`
-on the Worker `env` — see
-[Durable Objects](https://alchemy.run/cloudflare/compute/durable-objects/)
-and [Accept WebSockets](https://alchemy.run/cloudflare/compute/hibernatable-websockets/).
+Hono on a Cloudflare Worker (Better T Stack DX: plain `async fetch`). One
+**Durable Object per room**, a native `cloudflare:workers` class with
+hibernatable WebSockets (`acceptWebSocket`, `webSocketMessage`). Bound with
+`Cloudflare.DurableObject<Room>("Room")` on the Worker `env`.
+
+Effect DOs (`Cloudflare.DurableObject<Room>()("Room", Effect.gen…)`) only
+work when the Worker is also Effect: Alchemy then wraps the class with
+`DurableObjectBridge`, which supplies workerd `fetch`. A Hono worker calling
+`env.ROOM.getByName(name).fetch(request)` against an Effect DO fails with
+`Handler does not export a fetch() function`. See Alchemy’s
+[async-worker DO bindings](https://alchemy.run/cloudflare/compute/durable-objects/#binding-in-an-async-worker).
 
 Room DO = orchestration only: authz, apply intent, persist snapshot, fan
 out per-seat facts. **No rules in the room.** DO storage holds the live
