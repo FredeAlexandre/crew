@@ -1,7 +1,7 @@
 # Stack
 
-This is the stack decision for `repo-setup`. Later tasks follow it; they do
-not relitigate it unless a constraint below is wrong.
+This is the stack decision. Later work follows it; do not relitigate it
+unless a constraint below is wrong.
 
 ## Why this stack
 
@@ -60,8 +60,7 @@ client  <--snapshot- view-model                    room.snapshot
 - HTTP (Hono) only for health, auth session, create/join room by code.
   Not for playing cards.
 - No tRPC, GraphQL, or Socket.io. No sending full engine state to a client.
-- v1 stub: health + echo WS. Real intents land with `v1-table-flow` /
-  `engine-mission`.
+- v1 stub: health + echo WS. Real play intents land when the table is wired.
 
 ## Frontend (`apps/web`)
 
@@ -111,7 +110,7 @@ from `packages/db/src/migrations` during deploy / `alchemy dev`.
 | `PlayerId`, display name, session | auth | D1 + HTTP-only cookie |
 | Room code, host, occupancy | server | DO + D1 index for join |
 | Connection dim/reconnect | server | DO, ephemeral |
-| Campaign / logbook | later | D1 (`later-campaign`) |
+| Campaign / logbook | later | D1 |
 
 v1 D1 tables: Better Auth tables + `players` + `rooms` (code, host,
 status). Auth is **Better Auth** anonymous/guest plugin. v1 is a guest
@@ -138,7 +137,7 @@ server       → protocol, engine, view-model, db, auth
 - **Biome** — lint + format, one tool.
 - **Vitest** — unit tests. Engine tests are the rules oracle.
 - **Playwright** job stub — playground smoke in `phone-portrait` and
-  `desktop` frames; real fixtures wait on `view-fixtures`.
+  `desktop` frames; real scene fixtures come later.
 - **TypeScript** `strict`. **Knip** for dead exports. **dependency-cruiser**
   for the import graph.
 - `@t3-oss/env-core` for web env. No git hooks; `nub run check` + CI are

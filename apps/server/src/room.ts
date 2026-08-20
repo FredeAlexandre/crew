@@ -2,7 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import { echoFact, echoIntentSchema } from "@crew/protocol";
 
 /**
- * One Durable Object per room. Echo stub for repo-setup; intents land later.
+ * One Durable Object per room. Echo stub; play intents land later.
  *
  * This is a native `cloudflare:workers` Durable Object because the Worker is
  * Hono (`async fetch`). Alchemy only injects DurableObjectBridge (and therefore

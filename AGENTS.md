@@ -17,3 +17,5 @@ Use **nub** (`nub run`, `nubx`), not pnpm. Do not add Tailwind or shadcn.
 
 Engine code must run in Vitest, Node, and Cloudflare Workers — no `node:fs`,
 no DOM. `apps/web` must not import `@crew/engine`.
+
+Do not recreate `plan/` or a task board. Intent stays with the human.

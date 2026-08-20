@@ -7,5 +7,5 @@ export type HelloFixture = {
 export const helloFixture: HelloFixture = {
 	kind: "hello",
 	regions: ["table"],
-	note: "Playground hello fixture. Real snapshots land in view-fixtures.",
+	note: "Playground hello fixture. Real scene snapshots come later.",
 };

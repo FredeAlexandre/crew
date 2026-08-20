@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** Stable identities. Full deck and attempt types land in `engine-model`. */
+/** Stable identities. Full deck and attempt types land with the engine. */
 export const playerIdSchema = z.string().min(1);
 export const attemptIdSchema = z.string().min(1);
 export const roomIdSchema = z.string().min(1);
@@ -16,7 +16,7 @@ const wireMeta = {
 	seq: seqSchema,
 };
 
-/** Stub intent. Real play intents land with `v1-table-flow`. */
+/** Stub intent. Real play intents land when the table is wired. */
 export const echoIntentSchema = z.object({
 	type: z.literal("echo"),
 	...wireMeta,
