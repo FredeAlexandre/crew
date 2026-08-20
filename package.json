@@ -1,0 +1,57 @@
+{
+	"name": "crew",
+	"private": true,
+	"type": "module",
+	"workspaces": {
+		"packages": [
+			"apps/*",
+			"packages/*"
+		],
+		"catalog": {
+			"dotenv": "^17.4.2",
+			"zod": "^4.4.3",
+			"typescript": "^6.0.3",
+			"@types/node": "^22.20.1",
+			"@cloudflare/workers-types": "^5.20260728.1",
+			"better-auth": "1.6.27",
+			"react": "^19.2.8",
+			"react-dom": "^19.2.8",
+			"@types/react": "^19.2.17",
+			"@types/react-dom": "^19.2.3",
+			"vitest": "^3.2.4",
+			"hono": "^4.12.32",
+			"drizzle-orm": "^0.45.2"
+		}
+	},
+	"scripts": {
+		"dev": "nub run --node --filter @crew/infra dev",
+		"dev:web": "nub run --filter web dev:bare",
+		"dev:server": "nub run --filter server dev:bare",
+		"build": "nub run -r --if-present build",
+		"check-types": "nub run -r --if-present check-types",
+		"check": "nubx biome check . && nub run check-types && nubx knip && nubx dependency-cruiser --config dependency-cruiser.mjs apps packages && nub run test",
+		"fix": "nubx biome check --write .",
+		"test": "nubx vitest run",
+		"test:watch": "nubx vitest",
+		"test:e2e": "nub run --filter web test:e2e",
+		"db:generate": "nub run --filter @crew/db db:generate",
+		"deploy": "nub run --filter @crew/infra deploy",
+		"destroy": "nub run --filter @crew/infra destroy"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.3",
+		"@cloudflare/workers-types": "catalog:",
+		"@crew/config": "workspace:*",
+		"@types/node": "catalog:",
+		"dependency-cruiser": "^17.3.6",
+		"knip": "^5.80.0",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	},
+	"allowBuilds": {
+		"esbuild": true,
+		"workerd": true,
+		"msgpackr-extract": true,
+		"esbuild-wasm": true
+	}
+}

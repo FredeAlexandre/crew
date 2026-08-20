@@ -1,7 +1,7 @@
 ---
 id: repo-setup
 type: task
-status: ready
+status: claimed
 title: Monorepo foundation
 summary: "Apps, packages, tools, and the rules for where code lives. Do this before engine or view-model."
 parent: goal-decoupled-tracks
@@ -14,7 +14,7 @@ relates:
   - mil-engine
   - mil-view-model
   - mil-skin
-workspace: ""
+workspace: t3code-6c680eae
 change_ids: []
 bookmark: ""
 ---

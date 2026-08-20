@@ -1,0 +1,25 @@
+{
+	"name": "server",
+	"type": "module",
+	"main": "src/index.ts",
+	"scripts": {
+		"check-types": "tsc --noEmit",
+		"test": "vitest run",
+		"dev:bare": "echo 'Use nub run dev (Alchemy hosts the worker)'"
+	},
+	"dependencies": {
+		"@crew/auth": "workspace:*",
+		"@crew/engine": "workspace:*",
+		"@crew/env": "workspace:*",
+		"@crew/protocol": "workspace:*",
+		"@crew/view-model": "workspace:*",
+		"hono": "catalog:"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "catalog:",
+		"@crew/config": "workspace:*",
+		"@types/node": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	}
+}

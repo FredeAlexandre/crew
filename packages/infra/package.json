@@ -1,0 +1,24 @@
+{
+	"name": "@crew/infra",
+	"private": true,
+	"type": "module",
+	"exports": {
+		"./alchemy.run": "./alchemy.run.ts"
+	},
+	"scripts": {
+		"check-types": "tsc --noEmit",
+		"dev": "alchemy dev",
+		"deploy": "alchemy deploy",
+		"destroy": "alchemy destroy"
+	},
+	"dependencies": {
+		"dotenv": "catalog:"
+	},
+	"devDependencies": {
+		"@crew/config": "workspace:*",
+		"@effect/platform-node": "4.0.0-rc.108",
+		"alchemy": "2.0.0-beta.72",
+		"effect": "4.0.0-rc.108",
+		"typescript": "catalog:"
+	}
+}

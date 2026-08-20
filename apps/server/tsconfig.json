@@ -1,0 +1,9 @@
+{
+	"extends": "@crew/config/tsconfig.base.json",
+	"compilerOptions": {
+		"paths": {
+			"@/*": ["./src/*"]
+		}
+	},
+	"include": ["src"]
+}

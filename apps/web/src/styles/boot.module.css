@@ -1,0 +1,9 @@
+.stack {
+	display: grid;
+	gap: 1rem;
+	max-width: 40rem;
+}
+
+.status {
+	font-variant-numeric: tabular-nums;
+}

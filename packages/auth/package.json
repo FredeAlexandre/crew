@@ -1,0 +1,21 @@
+{
+	"name": "@crew/auth",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		}
+	},
+	"scripts": {
+		"check-types": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@crew/db": "workspace:*",
+		"@crew/env": "workspace:*",
+		"better-auth": "catalog:"
+	},
+	"devDependencies": {
+		"@crew/config": "workspace:*",
+		"typescript": "catalog:"
+	}
+}

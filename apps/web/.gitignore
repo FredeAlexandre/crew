@@ -1,0 +1,9 @@
+node_modules
+dist
+.alchemy
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+playwright-report
+test-results

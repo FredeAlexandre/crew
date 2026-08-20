@@ -1,0 +1,26 @@
+{
+	"name": "@crew/db",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {
+		"check-types": "tsc --noEmit",
+		"db:generate": "drizzle-kit generate"
+	},
+	"dependencies": {
+		"@crew/env": "workspace:*",
+		"dotenv": "catalog:",
+		"drizzle-orm": "catalog:"
+	},
+	"devDependencies": {
+		"@crew/config": "workspace:*",
+		"drizzle-kit": "^0.31.10",
+		"typescript": "catalog:"
+	}
+}
