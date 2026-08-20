@@ -46,6 +46,9 @@ export default {
 		},
 	],
 	options: {
+		exclude: {
+			path: "(^|/)(node_modules|dist|build|coverage)/",
+		},
 		doNotFollow: {
 			path: "node_modules",
 		},
