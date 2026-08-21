@@ -1,5 +1,6 @@
 /// <reference path="../../../packages/env/env.d.ts" />
 import { createAuth } from "@crew/auth";
+import { ensureMigrated } from "@crew/db";
 import { env } from "@crew/env/server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -8,6 +9,10 @@ import { registerRoomRoutes } from "./rooms-http.ts";
 
 const app = new Hono<{ Bindings: Env }>();
 
+app.use(async (c, next) => {
+	await ensureMigrated(c.env.DB);
+	return next();
+});
 app.use(logger());
 app.use(async (c, next) => {
 	if (c.req.header("upgrade")?.toLowerCase() === "websocket") {

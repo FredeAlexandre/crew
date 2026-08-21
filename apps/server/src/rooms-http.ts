@@ -1,10 +1,14 @@
 import { createDb, rooms } from "@crew/db";
 import type { PlayerCount } from "@crew/engine";
+import {
+	createRoomRequestSchema,
+	normalizeRoomCode,
+	ROOM_CODE_ALPHABET,
+	roomCodeSchema,
+} from "@crew/protocol";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { errorPayload, requirePlayer, withPlayerHeaders } from "./session.ts";
-
-const CODE_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 export function registerRoomRoutes(app: Hono<{ Bindings: Env }>) {
 	app.post("/rooms", async (c) => {
@@ -12,10 +16,11 @@ export function registerRoomRoutes(app: Hono<{ Bindings: Env }>) {
 		if (player instanceof Response) {
 			return player;
 		}
-		const playerCount = parsePlayerCount(await c.req.json().catch(() => null));
-		if (playerCount === null) {
+		const parsed = createRoomRequestSchema.safeParse(await c.req.json().catch(() => null));
+		if (!parsed.success) {
 			return c.json(errorPayload("illegalIntent", "playerCount must be 3, 4, or 5"), 400);
 		}
+		const { playerCount } = parsed.data;
 		const db = createDb(c.env.DB);
 		const code = await insertRoom(db, player.playerId, playerCount);
 		await c.env.ROOM.getByName(code).init({
@@ -31,7 +36,10 @@ export function registerRoomRoutes(app: Hono<{ Bindings: Env }>) {
 		if (player instanceof Response) {
 			return player;
 		}
-		const code = c.req.param("code").toUpperCase();
+		const code = readRoomCode(c.req.param("code"));
+		if (code === null) {
+			return c.json(errorPayload("unknownRoom", "room not found"), 404);
+		}
 		const db = createDb(c.env.DB);
 		const existing = await db.select().from(rooms).where(eq(rooms.code, code)).limit(1);
 		if (existing[0] === undefined) {
@@ -59,7 +67,10 @@ export function registerRoomRoutes(app: Hono<{ Bindings: Env }>) {
 		if (player instanceof Response) {
 			return player;
 		}
-		const code = c.req.param("code").toUpperCase();
+		const code = readRoomCode(c.req.param("code"));
+		if (code === null) {
+			return c.json(errorPayload("unknownRoom", "room not found"), 404);
+		}
 		const db = createDb(c.env.DB);
 		const existing = await db.select().from(rooms).where(eq(rooms.code, code)).limit(1);
 		if (existing[0] === undefined) {
@@ -69,15 +80,12 @@ export function registerRoomRoutes(app: Hono<{ Bindings: Env }>) {
 	});
 }
 
-function parsePlayerCount(body: unknown): PlayerCount | null {
-	if (typeof body !== "object" || body === null || !("playerCount" in body)) {
+function readRoomCode(raw: string): string | null {
+	const code = normalizeRoomCode(raw);
+	if (!roomCodeSchema.safeParse(code).success) {
 		return null;
 	}
-	const value = body.playerCount;
-	if (value === 3 || value === 4 || value === 5) {
-		return value;
-	}
-	return null;
+	return code;
 }
 
 function randomCode(length: number): string {
@@ -85,7 +93,7 @@ function randomCode(length: number): string {
 	crypto.getRandomValues(bytes);
 	let out = "";
 	for (const byte of bytes) {
-		out += CODE_ALPHABET[byte % CODE_ALPHABET.length] ?? "A";
+		out += ROOM_CODE_ALPHABET[byte % ROOM_CODE_ALPHABET.length] ?? "A";
 	}
 	return out;
 }

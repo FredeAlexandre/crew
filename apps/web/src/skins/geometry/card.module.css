@@ -1,0 +1,131 @@
+.card {
+	display: grid;
+	justify-items: center;
+	align-content: center;
+	gap: 0.2rem;
+	padding: 0.25rem;
+	border: 2px solid var(--suit, var(--muted));
+	border-radius: 0.4rem;
+	background: color-mix(in srgb, var(--table) 55%, var(--ink) 18%);
+	color: inherit;
+	font: inherit;
+	cursor: default;
+}
+
+.hand {
+	width: 3.15rem;
+	min-width: 44px;
+	min-height: 44px;
+	height: 4.55rem;
+}
+
+.trick {
+	width: 3.7rem;
+	min-width: 44px;
+	height: 5.2rem;
+}
+
+.token {
+	width: 2.35rem;
+	min-width: 2.35rem;
+	height: 3.25rem;
+	min-height: 44px;
+}
+
+.card[data-suit="pink"] {
+	--suit: var(--suit-pink);
+}
+
+.card[data-suit="yellow"] {
+	--suit: var(--suit-yellow);
+}
+
+.card[data-suit="green"] {
+	--suit: var(--suit-green);
+}
+
+.card[data-suit="blue"] {
+	--suit: var(--suit-blue);
+}
+
+.card[data-suit="submarine"] {
+	--suit: var(--suit-submarine);
+	border-radius: 0.4rem 0.4rem 0.85rem 0.85rem;
+}
+
+.value {
+	font-size: 1.35rem;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+}
+
+.token .value {
+	font-size: 1rem;
+}
+
+.mark {
+	width: 0.72rem;
+	height: 0.72rem;
+	background: var(--suit, var(--muted));
+}
+
+.mark[data-suit="pink"] {
+	border-radius: 50%;
+}
+
+.mark[data-suit="yellow"] {
+	clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.mark[data-suit="green"] {
+	border-radius: 0.08rem;
+}
+
+.mark[data-suit="blue"] {
+	clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.mark[data-suit="submarine"] {
+	clip-path: polygon(0 40%, 70% 40%, 70% 15%, 100% 50%, 70% 85%, 70% 60%, 0 60%);
+}
+
+.illegal {
+	opacity: 0.42;
+}
+
+.selected {
+	transform: translateY(-0.45rem);
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+.communicated {
+	box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.muted {
+	opacity: 0.55;
+}
+
+.lead {
+	box-shadow: 0 0 0 1px var(--accent);
+}
+
+.back {
+	border-color: color-mix(in srgb, var(--muted) 45%, transparent);
+	background: repeating-linear-gradient(
+		-18deg,
+		color-mix(in srgb, var(--table) 70%, var(--ink)) 0 6px,
+		color-mix(in srgb, var(--table) 55%, var(--muted)) 6px 12px
+	);
+}
+
+.back .value,
+.back .mark {
+	display: none;
+}
+
+.card:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}

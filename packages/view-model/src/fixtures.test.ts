@@ -1,8 +1,10 @@
 import { CARD_IDS, type CardId } from "@crew/protocol";
 import { describe, expect, it } from "vitest";
 import {
+	briefingMission1,
 	dealMid,
 	distressOffer,
+	FIXTURE_ORDER,
 	fixtures,
 	lobbyThreeEmpty,
 	playMidTrickFourPlayers,
@@ -26,8 +28,9 @@ const allCardIds = new Set<string>(CARD_IDS);
 
 describe("fixtures", () => {
 	it("parses every named scene snapshot", () => {
-		expect(Object.keys(fixtures).sort()).toEqual(
+		expect([...FIXTURE_ORDER].sort()).toEqual(
 			[
+				"briefing.mission1",
 				"deal.mid",
 				"distress.offer",
 				"lobby.threeEmpty",
@@ -42,6 +45,7 @@ describe("fixtures", () => {
 			expect(tableViewSchema.parse(view)).toEqual(view);
 		}
 		expect(lobbyThreeEmpty.scene).toBe("lobby");
+		expect(briefingMission1.scene).toBe("briefing");
 		expect(dealMid.scene).toBe("deal");
 		expect(dealMid.hand).toHaveLength(4);
 	});

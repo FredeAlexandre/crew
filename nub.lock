@@ -126,6 +126,9 @@ importers:
       '@crew/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
+      '@crew/view-model':
+        specifier: workspace:*
+        version: link:../../packages/view-model
       '@tanstack/react-router':
         specifier: ^1.170.18
         version: 1.170.30(react@19.2.8)(react-dom@19.2.8(react@19.2.8))

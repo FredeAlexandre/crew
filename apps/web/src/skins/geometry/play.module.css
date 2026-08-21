@@ -1,0 +1,203 @@
+.table {
+	display: grid;
+	grid-template-areas:
+		"crew"
+		"well"
+		"self"
+		"hand";
+	grid-template-rows: auto 1fr auto auto;
+	min-height: 100%;
+	gap: 0.55rem;
+	padding: 0.4rem 0.4rem 0.9rem;
+	container-type: inline-size;
+}
+
+.crew {
+	grid-area: crew;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.35rem 0.9rem;
+}
+
+.north,
+.west,
+.east {
+	display: none;
+}
+
+.well {
+	grid-area: well;
+	position: relative;
+	display: grid;
+	align-content: center;
+	justify-items: center;
+	gap: 0.5rem;
+	min-height: 12rem;
+}
+
+.self {
+	grid-area: self;
+}
+
+.handWrap {
+	grid-area: hand;
+	display: grid;
+	gap: 0.25rem;
+}
+
+.hint {
+	margin: 0;
+	text-align: center;
+	color: var(--accent);
+	font-size: 0.88rem;
+}
+
+.trick {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	grid-template-rows: auto auto auto;
+	align-items: center;
+	justify-items: center;
+	gap: 0.3rem 0.45rem;
+	min-height: 11rem;
+	width: min(22rem, 100%);
+}
+
+.slot[data-slot="top"] {
+	grid-column: 2;
+	grid-row: 1;
+	display: flex;
+	gap: 0.35rem;
+}
+
+.slot[data-slot="left"] {
+	grid-column: 1;
+	grid-row: 2;
+	justify-self: end;
+}
+
+.slot[data-slot="right"] {
+	grid-column: 3;
+	grid-row: 2;
+	justify-self: start;
+}
+
+.slot[data-slot="bottom"] {
+	grid-column: 2;
+	grid-row: 3;
+}
+
+.stock {
+	display: grid;
+	justify-items: center;
+	gap: 0.5rem;
+}
+
+.stockPile {
+	position: relative;
+	width: 3.7rem;
+	height: 5.2rem;
+}
+
+.stockPile > * {
+	position: absolute;
+	inset: 0;
+}
+
+.stockPile > *:nth-child(1) {
+	transform: translate(-0.45rem, 0.2rem) rotate(-8deg);
+}
+
+.stockPile > *:nth-child(2) {
+	transform: translate(0.4rem, -0.15rem) rotate(7deg);
+}
+
+.stockLabel {
+	margin: 0;
+	color: var(--muted);
+	font-size: 0.88rem;
+}
+
+.overlay {
+	position: absolute;
+	left: 50%;
+	bottom: 0.5rem;
+	transform: translateX(-50%);
+	display: grid;
+	gap: 0.45rem;
+	width: max-content;
+	max-width: calc(100% - 1rem);
+	padding: 0.85rem 1rem;
+	background: color-mix(in srgb, var(--table) 82%, var(--ink));
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.overlayTitle {
+	margin: 0;
+	font-size: 1rem;
+}
+
+.overlayCopy {
+	margin: 0;
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.overlayActions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.overlayAction {
+	min-height: 44px;
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+.lastTrick {
+	display: flex;
+	gap: 0.35rem;
+	justify-content: center;
+}
+
+@container (min-width: 40rem) {
+	.table {
+		grid-template-columns: minmax(6.5rem, 1fr) minmax(14rem, 2.4fr) minmax(6.5rem, 1fr);
+		grid-template-rows: auto 1fr auto auto;
+		grid-template-areas:
+			"west north east"
+			"west well east"
+			"west self east"
+			". hand .";
+	}
+
+	.crew {
+		display: none;
+	}
+
+	.north,
+	.west,
+	.east {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+	}
+
+	.north {
+		grid-area: north;
+	}
+
+	.west {
+		grid-area: west;
+		flex-direction: column;
+	}
+
+	.east {
+		grid-area: east;
+		flex-direction: column;
+	}
+}

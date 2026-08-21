@@ -56,6 +56,14 @@ export const CARD_IDS = [
 export const cardIdSchema = z.enum(CARD_IDS);
 export type CardId = z.infer<typeof cardIdSchema>;
 
+export function splitCardId(cardId: CardId): { suit: Suit; value: number } {
+	const separator = cardId.lastIndexOf("-");
+	return {
+		suit: cardId.slice(0, separator) as Suit,
+		value: Number(cardId.slice(separator + 1)),
+	};
+}
+
 export function isColorSuit(suit: Suit): suit is ColorSuit {
 	return colorSuitSchema.safeParse(suit).success;
 }
