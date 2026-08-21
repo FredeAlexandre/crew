@@ -1,13 +1,21 @@
 /**
- * Pure rules. Deal, turns, legality, and tasks land in later engine tasks.
- * No DOM, no `node:fs`, no wall-clock.
+ * Pure rules for *The Crew: Mission Deep Sea*.
+ * No DOM, no `node:fs`, no wall-clock. Seeded RNG only.
  */
-export type { AttemptId } from "@crew/protocol";
 
-export type EngineState = {
-	readonly version: 0;
-};
+export type { AttemptId, CardId, Fact, IllegalReason, Intent, SeatId } from "@crew/protocol";
 
-export function emptyState(): EngineState {
-	return { version: 0 };
-}
+export { apply } from "./apply.ts";
+export type { CreateAttemptConfig } from "./attempt.ts";
+export { createAttempt } from "./attempt.ts";
+export { legalIntents } from "./legality.ts";
+export type {
+	ApplyErr,
+	ApplyOk,
+	ApplyResult,
+	EngineState,
+	MissionDef,
+	MissionFlags,
+	Phase,
+	PlayerCount,
+} from "./state.ts";

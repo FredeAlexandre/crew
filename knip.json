@@ -5,6 +5,9 @@
 	"workspaces": {
 		".": {
 			"entry": ["dependency-cruiser.mjs"]
+		},
+		"packages/engine": {
+			"entry": ["playground/**/index.ts!"]
 		}
 	}
 }

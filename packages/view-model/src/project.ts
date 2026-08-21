@@ -1,11 +1,19 @@
 import type { EngineState } from "@crew/engine";
-import type { HelloFixture } from "./fixtures/hello.ts";
-import { helloFixture } from "./fixtures/hello.ts";
 
 /**
  * Per-seat projection. Real hiding of hands lands in `view-model`.
- * Server-only — web must import `@crew/view-model/fixtures`, not this file.
+ * Server-only — `apps/web` must not import this file.
  */
-export function project(_state: EngineState, _viewerSeat: number): HelloFixture {
-	return helloFixture;
+export type TableView = {
+	readonly viewerSeat: number;
+	readonly phase: EngineState["phase"];
+	readonly playerCount: number;
+};
+
+export function project(state: EngineState, viewerSeat: number): TableView {
+	return {
+		viewerSeat,
+		phase: state.phase,
+		playerCount: state.playerCount,
+	};
 }

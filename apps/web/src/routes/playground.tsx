@@ -1,4 +1,3 @@
-import { helloFixture } from "@crew/view-model/fixtures";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTable } from "../hooks/use-table.ts";
 import styles from "../styles/playground.module.css";
@@ -13,8 +12,7 @@ function PlaygroundRoute() {
 	return (
 		<section className={styles.table}>
 			<h1>Playground</h1>
-			<p>Hello fixture — no room required. Echo WS proves the worker pipe.</p>
-			<pre className={styles.fixture}>{JSON.stringify(helloFixture, null, 2)}</pre>
+			<p>Echo WS proves the worker pipe. Scene fixtures come later.</p>
 			<div className={styles.echo}>
 				<button type="button" onClick={table.connect}>
 					Open echo socket ({table.status})

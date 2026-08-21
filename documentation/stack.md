@@ -44,8 +44,8 @@ packages/infra      Alchemy stack (D1, Worker, Vite website)
 ```
 
 `apps/web` must not import `packages/engine` or `@crew/view-model/project`.
-Fixture JSON/types are `@crew/view-model/fixtures`. Fixture *validity*
-lives beside the engine; the skin binds to view-model JSON only.
+Scene fixtures will be `@crew/view-model/fixtures` (JSON/types only; no engine).
+Fixture *validity* lives beside the engine; the skin binds to view-model JSON only.
 
 ## Communication
 
@@ -122,10 +122,9 @@ durable crew. Sessions are cookies, not tokens in logs or `localStorage`.
 ```text
 engine       → protocol
 view-model   → protocol, engine          (@crew/view-model/project)
-fixtures     → protocol                  (@crew/view-model/fixtures; no engine)
 db           → (nothing in the game graph)
-web          → protocol, view-model/fixtures
-server       → protocol, engine, view-model, db, auth
+web          → protocol
+server       → protocol, db, auth
 ```
 
 - Do not deep-import another package’s `src/`.
@@ -157,7 +156,7 @@ Cloudflare secrets).
 
 ```text
 nub install
-nub run dev      web + worker via alchemy; playground renders a hello fixture
+nub run dev      web + worker via alchemy; playground echo WS, no room
 nub run check    same gates as CI
 nub run test     engine/protocol/view-model/server unit tests (stubs ok)
 ```

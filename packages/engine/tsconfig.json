@@ -1,4 +1,4 @@
 {
 	"extends": "@crew/config/tsconfig.base.json",
-	"include": ["src"]
+	"include": ["src", "playground"]
 }
