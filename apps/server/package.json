@@ -9,8 +9,12 @@
 	},
 	"dependencies": {
 		"@crew/auth": "workspace:*",
+		"@crew/db": "workspace:*",
+		"@crew/engine": "workspace:*",
 		"@crew/env": "workspace:*",
 		"@crew/protocol": "workspace:*",
+		"@crew/view-model": "workspace:*",
+		"drizzle-orm": "catalog:",
 		"hono": "catalog:"
 	},
 	"devDependencies": {

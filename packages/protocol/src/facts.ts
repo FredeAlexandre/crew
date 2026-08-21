@@ -4,6 +4,7 @@ import {
 	attemptIdSchema,
 	distressDirectionSchema,
 	missionIdSchema,
+	playerIdSchema,
 	seatIdSchema,
 	seqSchema,
 	sonarPositionSchema,
@@ -22,6 +23,39 @@ export const echoFactSchema = z.object({
 	type: z.literal("echo"),
 	...wireMeta,
 	payload: z.unknown(),
+});
+
+const tableLifeMeta = {
+	attemptId: attemptIdSchema.nullable(),
+	seq: seqSchema,
+};
+
+const playerSatFactSchema = z.object({
+	type: z.literal("player.sat"),
+	...tableLifeMeta,
+	seatId: seatIdSchema,
+	playerId: playerIdSchema,
+	displayName: z.string(),
+});
+
+const playerReadyFactSchema = z.object({
+	type: z.literal("player.ready"),
+	...tableLifeMeta,
+	seatId: seatIdSchema,
+	ready: z.boolean(),
+});
+
+const playerConnectionFactSchema = z.object({
+	type: z.literal("player.connection"),
+	...tableLifeMeta,
+	seatId: seatIdSchema,
+	connected: z.boolean(),
+});
+
+const hostStartedFactSchema = z.object({
+	type: z.literal("host.started"),
+	...tableLifeMeta,
+	missionId: missionIdSchema,
 });
 
 const cardDealtFactSchema = z.object({
@@ -181,6 +215,10 @@ const missionFailedFactSchema = z.object({
 
 export const factSchema = z.discriminatedUnion("type", [
 	echoFactSchema,
+	playerSatFactSchema,
+	playerReadyFactSchema,
+	playerConnectionFactSchema,
+	hostStartedFactSchema,
 	cardDealtFactSchema,
 	captainRevealedFactSchema,
 	tasksDrawnFactSchema,

@@ -6,6 +6,7 @@ import type {
 	IllegalReason,
 	Intent,
 	MissionId,
+	PlayIntent,
 	SeatId,
 	SonarPosition,
 	Suit,
@@ -104,6 +105,6 @@ export function cloneState(state: EngineState): EngineState {
 	return structuredClone(state);
 }
 
-export function isPlayIntent(intent: Intent): intent is Exclude<Intent, { type: "echo" }> {
-	return intent.type !== "echo";
+export function isPlayIntent(intent: Intent): intent is PlayIntent {
+	return intent.type !== "echo" && intent.type !== "player.ready" && intent.type !== "host.start";
 }

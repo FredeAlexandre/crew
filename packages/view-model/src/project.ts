@@ -18,10 +18,19 @@ import {
 	taskRegionAt,
 } from "./table.ts";
 
+type OccupancySeat = {
+	playerId: string;
+	displayName: string | null;
+	connected: boolean;
+	ready: boolean;
+} | null;
+
+export type Occupancy = readonly OccupancySeat[];
+
 /**
  * Per-seat projection. Server-only — `apps/web` must not import this file.
  */
-export function project(state: EngineState, viewerSeat: SeatId): TableView {
+export function project(state: EngineState, viewerSeat: SeatId, occupancy?: Occupancy): TableView {
 	const playerCount = state.playerCount;
 	const intents = legalIntents(state, viewerSeat);
 	const { scene, overlay } = sceneAndOverlay(state);
@@ -79,9 +88,7 @@ export function project(state: EngineState, viewerSeat: SeatId): TableView {
 		seats.push({
 			region: regionForSeat(seatId, viewerSeat, playerCount),
 			seatId,
-			displayName: null,
-			connected: true,
-			ready: true,
+			...occupancyFields(occupancy, seatId),
 			isCaptain: state.captainSeat === seatId,
 			sonar: {
 				state:
@@ -194,6 +201,79 @@ export function project(state: EngineState, viewerSeat: SeatId): TableView {
 
 export function projectFacts(facts: readonly Fact[], viewerSeat: SeatId): Fact[] {
 	return facts.map((fact) => redactFact(fact, viewerSeat));
+}
+
+export function projectLobby(occupancy: Occupancy, viewerSeat: SeatId, seq: number): TableView {
+	const playerCount = occupancy.length;
+	const seats: TableView["seats"] = [];
+	for (let relative = 0; relative < playerCount; relative += 1) {
+		const seatId = ((viewerSeat + relative) % playerCount) as SeatId;
+		seats.push({
+			region: regionForSeat(seatId, viewerSeat, playerCount),
+			seatId,
+			...occupancyFields(occupancy, seatId),
+			isCaptain: false,
+			sonar: { state: "available", communication: null },
+			handCount: 0,
+			wonTrickCount: 0,
+			isTurn: false,
+			isLastTrickWinner: false,
+			tasks: [],
+		});
+	}
+	return {
+		attemptId: null,
+		seq,
+		viewerSeat,
+		playerCount,
+		scene: "lobby",
+		overlay: "none",
+		chrome: {
+			missionId: null,
+			difficulty: null,
+			trickId: null,
+			turnRegion: null,
+			distress: { active: false, direction: null },
+			sonarAvailable: false,
+			flags: { sonarDisabled: false, discussionAllowed: false },
+		},
+		seats,
+		hand: [],
+		trick: { trickId: null, ledSuit: null, leadRegion: null, cards: [] },
+		centerTasks: [],
+		lastTrick: null,
+		undealt: { present: playerCount === 3 },
+		sonarCandidates: [],
+		affordances: {
+			canPlay: false,
+			canSonar: false,
+			canTakeTask: false,
+			canPassTask: false,
+			canSkipDistress: false,
+			canActivateDistress: false,
+			canPassDistressCard: false,
+			canPeekLastTrick: false,
+		},
+		result: null,
+	};
+}
+
+function occupancyFields(
+	occupancy: Occupancy | undefined,
+	seatId: SeatId,
+): Pick<TableView["seats"][number], "displayName" | "connected" | "ready"> {
+	if (occupancy === undefined) {
+		return { displayName: null, connected: true, ready: true };
+	}
+	const slot = occupancy[seatId];
+	if (slot === undefined || slot === null) {
+		return { displayName: null, connected: false, ready: false };
+	}
+	return {
+		displayName: slot.displayName,
+		connected: slot.connected,
+		ready: slot.ready,
+	};
 }
 
 function redactFact(fact: Fact, viewerSeat: SeatId): Fact {

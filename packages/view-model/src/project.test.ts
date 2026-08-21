@@ -1,7 +1,8 @@
 import { apply, createAttempt, legalIntents } from "@crew/engine";
 import { CARD_IDS, type CardId, type TaskPublic } from "@crew/protocol";
 import { describe, expect, it } from "vitest";
-import { project, projectFacts } from "./project.ts";
+import { lobbyThreeEmpty } from "./fixtures.ts";
+import { project, projectFacts, projectLobby } from "./project.ts";
 import { tableViewSchema } from "./table.ts";
 import {
 	failWithImpossibleTask,
@@ -286,6 +287,35 @@ describe("captain region", () => {
 		const other = project(state, ((captain + 1) % 4) as 0 | 1 | 2 | 3);
 		expect(other.seats[0]?.isCaptain).toBe(false);
 		expect(other.seats.find((seat) => seat.seatId === captain)?.isCaptain).toBe(true);
+	});
+});
+
+describe("occupancy", () => {
+	it("projects lobby holes like the three-empty fixture", () => {
+		const view = projectLobby([null, null, null], 0, 0);
+		expect(view).toEqual(lobbyThreeEmpty);
+		expect(tableViewSchema.parse(view)).toEqual(view);
+	});
+
+	it("keeps occupancy names after a deal", () => {
+		const occupancy = [
+			{ playerId: "p0", displayName: "Alex", connected: true, ready: true },
+			{ playerId: "p1", displayName: "Bea", connected: true, ready: true },
+			null,
+		];
+		const lobby = projectLobby(occupancy, 0, 3);
+		expect(lobby.seats[0]?.displayName).toBe("Alex");
+		expect(lobby.seats[1]?.displayName).toBe("Bea");
+		expect(lobby.seats[2]?.displayName).toBeNull();
+		expect(lobby.seats[2]?.connected).toBe(false);
+
+		const state = startAttempt(3, 1);
+		const view = project(state, 0, occupancy);
+		expect(view.scene).toBe("taskDraft");
+		expect(view.seats.find((seat) => seat.seatId === 0)?.displayName).toBe("Alex");
+		expect(view.seats.find((seat) => seat.seatId === 1)?.displayName).toBe("Bea");
+		expect(view.seats.find((seat) => seat.seatId === 2)?.displayName).toBeNull();
+		expect(view.hand.map((card) => card.cardId)).toEqual(state.hands[0]);
 	});
 });
 

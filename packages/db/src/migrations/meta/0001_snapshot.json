@@ -1,0 +1,16 @@
+{
+  "id": "0001_player_count",
+  "prevId": "0000_init",
+  "version": "6",
+  "dialect": "sqlite",
+  "tables": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

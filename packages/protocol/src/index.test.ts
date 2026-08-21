@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { CARD_IDS } from "./cards.ts";
-import { echoFact, echoIntentSchema, factSchema, intentSchema } from "./index.ts";
+import {
+	echoFact,
+	echoIntentSchema,
+	factSchema,
+	intentSchema,
+	serverMessageSchema,
+	snapshotEnvelopeSchema,
+} from "./index.ts";
 
 describe("echoFact", () => {
 	it("assigns the next seq and keeps the payload", () => {
@@ -70,5 +77,37 @@ describe("wire schemas", () => {
 
 	it("names all 40 playing cards", () => {
 		expect(CARD_IDS).toHaveLength(40);
+	});
+
+	it("parses lobby intents", () => {
+		expect(intentSchema.parse({ type: "player.ready", ready: true }).type).toBe("player.ready");
+		expect(intentSchema.parse({ type: "host.start" }).type).toBe("host.start");
+	});
+
+	it("parses table-life facts and a lobby snapshot", () => {
+		const sat = factSchema.parse({
+			type: "player.sat",
+			attemptId: null,
+			seq: 1,
+			seatId: 0,
+			playerId: "p1",
+			displayName: "Alex",
+		});
+		expect(sat.type).toBe("player.sat");
+		const snapshot = snapshotEnvelopeSchema.parse({
+			type: "room.snapshot",
+			attemptId: null,
+			seq: 1,
+			viewModel: { scene: "lobby" },
+		});
+		expect(snapshot.attemptId).toBeNull();
+		expect(serverMessageSchema.parse(snapshot).type).toBe("room.snapshot");
+		expect(
+			serverMessageSchema.parse({
+				type: "error",
+				code: "roomFull",
+				message: "table is full",
+			}).type,
+		).toBe("error");
 	});
 });

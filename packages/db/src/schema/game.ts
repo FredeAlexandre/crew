@@ -30,6 +30,7 @@ export const rooms = sqliteTable(
 			.notNull()
 			.default("lobby"),
 		occupancy: integer("occupancy").notNull().default(0),
+		playerCount: integer("player_count").notNull().default(4),
 		createdAt: integer("created_at", { mode: "timestamp_ms" })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.notNull(),
