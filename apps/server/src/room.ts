@@ -17,6 +17,7 @@ import {
 } from "./table.ts";
 
 type Attachment = { playerId: string };
+type RoomBindings = { DB: D1Database };
 
 const TABLE_KEY = "table";
 
@@ -26,7 +27,7 @@ const TABLE_KEY = "table";
  * Native `cloudflare:workers` Durable Object because the Worker is Hono
  * (`async fetch`). Alchemy only injects DurableObjectBridge for Effect Workers.
  */
-export default class Room extends DurableObject<Env> {
+export default class Room extends DurableObject<RoomBindings> {
 	async init(input: { code: string; hostPlayerId: string; playerCount: 3 | 4 | 5 }): Promise<void> {
 		const existing = await this.load();
 		if (existing !== null) {

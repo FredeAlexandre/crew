@@ -193,9 +193,6 @@ importers:
 
   packages/db:
     dependencies:
-      '@crew/env':
-        specifier: workspace:*
-        version: link:../env
       dotenv:
         specifier: 'catalog:'
         version: 17.4.2
