@@ -1,0 +1,100 @@
+{
+	"attemptId": null,
+	"seq": 0,
+	"viewerSeat": 0,
+	"playerCount": 3,
+	"scene": "lobby",
+	"overlay": "none",
+	"chrome": {
+		"missionId": null,
+		"difficulty": null,
+		"trickId": null,
+		"turnRegion": null,
+		"distress": {
+			"active": false,
+			"direction": null
+		},
+		"sonarAvailable": false,
+		"flags": {
+			"sonarDisabled": false,
+			"discussionAllowed": false
+		}
+	},
+	"seats": [
+		{
+			"region": "seat.self",
+			"seatId": 0,
+			"displayName": null,
+			"connected": false,
+			"ready": false,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 0,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": []
+		},
+		{
+			"region": "seat.1",
+			"seatId": 1,
+			"displayName": null,
+			"connected": false,
+			"ready": false,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 0,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": []
+		},
+		{
+			"region": "seat.2",
+			"seatId": 2,
+			"displayName": null,
+			"connected": false,
+			"ready": false,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 0,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": []
+		}
+	],
+	"hand": [],
+	"trick": {
+		"trickId": null,
+		"ledSuit": null,
+		"leadRegion": null,
+		"cards": []
+	},
+	"centerTasks": [],
+	"lastTrick": null,
+	"undealt": {
+		"present": true
+	},
+	"sonarCandidates": [],
+	"affordances": {
+		"canPlay": false,
+		"canSonar": false,
+		"canTakeTask": false,
+		"canPassTask": false,
+		"canSkipDistress": false,
+		"canActivateDistress": false,
+		"canPassDistressCard": false,
+		"canPeekLastTrick": false
+	},
+	"result": null
+}

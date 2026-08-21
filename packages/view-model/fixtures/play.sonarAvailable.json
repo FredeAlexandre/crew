@@ -1,0 +1,228 @@
+{
+	"attemptId": "a1",
+	"seq": 48,
+	"viewerSeat": 0,
+	"playerCount": 4,
+	"scene": "play",
+	"overlay": "none",
+	"chrome": {
+		"missionId": "m1",
+		"difficulty": 1,
+		"trickId": 1,
+		"turnRegion": "seat.self",
+		"distress": {
+			"active": false,
+			"direction": null
+		},
+		"sonarAvailable": true,
+		"flags": {
+			"sonarDisabled": false,
+			"discussionAllowed": false
+		}
+	},
+	"seats": [
+		{
+			"region": "seat.self",
+			"seatId": 0,
+			"displayName": null,
+			"connected": true,
+			"ready": true,
+			"isCaptain": true,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 10,
+			"wonTrickCount": 0,
+			"isTurn": true,
+			"isLastTrickWinner": false,
+			"tasks": [
+				{
+					"instanceId": "a1:0",
+					"spec": {
+						"kind": "winColor",
+						"suit": "blue",
+						"count": 1,
+						"difficulty": {
+							"3": 1,
+							"4": 1,
+							"5": 1
+						},
+						"captainMaySelect": true,
+						"id": "t32"
+					},
+					"status": "open",
+					"progress": 0,
+					"region": "tasks.self",
+					"ownerSeatId": 0,
+					"takeable": false
+				}
+			]
+		},
+		{
+			"region": "seat.1",
+			"seatId": 1,
+			"displayName": null,
+			"connected": true,
+			"ready": true,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 10,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": []
+		},
+		{
+			"region": "seat.2",
+			"seatId": 2,
+			"displayName": null,
+			"connected": true,
+			"ready": true,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 10,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": []
+		},
+		{
+			"region": "seat.3",
+			"seatId": 3,
+			"displayName": null,
+			"connected": true,
+			"ready": true,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 10,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": []
+		}
+	],
+	"hand": [
+		{
+			"cardId": "blue-1",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "submarine-4",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "green-1",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "yellow-4",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "yellow-8",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "pink-5",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "blue-9",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "yellow-3",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "blue-4",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "pink-8",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		}
+	],
+	"trick": {
+		"trickId": 1,
+		"ledSuit": null,
+		"leadRegion": null,
+		"cards": []
+	},
+	"centerTasks": [],
+	"lastTrick": null,
+	"undealt": {
+		"present": false
+	},
+	"sonarCandidates": [
+		{
+			"cardId": "blue-1",
+			"position": "lowest"
+		},
+		{
+			"cardId": "green-1",
+			"position": "only"
+		},
+		{
+			"cardId": "yellow-8",
+			"position": "highest"
+		},
+		{
+			"cardId": "pink-5",
+			"position": "lowest"
+		},
+		{
+			"cardId": "blue-9",
+			"position": "highest"
+		},
+		{
+			"cardId": "yellow-3",
+			"position": "lowest"
+		},
+		{
+			"cardId": "pink-8",
+			"position": "highest"
+		}
+	],
+	"affordances": {
+		"canPlay": true,
+		"canSonar": true,
+		"canTakeTask": false,
+		"canPassTask": false,
+		"canSkipDistress": false,
+		"canActivateDistress": false,
+		"canPassDistressCard": false,
+		"canPeekLastTrick": false
+	},
+	"result": null
+}

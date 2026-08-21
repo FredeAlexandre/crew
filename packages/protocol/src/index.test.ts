@@ -30,6 +30,32 @@ describe("wire schemas", () => {
 		expect(parsed.type).toBe("card.play");
 	});
 
+	it("allows card.dealt and card.passed without cardId after projection", () => {
+		const dealt = factSchema.parse({
+			type: "card.dealt",
+			attemptId: "attempt-1",
+			seq: 1,
+			seatId: 2,
+			index: 0,
+			handCount: 1,
+		});
+		const passed = factSchema.parse({
+			type: "card.passed",
+			attemptId: "attempt-1",
+			seq: 2,
+			fromSeat: 0,
+			toSeat: 1,
+		});
+		expect(dealt.type).toBe("card.dealt");
+		expect(passed.type).toBe("card.passed");
+		if (dealt.type === "card.dealt") {
+			expect(dealt.cardId).toBeUndefined();
+		}
+		if (passed.type === "card.passed") {
+			expect(passed.cardId).toBeUndefined();
+		}
+	});
+
 	it("parses a card.played fact", () => {
 		const parsed = factSchema.parse({
 			type: "card.played",
