@@ -28,7 +28,7 @@ const cardDealtFactSchema = z.object({
 	type: z.literal("card.dealt"),
 	...wireMeta,
 	seatId: seatIdSchema,
-	cardId: cardIdSchema,
+	cardId: cardIdSchema.optional(),
 	index: z.number().int().nonnegative(),
 	handCount: z.number().int().nonnegative(),
 });
@@ -103,7 +103,7 @@ const cardPassedFactSchema = z.object({
 	...wireMeta,
 	fromSeat: seatIdSchema,
 	toSeat: seatIdSchema,
-	cardId: cardIdSchema,
+	cardId: cardIdSchema.optional(),
 });
 
 const turnStartedFactSchema = z.object({

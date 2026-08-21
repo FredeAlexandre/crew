@@ -8,6 +8,9 @@
 		},
 		"packages/engine": {
 			"entry": ["playground/**/index.ts!"]
+		},
+		"packages/view-model": {
+			"entry": ["playground/**/index.ts!"]
 		}
 	}
 }

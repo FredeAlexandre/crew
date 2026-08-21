@@ -1,0 +1,206 @@
+{
+	"attemptId": "a1",
+	"seq": 50,
+	"viewerSeat": 3,
+	"playerCount": 4,
+	"scene": "play",
+	"overlay": "none",
+	"chrome": {
+		"missionId": "m1",
+		"difficulty": 1,
+		"trickId": 1,
+		"turnRegion": "seat.self",
+		"distress": {
+			"active": false,
+			"direction": null
+		},
+		"sonarAvailable": true,
+		"flags": {
+			"sonarDisabled": false,
+			"discussionAllowed": false
+		}
+	},
+	"seats": [
+		{
+			"region": "seat.self",
+			"seatId": 3,
+			"displayName": null,
+			"connected": true,
+			"ready": true,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 10,
+			"wonTrickCount": 0,
+			"isTurn": true,
+			"isLastTrickWinner": false,
+			"tasks": []
+		},
+		{
+			"region": "seat.1",
+			"seatId": 0,
+			"displayName": null,
+			"connected": true,
+			"ready": true,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 10,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": []
+		},
+		{
+			"region": "seat.2",
+			"seatId": 1,
+			"displayName": null,
+			"connected": true,
+			"ready": true,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 10,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": []
+		},
+		{
+			"region": "seat.3",
+			"seatId": 2,
+			"displayName": null,
+			"connected": true,
+			"ready": true,
+			"isCaptain": true,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 9,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": [
+				{
+					"instanceId": "a1:0",
+					"spec": {
+						"kind": "trickCount",
+						"op": "atLeast",
+						"count": 1,
+						"difficulty": {
+							"3": 1,
+							"4": 1,
+							"5": 1
+						},
+						"captainMaySelect": true,
+						"id": "t56"
+					},
+					"status": "open",
+					"progress": 0,
+					"region": "tasks.3",
+					"ownerSeatId": 2,
+					"takeable": false
+				}
+			]
+		}
+	],
+	"hand": [
+		{
+			"cardId": "blue-3",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "pink-6",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "pink-4",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "green-5",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "blue-1",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "blue-2",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "yellow-3",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "green-2",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "blue-4",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "green-3",
+			"legal": true,
+			"illegalReason": null,
+			"communicated": false
+		}
+	],
+	"trick": {
+		"trickId": 1,
+		"ledSuit": "submarine",
+		"leadRegion": "seat.3",
+		"cards": [
+			{
+				"region": "seat.3",
+				"seatId": 2,
+				"cardId": "submarine-3",
+				"order": 1
+			}
+		]
+	},
+	"centerTasks": [],
+	"lastTrick": null,
+	"undealt": {
+		"present": false
+	},
+	"sonarCandidates": [],
+	"affordances": {
+		"canPlay": true,
+		"canSonar": false,
+		"canTakeTask": false,
+		"canPassTask": false,
+		"canSkipDistress": false,
+		"canActivateDistress": false,
+		"canPassDistressCard": false,
+		"canPeekLastTrick": false
+	},
+	"result": null
+}

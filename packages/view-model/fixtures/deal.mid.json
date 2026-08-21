@@ -1,0 +1,142 @@
+{
+	"attemptId": "a1",
+	"seq": 43,
+	"viewerSeat": 0,
+	"playerCount": 4,
+	"scene": "deal",
+	"overlay": "none",
+	"chrome": {
+		"missionId": "m1",
+		"difficulty": 1,
+		"trickId": null,
+		"turnRegion": null,
+		"distress": {
+			"active": false,
+			"direction": null
+		},
+		"sonarAvailable": true,
+		"flags": {
+			"sonarDisabled": false,
+			"discussionAllowed": false
+		}
+	},
+	"seats": [
+		{
+			"region": "seat.self",
+			"seatId": 0,
+			"displayName": null,
+			"connected": true,
+			"ready": true,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 4,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": []
+		},
+		{
+			"region": "seat.1",
+			"seatId": 1,
+			"displayName": null,
+			"connected": true,
+			"ready": true,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 3,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": []
+		},
+		{
+			"region": "seat.2",
+			"seatId": 2,
+			"displayName": null,
+			"connected": true,
+			"ready": true,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 2,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": []
+		},
+		{
+			"region": "seat.3",
+			"seatId": 3,
+			"displayName": null,
+			"connected": true,
+			"ready": true,
+			"isCaptain": false,
+			"sonar": {
+				"state": "available",
+				"communication": null
+			},
+			"handCount": 1,
+			"wonTrickCount": 0,
+			"isTurn": false,
+			"isLastTrickWinner": false,
+			"tasks": []
+		}
+	],
+	"hand": [
+		{
+			"cardId": "green-4",
+			"legal": false,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "yellow-7",
+			"legal": false,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "green-5",
+			"legal": false,
+			"illegalReason": null,
+			"communicated": false
+		},
+		{
+			"cardId": "pink-3",
+			"legal": false,
+			"illegalReason": null,
+			"communicated": false
+		}
+	],
+	"trick": {
+		"trickId": null,
+		"ledSuit": null,
+		"leadRegion": null,
+		"cards": []
+	},
+	"centerTasks": [],
+	"lastTrick": null,
+	"undealt": {
+		"present": false
+	},
+	"sonarCandidates": [],
+	"affordances": {
+		"canPlay": false,
+		"canSonar": false,
+		"canTakeTask": false,
+		"canPassTask": false,
+		"canSkipDistress": false,
+		"canActivateDistress": false,
+		"canPassDistressCard": false,
+		"canPeekLastTrick": false
+	},
+	"result": null
+}

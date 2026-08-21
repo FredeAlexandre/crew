@@ -11,6 +11,10 @@
 		"./project": {
 			"types": "./src/project.ts",
 			"default": "./src/project.ts"
+		},
+		"./fixtures": {
+			"types": "./src/fixtures.ts",
+			"default": "./src/fixtures.ts"
 		}
 	},
 	"scripts": {
@@ -19,7 +23,8 @@
 	},
 	"dependencies": {
 		"@crew/engine": "workspace:*",
-		"@crew/protocol": "workspace:*"
+		"@crew/protocol": "workspace:*",
+		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@crew/config": "workspace:*",
