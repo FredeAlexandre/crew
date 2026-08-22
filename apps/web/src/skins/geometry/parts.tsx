@@ -113,7 +113,7 @@ export function TaskMark({ task }: { task: TaskView }) {
 	);
 }
 
-export function TaskCard({ task, onTake }: { task: TaskView; onTake?: () => void }) {
+export function TaskCard({ task, onTake }: { task: TaskView; onTake?: (task: TaskView) => void }) {
 	const body = <span className={styles.taskFace}>{taskLabel(task.spec)}</span>;
 	if (task.takeable && onTake) {
 		return (
@@ -122,7 +122,7 @@ export function TaskCard({ task, onTake }: { task: TaskView; onTake?: () => void
 				data-status={task.status}
 				data-takeable="true"
 				data-region={task.region}
-				onPress={onTake}
+				onPress={() => onTake(task)}
 			>
 				{body}
 			</Button>

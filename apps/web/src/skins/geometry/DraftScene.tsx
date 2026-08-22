@@ -1,5 +1,5 @@
 import type { CardId } from "@crew/protocol";
-import type { TableView } from "@crew/view-model/fixtures";
+import type { TableView, TaskView } from "@crew/view-model/fixtures";
 import { useState } from "react";
 import { opponentSeats, selfSeat, turnCopy } from "./copy.ts";
 import { ChromeLine, HandStrip, SeatPip, SelfDock, TaskCard } from "./parts.tsx";
@@ -11,7 +11,7 @@ export function DraftScene({
 	onPass,
 }: {
 	view: TableView;
-	onTake?: () => void;
+	onTake?: (task: TaskView) => void;
 	onPass?: () => void;
 }) {
 	const [selected, setSelected] = useState<CardId | null>(null);

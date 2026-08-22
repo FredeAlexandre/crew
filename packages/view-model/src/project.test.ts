@@ -292,9 +292,30 @@ describe("captain region", () => {
 
 describe("occupancy", () => {
 	it("projects lobby holes like the three-empty fixture", () => {
-		const view = projectLobby([null, null, null], 0, 0);
+		const view = projectLobby([null, null, null], 0, 0, 0);
+		expect(view.affordances.canStart).toBe(false);
 		expect(view).toEqual(lobbyThreeEmpty);
 		expect(tableViewSchema.parse(view)).toEqual(view);
+	});
+
+	it("lets only the host start when every seat is filled and ready", () => {
+		const occupancy = [
+			{ playerId: "p0", displayName: "Alex", connected: true, ready: true },
+			{ playerId: "p1", displayName: "Bea", connected: true, ready: true },
+			{ playerId: "p2", displayName: "Cam", connected: true, ready: true },
+		] as const;
+		const host = projectLobby(occupancy, 0, 5, 0);
+		expect(host.affordances.canStart).toBe(true);
+		expect(projectLobby(occupancy, 1, 5, 0).affordances.canStart).toBe(false);
+		const waiting = [
+			occupancy[0],
+			occupancy[1],
+			{ playerId: "p2", displayName: "Cam", connected: true, ready: false },
+		] as const;
+		expect(projectLobby(waiting, 0, 5, 0).affordances.canStart).toBe(false);
+		expect(projectLobby([occupancy[0], occupancy[1], null], 0, 5, 0).affordances.canStart).toBe(
+			false,
+		);
 	});
 
 	it("keeps occupancy names after a deal", () => {
@@ -303,15 +324,17 @@ describe("occupancy", () => {
 			{ playerId: "p1", displayName: "Bea", connected: true, ready: true },
 			null,
 		];
-		const lobby = projectLobby(occupancy, 0, 3);
+		const lobby = projectLobby(occupancy, 0, 3, 0);
 		expect(lobby.seats[0]?.displayName).toBe("Alex");
 		expect(lobby.seats[1]?.displayName).toBe("Bea");
 		expect(lobby.seats[2]?.displayName).toBeNull();
 		expect(lobby.seats[2]?.connected).toBe(false);
+		expect(lobby.affordances.canStart).toBe(false);
 
 		const state = startAttempt(3, 1);
 		const view = project(state, 0, occupancy);
 		expect(view.scene).toBe("taskDraft");
+		expect(view.affordances.canStart).toBe(false);
 		expect(view.seats.find((seat) => seat.seatId === 0)?.displayName).toBe("Alex");
 		expect(view.seats.find((seat) => seat.seatId === 1)?.displayName).toBe("Bea");
 		expect(view.seats.find((seat) => seat.seatId === 2)?.displayName).toBeNull();

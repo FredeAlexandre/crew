@@ -158,9 +158,12 @@ Cloudflare secrets).
 nub install
 nub run dev      web + worker via alchemy; HTTP create/join + room WS
 nub run check    same gates as CI
-nub run test     engine/protocol/view-model/server unit tests
+nub run test     engine/protocol/view-model/server/web unit tests
 ```
 
-Two browser profiles against one room code is the multi-seat check once the
-web hook sends play intents. Playground echo ping still speaks echo and will
-fail against the table host until that hook is rewired.
+Create and join are HTTP (`POST /rooms`, `POST /rooms/:code/join`). The skin
+connects with `useTable` to `GET /room/:code` (WebSocket upgrade, guest cookie)
+and keeps the latest per-seat `room.snapshot`. Two browser profiles against one
+room code is the multi-seat check: sit, ready flags, host start, reconnect
+keeps `viewerSeat`. `?preview=` on the lobby is fixture-only and never opens a
+socket.

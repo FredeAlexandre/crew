@@ -1,5 +1,4 @@
 import type { TableView } from "@crew/view-model/fixtures";
-import { useState } from "react";
 import { Button } from "react-aria-components";
 import { seatIsEmpty, seatName } from "./copy.ts";
 import styles from "./scenes.module.css";
@@ -10,13 +9,12 @@ export type LobbyActions = {
 	statusNote?: string | null;
 	alert?: string | null;
 	onCopyCode?: () => void;
+	onReady?: (ready: boolean) => void;
 	onStart?: () => void;
 };
 
 export function LobbyScene({ view, actions }: { view: TableView; actions?: LobbyActions }) {
 	const code = actions?.roomCode || "————";
-	const self = view.seats.find((seat) => seat.region === "seat.self");
-	const [ready, setReady] = useState(self?.ready ?? false);
 	return (
 		<div className={styles.board} data-scene={view.scene}>
 			<p className={styles.kicker}>Crew</p>
@@ -32,28 +30,27 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 			<div className={styles.arc}>
 				{view.seats.map((seat) => {
 					const empty = seatIsEmpty(seat);
-					const seatedReady = seat.region === "seat.self" ? ready : seat.ready;
 					return (
 						<div
 							key={seat.region}
 							className={styles.chair}
 							data-region={seat.region}
 							data-empty={empty ? "true" : "false"}
-							data-ready={seatedReady ? "true" : "false"}
+							data-ready={seat.ready ? "true" : "false"}
 							data-self={seat.region === "seat.self" ? "true" : "false"}
 						>
 							<span
 								className={styles.notch}
 								data-empty={empty ? "true" : "false"}
 								data-self={seat.region === "seat.self" ? "true" : "false"}
-								data-ready={seatedReady ? "true" : "false"}
+								data-ready={seat.ready ? "true" : "false"}
 							/>
 							<span className={styles.chairName}>{empty ? "Empty" : seatName(seat)}</span>
 							{seat.region === "seat.self" && !empty ? (
-								<Button className={styles.ghost} onPress={() => setReady((current) => !current)}>
-									{ready ? "Ready" : "Sit ready"}
+								<Button className={styles.ghost} onPress={() => actions?.onReady?.(!seat.ready)}>
+									{seat.ready ? "Ready" : "Sit ready"}
 								</Button>
-							) : seatedReady ? (
+							) : seat.ready ? (
 								<span className={styles.readyMark}>Ready</span>
 							) : null}
 						</div>

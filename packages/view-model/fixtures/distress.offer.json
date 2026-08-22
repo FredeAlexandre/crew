@@ -213,7 +213,8 @@
 		"canSkipDistress": true,
 		"canActivateDistress": true,
 		"canPassDistressCard": false,
-		"canPeekLastTrick": false
+		"canPeekLastTrick": false,
+		"canStart": false
 	},
 	"result": null
 }

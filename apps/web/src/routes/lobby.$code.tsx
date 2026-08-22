@@ -1,4 +1,4 @@
-import { isRoomCode, normalizeRoomCode } from "@crew/protocol";
+import { isRoomCode, normalizeRoomCode, type PlayerCount, type RoomTicket } from "@crew/protocol";
 import {
 	type FixtureName,
 	fixtures,
@@ -10,6 +10,7 @@ import {
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "react-aria-components";
+import { useTable } from "../hooks/use-table.ts";
 import { joinRoom, roomErrorCopy } from "../lib/rooms.ts";
 import { GeometryTable } from "../skins/geometry/Table.tsx";
 import styles from "../styles/lobby.module.css";
@@ -37,13 +38,26 @@ const FIXTURE_SITUATION: Record<FixtureName, string> = {
 	"result.fail.taskImpossible": "The mission failed: a task became impossible.",
 };
 
-function previewLobby(): TableView {
-	const base = fixtures["lobby.threeEmpty"];
+const SEAT_REGIONS = ["seat.self", "seat.1", "seat.2", "seat.3", "seat.4"] as const;
+
+function placeholderLobby(playerCount: PlayerCount): TableView {
+	const template = fixtures["lobby.threeEmpty"];
+	const blank = template.seats[0];
+	if (blank === undefined) {
+		return template;
+	}
 	return {
-		...base,
-		seats: base.seats.map((seat) =>
-			seat.region === "seat.self" ? { ...seat, displayName: "You", connected: true } : seat,
-		),
+		...template,
+		playerCount,
+		seats: Array.from({ length: playerCount }, (_, index) => ({
+			...blank,
+			region: SEAT_REGIONS[index] ?? "seat.4",
+			seatId: index as 0 | 1 | 2 | 3 | 4,
+			displayName: index === 0 ? "You" : null,
+			connected: index === 0,
+			ready: false,
+		})),
+		undealt: { present: playerCount === 3 },
 	};
 }
 
@@ -52,21 +66,30 @@ function LobbyRoute() {
 	const { preview } = Route.useSearch();
 	const navigate = Route.useNavigate();
 	const code = normalizeRoomCode(rawCode);
+	const live = preview === undefined;
 	const [status, setStatus] = useState<"joining" | "ready" | "error">(
-		isRoomCode(code) ? "joining" : "error",
+		live && isRoomCode(code) ? "joining" : live ? "error" : "ready",
 	);
-	const [error, setError] = useState(isRoomCode(code) ? null : "That code is not a lobby.");
+	const [error, setError] = useState(
+		live && !isRoomCode(code) ? "That code is not a lobby." : null,
+	);
 	const [copied, setCopied] = useState(false);
-	const view = preview === undefined ? previewLobby() : fixtures[preview];
+	const [ticket, setTicket] = useState<RoomTicket | null>(null);
+	const table = useTable(live && ticket !== null ? ticket.code : null);
+	const view =
+		preview !== undefined
+			? fixtures[preview]
+			: (table.view ?? placeholderLobby(ticket?.playerCount ?? 3));
 
 	useEffect(() => {
-		if (!isRoomCode(code)) {
+		if (!live || !isRoomCode(code)) {
 			return;
 		}
 		let cancelled = false;
 		void joinRoom(code)
-			.then(() => {
+			.then((next) => {
 				if (!cancelled) {
+					setTicket(next);
 					setStatus("ready");
 				}
 			})
@@ -79,7 +102,7 @@ function LobbyRoute() {
 		return () => {
 			cancelled = true;
 		};
-	}, [code]);
+	}, [code, live]);
 
 	function show(name: FixtureName) {
 		void navigate({ search: { preview: name } });
@@ -93,6 +116,16 @@ function LobbyRoute() {
 			setCopied(false);
 		}
 	}
+
+	const waitingToSit = live && status !== "error" && table.view === null;
+	const statusNote = !live
+		? null
+		: waitingToSit
+			? "Sitting down…"
+			: view.scene === "lobby"
+				? "Waiting for the rest of the crew."
+				: null;
+	const alert = live ? (error ?? table.error) : null;
 
 	return (
 		<section className={styles.page}>
@@ -120,27 +153,35 @@ function LobbyRoute() {
 					</>
 				)}
 			</nav>
-			<div className={styles.stage}>
+			<div className={waitingToSit ? `${styles.stage} ${styles.pending}` : styles.stage}>
 				<GeometryTable
 					view={view}
+					sendIntent={live ? table.sendIntent : undefined}
 					lobby={{
 						roomCode: code,
 						copied,
-						statusNote:
-							preview === undefined && status === "joining"
-								? "Sitting down…"
-								: preview === undefined && status === "ready"
-									? "Waiting for the rest of the crew."
-									: null,
-						alert: preview === undefined ? error : null,
+						statusNote,
+						alert,
 						onCopyCode: isRoomCode(code) ? () => void copyCode() : undefined,
-						onStart: () => show("briefing.mission1"),
+						onReady: live
+							? (ready) => table.sendIntent({ type: "player.ready", ready })
+							: undefined,
+						onStart:
+							preview !== undefined
+								? () => show("briefing.mission1")
+								: view.affordances.canStart
+									? () => table.sendIntent({ type: "host.start" })
+									: undefined,
 					}}
-					onConfirmBriefing={() => show("deal.mid")}
-					onTakeTask={() => show("distress.offer")}
-					onSkipDistress={() => show("play.midTrick.fourPlayers")}
-					onActivateDistress={() => show("play.midTrick.fourPlayers")}
-					onRetry={() => show("briefing.mission1")}
+					onConfirmBriefing={preview !== undefined ? () => show("deal.mid") : undefined}
+					onTakeTask={preview !== undefined ? () => show("distress.offer") : undefined}
+					onSkipDistress={
+						preview !== undefined ? () => show("play.midTrick.fourPlayers") : undefined
+					}
+					onActivateDistress={
+						preview !== undefined ? () => show("play.midTrick.fourPlayers") : undefined
+					}
+					onRetry={preview !== undefined ? () => show("briefing.mission1") : undefined}
 				/>
 			</div>
 		</section>

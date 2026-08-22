@@ -97,6 +97,16 @@ describe("table lobby", () => {
 		expect(handleIntent(started.state, "p0", { type: "host.start" }, { seed: 1 }).ok).toBe(false);
 	});
 
+	it("sets canStart only for the host when every seat is ready", () => {
+		const seated = sitAll();
+		expect(viewForSeat(seated, 0).affordances.canStart).toBe(false);
+		const ready = readyAll(seated);
+		expect(viewForSeat(ready, 0).affordances.canStart).toBe(true);
+		expect(viewForSeat(ready, 1).affordances.canStart).toBe(false);
+		const started = startGame(ready);
+		expect(viewForSeat(started.state, 0).affordances.canStart).toBe(false);
+	});
+
 	it("dims a disconnected seat without clearing it", () => {
 		const seated = sitAll();
 		const left = mustOk(disconnect(seated, "p1"));
