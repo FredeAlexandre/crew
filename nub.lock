@@ -255,10 +255,6 @@ importers:
         version: 6.0.3
 
   packages/infra:
-    dependencies:
-      dotenv:
-        specifier: 'catalog:'
-        version: 17.4.2
     devDependencies:
       '@crew/config':
         specifier: workspace:*

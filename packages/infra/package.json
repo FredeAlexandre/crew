@@ -7,12 +7,9 @@
 	},
 	"scripts": {
 		"check-types": "tsc --noEmit",
-		"dev": "alchemy dev",
-		"deploy": "alchemy deploy",
-		"destroy": "alchemy destroy"
-	},
-	"dependencies": {
-		"dotenv": "catalog:"
+		"dev": "alchemy dev --env-file ../../apps/server/.env",
+		"deploy": "alchemy deploy --stage prod --env-file .env.prod",
+		"destroy": "alchemy destroy --stage prod --env-file .env.prod"
 	},
 	"devDependencies": {
 		"@crew/config": "workspace:*",

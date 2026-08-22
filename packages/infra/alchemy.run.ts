@@ -2,14 +2,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as Alchemy from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
-import { config } from "dotenv";
 import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 import type Room from "../../apps/server/src/room.ts";
-
-config({ path: "./.env" });
-config({ path: "../../apps/web/.env" });
-config({ path: "../../apps/server/.env" });
 
 const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), "../db/src/migrations");
 

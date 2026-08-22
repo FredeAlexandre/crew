@@ -27,5 +27,17 @@ HTTP create/join mints a room code; WS `/room/:code` is the table host.
 Boot can mint a guest cookie. Playground echo ping still speaks echo and will
 fail until the web hook is rewired.
 
-Deploy: `cd packages/infra && nubx alchemy login --configure`, then
-`nub run deploy`. Destroy with `nub run destroy`.
+Local and production do not share env files. `nub run dev` reads
+`apps/server/.env` (localhost CORS). `nub run deploy` targets Alchemy stage
+`prod` and reads `packages/infra/.env.prod`.
+
+Deploy: `cd packages/infra && nubx alchemy login --configure`, then:
+
+```bash
+cp packages/infra/.env.prod.example packages/infra/.env.prod
+# Set CORS_ORIGIN to the production website origin and a dedicated secret.
+nub run deploy
+```
+
+CI writes the same `.env.prod` keys from GitHub Actions secrets/variables.
+Destroy with `nub run destroy`.
