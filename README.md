@@ -33,8 +33,10 @@ Local and production do not share env files. `nub run dev` reads
 Cloudflare (`Cloudflare.state()`), not in `.alchemy/` on a laptop.
 
 Pushes to `main` deploy production via GitHub Actions (after `nub run check`).
-The site is `https://crew.aleno.casa`. Manual deploy from a laptop still
-works after `cd packages/infra && nubx alchemy login --configure`:
+The site is `https://crew.aleno.casa`. Same-repo PRs deploy an isolated
+preview at `https://crew-pr-{n}.aleno.casa` and tear it down when the
+PR closes. Manual deploy from a laptop still works after
+`cd packages/infra && nubx alchemy login --configure`:
 
 ```bash
 cp packages/infra/.env.prod.example packages/infra/.env.prod
@@ -49,6 +51,7 @@ Actions needs these repository secrets/variables:
 | `CLOUDFLARE_API_TOKEN` | secret | Deploy Workers/D1 and read the Alchemy state-store token. Must include **Secrets Store Write** (not just Read), plus Workers Scripts Write, D1 Write, Account Settings Write, Workers Routes Write, DNS Write, Workers Tail Read. |
 | `CLOUDFLARE_ACCOUNT_ID` | secret | Cloudflare account |
 | `BETTER_AUTH_SECRET` | secret | Production cookie signing (not the local `.env` value) |
-| `CORS_ORIGIN` | variable | `https://crew.aleno.casa` |
+| `PREVIEW_BETTER_AUTH_SECRET` | secret | Cookie signing for PR preview stages (not the prod secret) |
+| `CORS_ORIGIN` | variable | `https://crew.aleno.casa` (prod only; previews compute their own) |
 
 Create the API token at [Cloudflare API tokens](https://dash.cloudflare.com/profile/api-tokens), then `gh secret set CLOUDFLARE_API_TOKEN`. Destroy with `nub run destroy`.

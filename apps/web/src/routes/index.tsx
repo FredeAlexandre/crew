@@ -57,7 +57,7 @@ function BootRoute() {
 		<section className={styles.table}>
 			<header className={styles.masthead}>
 				<h1 className={styles.title}>Crew</h1>
-				<p className={styles.lede}>Sit at a table. Three to five players. CD probe 22 Aug.</p>
+				<p className={styles.lede}>Sit at a table. Three to five players.</p>
 			</header>
 			<TextField
 				className={styles.identity}
