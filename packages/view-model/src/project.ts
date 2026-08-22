@@ -30,7 +30,12 @@ export type Occupancy = readonly OccupancySeat[];
 /**
  * Per-seat projection. Server-only — `apps/web` must not import this file.
  */
-export function project(state: EngineState, viewerSeat: SeatId, occupancy?: Occupancy): TableView {
+export function project(
+	state: EngineState,
+	viewerSeat: SeatId,
+	occupancy?: Occupancy,
+	hostSeatId?: SeatId | null,
+): TableView {
 	const playerCount = state.playerCount;
 	const intents = legalIntents(state, viewerSeat);
 	const { scene, overlay } = sceneAndOverlay(state);
@@ -195,6 +200,7 @@ export function project(state: EngineState, viewerSeat: SeatId, occupancy?: Occu
 			canPassDistressCard,
 			canPeekLastTrick: lastTrick !== null,
 			canStart: false,
+			canRetry: state.phase === "result" && hostSeatId === viewerSeat,
 		},
 		result: state.result === null ? null : { outcome: state.result, reason: state.failReason },
 	};
@@ -260,6 +266,7 @@ export function projectLobby(
 			canPassDistressCard: false,
 			canPeekLastTrick: false,
 			canStart: lobbyCanStart(occupancy, viewerSeat, hostSeatId),
+			canRetry: false,
 		},
 		result: null,
 	};

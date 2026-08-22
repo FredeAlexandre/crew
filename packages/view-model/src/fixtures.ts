@@ -46,7 +46,7 @@ export const FIXTURE_ORDER = [
 	"result.fail.taskImpossible",
 ] as const;
 
-export type FixtureName = (typeof FIXTURE_ORDER)[number];
+type FixtureName = (typeof FIXTURE_ORDER)[number];
 
 export const fixtures: Record<FixtureName, TableView> = {
 	"lobby.threeEmpty": lobbyThreeEmpty,
@@ -59,17 +59,3 @@ export const fixtures: Record<FixtureName, TableView> = {
 	"play.twoTasksLeft": playTwoTasksLeft,
 	"result.fail.taskImpossible": resultFailTaskImpossible,
 };
-
-export function isFixtureName(value: string): value is FixtureName {
-	return (FIXTURE_ORDER as readonly string[]).includes(value);
-}
-
-export function nextFixture(name: FixtureName): FixtureName {
-	const index = FIXTURE_ORDER.indexOf(name);
-	return FIXTURE_ORDER[(index + 1) % FIXTURE_ORDER.length] ?? name;
-}
-
-export function previousFixture(name: FixtureName): FixtureName {
-	const index = FIXTURE_ORDER.indexOf(name);
-	return FIXTURE_ORDER[(index - 1 + FIXTURE_ORDER.length) % FIXTURE_ORDER.length] ?? name;
-}

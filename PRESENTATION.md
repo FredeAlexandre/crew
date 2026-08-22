@@ -58,7 +58,8 @@ Responsibilities:
 - mark which of *my* cards are legal right now
 - rotate seats so the viewer is always in region `seat.self`
 - expose public table information (trick, tasks, sonar faces, last trick)
-- expose action affordances (`canPlay`, `canSonar`, `canTakeTask`, `canPassTask`, `canToggleDistress`, …)
+- expose action affordances (`canPlay`, `canSonar`, `canTakeTask`, `canPassTask`, `canRetry`, …)
+- result actions: `canRetry` is true only for the host; Retry sends `host.retry` (same mission, new deal). Same-tasks and next-mission are later.
 
 The view model is the API the skin binds to. If the skin needs a new piece of information, add it here, not by peeking into the engine.
 
@@ -466,9 +467,7 @@ fixtures/play.twoTasksLeft.json
 fixtures/result.fail.taskImpossible.json
 ```
 
-A playground route renders any fixture in `phone-portrait`, `tablet`, and `desktop` frames, and can replay a recorded event list (`card.played` × 4 → `trick.resolved`) for motion.
-
-The engine team owns fixture *validity* (a snapshot must be a possible view model). The skin team owns how it looks.
+The engine team owns fixture *validity* (a snapshot must be a possible view model). The skin team owns how it looks. The product lobby is a live room; these snapshots are for tests and CLI playgrounds, not a `?preview=` route.
 
 ---
 

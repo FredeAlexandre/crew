@@ -194,6 +194,9 @@ describe("project", () => {
 		expect(view.scene).toBe("result");
 		expect(view.result).toEqual({ outcome: "failed", reason: ended.failReason });
 		expect(view.affordances.canPlay).toBe(false);
+		expect(view.affordances.canRetry).toBe(false);
+		expect(project(ended, 0, undefined, 0).affordances.canRetry).toBe(true);
+		expect(project(ended, 1, undefined, 0).affordances.canRetry).toBe(false);
 	});
 
 	it("does not leak other hands from a mid-trick dump", () => {

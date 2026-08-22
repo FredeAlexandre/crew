@@ -113,7 +113,10 @@ export function viewForSeat(state: TableState, viewerSeat: SeatId): TableView {
 			seatOf(state, state.hostPlayerId),
 		);
 	}
-	return { ...project(state.engine, viewerSeat, occupancyOf(state)), seq: state.seq };
+	return {
+		...project(state.engine, viewerSeat, occupancyOf(state), seatOf(state, state.hostPlayerId)),
+		seq: state.seq,
+	};
 }
 
 export function snapshotMessage(state: TableState, viewerSeat: SeatId): SnapshotEnvelope {
@@ -221,6 +224,9 @@ export function handleIntent(
 	if (intent.type === "host.start") {
 		return start(state, playerId, options);
 	}
+	if (intent.type === "host.retry") {
+		return retry(state, playerId, options);
+	}
 	return play(state, seatId, intent);
 }
 
@@ -257,6 +263,24 @@ function start(state: TableState, playerId: string, options?: StartOptions): Tab
 		return fail(state, "notReady", "every seat must be filled and ready");
 	}
 
+	return beginAttempt(state, options);
+}
+
+function retry(state: TableState, playerId: string, options?: StartOptions): TableResult {
+	if (playerId !== state.hostPlayerId) {
+		return fail(state, "notHost", "only the host can retry");
+	}
+	if (state.engine === null || state.status === "lobby") {
+		return fail(state, "wrongPhase", "game has not started");
+	}
+	if (state.engine.phase !== "result") {
+		return fail(state, "alreadyStarted", "mission is still in progress");
+	}
+
+	return beginAttempt(state, options);
+}
+
+function beginAttempt(state: TableState, options?: StartOptions): TableResult {
 	const attemptId = options?.attemptId ?? crypto.randomUUID();
 	const seed = options?.seed ?? randomSeed();
 	const created = createAttempt({

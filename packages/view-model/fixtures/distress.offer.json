@@ -214,7 +214,8 @@
 		"canActivateDistress": true,
 		"canPassDistressCard": false,
 		"canPeekLastTrick": false,
-		"canStart": false
+		"canStart": false,
+		"canRetry": false
 	},
 	"result": null
 }

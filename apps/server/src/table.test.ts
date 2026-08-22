@@ -202,4 +202,59 @@ describe("table play", () => {
 			expect(echo.code).toBe("illegalIntent");
 		}
 	});
+
+	it("lets only the host retry after a result", () => {
+		const lobby = handleIntent(sitAll(), "p0", { type: "host.retry" });
+		expect(lobby.ok).toBe(false);
+		if (!lobby.ok) {
+			expect(lobby.code).toBe("wrongPhase");
+		}
+
+		const started = startGame();
+		const during = handleIntent(started.state, "p0", { type: "host.retry" }, { seed: 2 });
+		expect(during.ok).toBe(false);
+		if (!during.ok) {
+			expect(during.code).toBe("alreadyStarted");
+		}
+
+		const ended = forceResult(started.state);
+		expect(viewForSeat(ended, 0).scene).toBe("result");
+		expect(viewForSeat(ended, 0).affordances.canRetry).toBe(true);
+		expect(viewForSeat(ended, 1).affordances.canRetry).toBe(false);
+
+		const guest = handleIntent(ended, "p1", { type: "host.retry" }, { seed: 2 });
+		expect(guest.ok).toBe(false);
+		if (!guest.ok) {
+			expect(guest.code).toBe("notHost");
+		}
+
+		const retried = mustOk(
+			handleIntent(ended, "p0", { type: "host.retry" }, { seed: 2, attemptId: "a2" }),
+		);
+		expect(retried.state.status).toBe("playing");
+		expect(retried.state.engine?.attemptId).toBe("a2");
+		expect(retried.state.engine?.phase).toBe("taskDraft");
+		expect(retried.state.engine?.attemptId).not.toBe(ended.engine?.attemptId);
+		expect(retried.state.seats.map((seat) => seat?.playerId)).toEqual(["p0", "p1", "p2"]);
+		expect(retried.facts[0]?.type).toBe("host.started");
+		expect(retried.facts.some((fact) => fact.type === "task.offeredTurn")).toBe(true);
+		expect(viewForSeat(retried.state, 0).scene).toBe("taskDraft");
+		expect(viewForSeat(retried.state, 0).affordances.canRetry).toBe(false);
+	});
 });
+
+function forceResult(state: ReturnType<typeof fresh>) {
+	if (state.engine === null) {
+		throw new Error("expected engine");
+	}
+	return {
+		...state,
+		engine: {
+			...state.engine,
+			phase: "result" as const,
+			result: "failed" as const,
+			failReason: "taskImpossible",
+			currentSeat: null,
+		},
+	};
+}

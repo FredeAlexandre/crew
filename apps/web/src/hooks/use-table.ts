@@ -16,6 +16,7 @@ const RECONNECT_MS = 400;
 export type ClientIntent =
 	| { type: "player.ready"; ready: boolean }
 	| { type: "host.start" }
+	| { type: "host.retry" }
 	| { type: "task.take"; taskInstanceId: TaskInstanceId }
 	| { type: "task.pass" }
 	| { type: "distress.skip" }
@@ -116,7 +117,12 @@ function roomSocketUrl(code: string): string {
 }
 
 function stampIntent(intent: ClientIntent, view: TableView | null): Intent | null {
-	if (intent.type === "player.ready" || intent.type === "host.start" || intent.type === "echo") {
+	if (
+		intent.type === "player.ready" ||
+		intent.type === "host.start" ||
+		intent.type === "host.retry" ||
+		intent.type === "echo"
+	) {
 		const parsed = intentSchema.safeParse(intent);
 		return parsed.success ? parsed.data : null;
 	}

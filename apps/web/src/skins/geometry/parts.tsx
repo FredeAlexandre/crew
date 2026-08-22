@@ -6,7 +6,37 @@ import { seatIsEmpty, seatName, turnCopy } from "./copy.ts";
 import styles from "./parts.module.css";
 import { taskLabel } from "./task-label.ts";
 
-export function SeatPip({ seat, compact = false }: { seat: SeatView; compact?: boolean }) {
+function WonCount({
+	count,
+	onPeek,
+	hole = false,
+}: {
+	count: number;
+	onPeek?: () => void;
+	hole?: boolean;
+}) {
+	if (count <= 0) {
+		return hole ? <span className={styles.wonHole} /> : null;
+	}
+	if (onPeek) {
+		return (
+			<Button className={styles.wonPeek} onPress={onPeek} aria-label="Last trick">
+				{count}
+			</Button>
+		);
+	}
+	return <span className={styles.won}>{count}</span>;
+}
+
+export function SeatPip({
+	seat,
+	compact = false,
+	onPeekLastTrick,
+}: {
+	seat: SeatView;
+	compact?: boolean;
+	onPeekLastTrick?: () => void;
+}) {
 	const empty = seatIsEmpty(seat);
 	return (
 		<div
@@ -21,11 +51,7 @@ export function SeatPip({ seat, compact = false }: { seat: SeatView; compact?: b
 			</span>
 			<span className={styles.sonar} data-state={seat.sonar.state} />
 			{seat.region !== "seat.self" ? <span className={styles.count}>{seat.handCount}</span> : null}
-			{seat.wonTrickCount > 0 ? (
-				<span className={styles.won}>{seat.wonTrickCount}</span>
-			) : (
-				<span className={styles.wonHole} />
-			)}
+			<WonCount count={seat.wonTrickCount} onPeek={onPeekLastTrick} hole />
 			{seat.sonar.communication ? (
 				<CardFace cardId={seat.sonar.communication.cardId} communicated size="token" />
 			) : null}
@@ -51,6 +77,7 @@ export function SelfDock({
 	onSonar,
 	onPlay,
 	onPass,
+	onPeekLastTrick,
 }: {
 	seat: SeatView;
 	canSonar: boolean;
@@ -59,6 +86,7 @@ export function SelfDock({
 	onSonar?: () => void;
 	onPlay?: () => void;
 	onPass?: () => void;
+	onPeekLastTrick?: () => void;
 }) {
 	return (
 		<div
@@ -72,7 +100,7 @@ export function SelfDock({
 					C
 				</span>
 				<span className={styles.sonar} data-state={seat.sonar.state} />
-				{seat.wonTrickCount > 0 ? <span className={styles.won}>{seat.wonTrickCount}</span> : null}
+				<WonCount count={seat.wonTrickCount} onPeek={onPeekLastTrick} />
 			</div>
 			<div className={styles.dockTasks} data-region="tasks.self">
 				{seat.tasks.map((task) => (

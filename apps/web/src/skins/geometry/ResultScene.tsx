@@ -31,7 +31,7 @@ export function ResultScene({ view, onRetry }: { view: TableView; onRetry?: () =
 					<SeatPip key={seat.region} seat={seat} compact />
 				))}
 			</div>
-			{onRetry ? (
+			{view.affordances.canRetry && onRetry ? (
 				<div className={styles.boardActions}>
 					<Button className={styles.primary} onPress={onRetry}>
 						Retry

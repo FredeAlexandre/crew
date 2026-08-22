@@ -106,5 +106,10 @@ export function cloneState(state: EngineState): EngineState {
 }
 
 export function isPlayIntent(intent: Intent): intent is PlayIntent {
-	return intent.type !== "echo" && intent.type !== "player.ready" && intent.type !== "host.start";
+	return (
+		intent.type !== "echo" &&
+		intent.type !== "player.ready" &&
+		intent.type !== "host.start" &&
+		intent.type !== "host.retry"
+	);
 }

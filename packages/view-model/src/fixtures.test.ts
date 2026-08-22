@@ -66,7 +66,7 @@ describe("fixtures", () => {
 		expect(project(twoTasks, viewerCaptain(twoTasks))).toEqual(playTwoTasksLeft);
 		expect(twoTasks.tasks.filter((task) => task.status === "open")).toHaveLength(2);
 
-		expect(project(failWithImpossibleTask(startAttempt(4, 11)), 0)).toEqual(
+		expect(project(failWithImpossibleTask(startAttempt(4, 11)), 0, undefined, 0)).toEqual(
 			resultFailTaskImpossible,
 		);
 	});

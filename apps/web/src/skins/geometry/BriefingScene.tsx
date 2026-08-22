@@ -1,9 +1,8 @@
 import type { TableView } from "@crew/view-model/fixtures";
-import { Button } from "react-aria-components";
 import { missionHeading, seatName } from "./copy.ts";
 import styles from "./scenes.module.css";
 
-export function BriefingScene({ view, onConfirm }: { view: TableView; onConfirm?: () => void }) {
+export function BriefingScene({ view }: { view: TableView }) {
 	return (
 		<div className={styles.logbook} data-scene="briefing">
 			<p className={styles.kicker}>Logbook</p>
@@ -19,11 +18,6 @@ export function BriefingScene({ view, onConfirm }: { view: TableView; onConfirm?
 					</li>
 				))}
 			</ul>
-			{onConfirm ? (
-				<Button className={styles.primary} onPress={onConfirm}>
-					Deal
-				</Button>
-			) : null}
 		</div>
 	);
 }
