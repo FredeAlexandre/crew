@@ -106,7 +106,12 @@ function occupancyOf(state: TableState): Occupancy {
 
 export function viewForSeat(state: TableState, viewerSeat: SeatId): TableView {
 	if (state.engine === null) {
-		return projectLobby(occupancyOf(state), viewerSeat, state.seq);
+		return projectLobby(
+			occupancyOf(state),
+			viewerSeat,
+			state.seq,
+			seatOf(state, state.hostPlayerId),
+		);
 	}
 	return { ...project(state.engine, viewerSeat, occupancyOf(state)), seq: state.seq };
 }

@@ -194,6 +194,7 @@ export function project(state: EngineState, viewerSeat: SeatId, occupancy?: Occu
 			canActivateDistress,
 			canPassDistressCard,
 			canPeekLastTrick: lastTrick !== null,
+			canStart: false,
 		},
 		result: state.result === null ? null : { outcome: state.result, reason: state.failReason },
 	};
@@ -203,7 +204,12 @@ export function projectFacts(facts: readonly Fact[], viewerSeat: SeatId): Fact[]
 	return facts.map((fact) => redactFact(fact, viewerSeat));
 }
 
-export function projectLobby(occupancy: Occupancy, viewerSeat: SeatId, seq: number): TableView {
+export function projectLobby(
+	occupancy: Occupancy,
+	viewerSeat: SeatId,
+	seq: number,
+	hostSeatId: SeatId | null,
+): TableView {
 	const playerCount = occupancy.length;
 	const seats: TableView["seats"] = [];
 	for (let relative = 0; relative < playerCount; relative += 1) {
@@ -253,9 +259,21 @@ export function projectLobby(occupancy: Occupancy, viewerSeat: SeatId, seq: numb
 			canActivateDistress: false,
 			canPassDistressCard: false,
 			canPeekLastTrick: false,
+			canStart: lobbyCanStart(occupancy, viewerSeat, hostSeatId),
 		},
 		result: null,
 	};
+}
+
+function lobbyCanStart(
+	occupancy: Occupancy,
+	viewerSeat: SeatId,
+	hostSeatId: SeatId | null,
+): boolean {
+	if (hostSeatId === null || viewerSeat !== hostSeatId || occupancy.length === 0) {
+		return false;
+	}
+	return occupancy.every((seat) => seat?.ready);
 }
 
 function occupancyFields(

@@ -16,6 +16,7 @@ import taskDraftCaptainChoosingJson from "../fixtures/taskDraft.captainChoosing.
 import { type TableView, tableViewSchema } from "./table.ts";
 
 export type { HandCard, Overlay, SeatView, TableView, TaskView } from "./table.ts";
+export { tableViewSchema } from "./table.ts";
 
 export const lobbyThreeEmpty: TableView = tableViewSchema.parse(lobbyThreeEmptyJson);
 export const briefingMission1: TableView = tableViewSchema.parse(briefingMission1Json);

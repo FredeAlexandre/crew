@@ -38,3 +38,7 @@
 .stage {
 	min-height: 0;
 }
+
+.pending {
+	opacity: 0.55;
+}

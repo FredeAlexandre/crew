@@ -11,10 +11,12 @@ export function PlayScene({
 	view,
 	onSkipDistress,
 	onActivateDistress,
+	onPlay,
 }: {
 	view: TableView;
 	onSkipDistress?: () => void;
 	onActivateDistress?: () => void;
+	onPlay?: (cardId: CardId) => void;
 }) {
 	const [selected, setSelected] = useState<CardId | null>(null);
 	const [sonarOpen, setSonarOpen] = useState(false);
@@ -72,7 +74,13 @@ export function PlayScene({
 						canPlay={canPlaySelected}
 						canPass={false}
 						onSonar={() => setSonarOpen(true)}
-						onPlay={() => setSelected(null)}
+						onPlay={() => {
+							if (selected === null || !canPlaySelected) {
+								return;
+							}
+							onPlay?.(selected);
+							setSelected(null);
+						}}
 					/>
 				</div>
 			) : null}
