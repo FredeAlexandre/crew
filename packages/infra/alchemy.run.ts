@@ -8,6 +8,18 @@ import type Room from "../../apps/server/src/room.ts";
 
 const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), "../db/src/migrations");
 
+function previewPrNumber(stage: string): string | undefined {
+	return /^pr-(\d+)$/.exec(stage)?.[1];
+}
+
+function websiteDomain(stage: string): string | undefined {
+	if (stage === "prod") {
+		return "crew.aleno.casa";
+	}
+	const pr = previewPrNumber(stage);
+	return pr === undefined ? undefined : `pr-${pr}.preview.aleno.casa`;
+}
+
 export const db = Cloudflare.D1.Database("database", {
 	migrationsDir,
 });
@@ -38,17 +50,21 @@ export default Alchemy.Stack(
 		state: Cloudflare.state(),
 	},
 	Effect.gen(function* () {
+		const stack = yield* Alchemy.Stack;
+		const domain = websiteDomain(stack.stage);
+		const pr = previewPrNumber(stack.stage);
 		yield* db;
 		const serverWorker = yield* server;
 		const webWorker = yield* Cloudflare.Website.Vite("web", {
 			rootDir: "../../apps/web",
-			domain: "crew.aleno.casa",
+			...(domain === undefined ? {} : { domain }),
 			assets: {
 				htmlHandling: "auto-trailing-slash",
 				notFoundHandling: "single-page-application",
 			},
 			env: {
 				VITE_SERVER_URL: serverWorker.url.as<string>(),
+				...(pr === undefined ? {} : { VITE_PREVIEW_LABEL: `Preview · PR ${pr}` }),
 			},
 			dev: {
 				port: 3001,

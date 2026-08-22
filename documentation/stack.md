@@ -158,9 +158,18 @@ typecheck, Knip, dependency-cruiser, unit tests. Playwright smoke may skip
 until playground fixtures exist.
 
 **CD:** push to `main` (and manual `workflow_dispatch`) runs check, then
-`alchemy deploy --stage prod`. Needs Actions secrets
-`CLOUDFLARE_API_TOKEN` (must include **Secrets Store Write**),
+`alchemy deploy --stage prod` at `https://crew.aleno.casa`. Needs Actions
+secrets `CLOUDFLARE_API_TOKEN` (must include **Secrets Store Write**),
 `CLOUDFLARE_ACCOUNT_ID`, `BETTER_AUTH_SECRET`, and variable `CORS_ORIGIN`.
+
+**PR previews:** same-repo pull requests deploy Alchemy stage `pr-{n}` to
+`https://pr-{n}.preview.aleno.casa` (own D1, Durable Objects, auth). A bot
+comment on the PR keeps the URL. Closing or merging the PR runs
+`alchemy destroy --stage pr-{n}`. Fork PRs are not deployed. Needs the
+same Cloudflare secrets plus `PREVIEW_BETTER_AUTH_SECRET` (not the prod
+cookie secret). `CORS_ORIGIN` for a preview is computed as that hostname;
+do not reuse the prod variable. The custom domain `crew.aleno.casa` is
+attached only when `stage === "prod"`.
 
 **Local:**
 

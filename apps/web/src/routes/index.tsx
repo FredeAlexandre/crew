@@ -1,3 +1,4 @@
+import { env } from "@crew/env/web";
 import { isRoomCode, normalizeRoomCode, PLAYER_COUNTS, type PlayerCount } from "@crew/protocol";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -57,7 +58,8 @@ function BootRoute() {
 		<section className={styles.table}>
 			<header className={styles.masthead}>
 				<h1 className={styles.title}>Crew</h1>
-				<p className={styles.lede}>Sit at a table. Three to five players. CD probe 22 Aug.</p>
+				<p className={styles.lede}>Sit at a table. Three to five players.</p>
+				{env.VITE_PREVIEW_LABEL ? <p className={styles.preview}>{env.VITE_PREVIEW_LABEL}</p> : null}
 			</header>
 			<TextField
 				className={styles.identity}
