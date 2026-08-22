@@ -1,9 +1,10 @@
-import { isRoomCode, normalizeRoomCode, PLAYER_COUNTS, type PlayerCount } from "@crew/protocol";
+import { isRoomCode, PLAYER_COUNTS, type PlayerCount } from "@crew/protocol";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button, Input, Label, Radio, RadioGroup, TextField } from "react-aria-components";
 import { useDisplayName } from "../hooks/use-display-name.ts";
 import { DISPLAY_NAME_MAX } from "../lib/display-name.ts";
+import { extractLobbyCode } from "../lib/lobby-code.ts";
 import { createRoom, joinRoom, roomErrorCopy } from "../lib/rooms.ts";
 import styles from "../styles/boot.module.css";
 
@@ -33,7 +34,7 @@ function BootRoute() {
 	}
 
 	async function sitDown() {
-		const normalized = normalizeRoomCode(code);
+		const normalized = extractLobbyCode(code);
 		if (!isRoomCode(normalized)) {
 			setError("Enter the 4–6 character code from your host.");
 			return;
@@ -83,7 +84,7 @@ function BootRoute() {
 					}}
 				>
 					<h2 className={styles.choiceTitle}>Create a lobby</h2>
-					<p className={styles.choiceCopy}>Open a table and share the code.</p>
+					<p className={styles.choiceCopy}>Open a table and share the link.</p>
 					<RadioGroup
 						className={styles.counts}
 						value={String(playerCount)}
@@ -115,11 +116,11 @@ function BootRoute() {
 					}}
 				>
 					<h2 className={styles.choiceTitle}>Join a lobby</h2>
-					<p className={styles.choiceCopy}>Enter the code from your host.</p>
+					<p className={styles.choiceCopy}>Paste the code or the lobby link.</p>
 					<TextField
 						aria-label="Lobby code"
 						value={code}
-						onChange={(value: string) => setCode(normalizeRoomCode(value))}
+						onChange={(value: string) => setCode(extractLobbyCode(value))}
 						isDisabled={blocked}
 					>
 						<Input

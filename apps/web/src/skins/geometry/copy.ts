@@ -88,6 +88,36 @@ export function opponentSeats(view: TableView): SeatView[] {
 	return view.seats.filter((seat) => seat.region !== "seat.self");
 }
 
+export type LobbySlot = "self" | "west" | "east" | "north" | "northwest" | "northeast";
+
+export function lobbySlot(region: SeatView["region"], playerCount: number): LobbySlot {
+	if (region === "seat.self") {
+		return "self";
+	}
+	if (playerCount <= 3) {
+		return region === "seat.1" ? "east" : "west";
+	}
+	if (playerCount === 4) {
+		if (region === "seat.1") {
+			return "east";
+		}
+		if (region === "seat.2") {
+			return "north";
+		}
+		return "west";
+	}
+	if (region === "seat.1") {
+		return "east";
+	}
+	if (region === "seat.2") {
+		return "northeast";
+	}
+	if (region === "seat.3") {
+		return "northwest";
+	}
+	return "west";
+}
+
 export function tablePlacement(view: TableView): {
 	north: SeatView[];
 	east: SeatView[];
