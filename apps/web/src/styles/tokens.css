@@ -42,3 +42,13 @@ button {
 	color: inherit;
 	cursor: pointer;
 }
+
+button:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}

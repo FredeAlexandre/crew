@@ -1,3 +1,4 @@
+import briefingMission1Json from "../fixtures/briefing.mission1.json" with { type: "json" };
 import dealMidJson from "../fixtures/deal.mid.json" with { type: "json" };
 import distressOfferJson from "../fixtures/distress.offer.json" with { type: "json" };
 import lobbyThreeEmptyJson from "../fixtures/lobby.threeEmpty.json" with { type: "json" };
@@ -14,7 +15,10 @@ import taskDraftCaptainChoosingJson from "../fixtures/taskDraft.captainChoosing.
 };
 import { type TableView, tableViewSchema } from "./table.ts";
 
+export type { HandCard, Overlay, SeatView, TableView, TaskView } from "./table.ts";
+
 export const lobbyThreeEmpty: TableView = tableViewSchema.parse(lobbyThreeEmptyJson);
+export const briefingMission1: TableView = tableViewSchema.parse(briefingMission1Json);
 export const dealMid: TableView = tableViewSchema.parse(dealMidJson);
 export const taskDraftCaptainChoosing: TableView = tableViewSchema.parse(
 	taskDraftCaptainChoosingJson,
@@ -29,8 +33,23 @@ export const resultFailTaskImpossible: TableView = tableViewSchema.parse(
 	resultFailTaskImpossibleJson,
 );
 
-export const fixtures: Record<string, TableView> = {
+export const FIXTURE_ORDER = [
+	"lobby.threeEmpty",
+	"briefing.mission1",
+	"deal.mid",
+	"taskDraft.captainChoosing",
+	"distress.offer",
+	"play.midTrick.fourPlayers",
+	"play.sonarAvailable",
+	"play.twoTasksLeft",
+	"result.fail.taskImpossible",
+] as const;
+
+export type FixtureName = (typeof FIXTURE_ORDER)[number];
+
+export const fixtures: Record<FixtureName, TableView> = {
 	"lobby.threeEmpty": lobbyThreeEmpty,
+	"briefing.mission1": briefingMission1,
 	"deal.mid": dealMid,
 	"taskDraft.captainChoosing": taskDraftCaptainChoosing,
 	"distress.offer": distressOffer,
@@ -39,3 +58,17 @@ export const fixtures: Record<string, TableView> = {
 	"play.twoTasksLeft": playTwoTasksLeft,
 	"result.fail.taskImpossible": resultFailTaskImpossible,
 };
+
+export function isFixtureName(value: string): value is FixtureName {
+	return (FIXTURE_ORDER as readonly string[]).includes(value);
+}
+
+export function nextFixture(name: FixtureName): FixtureName {
+	const index = FIXTURE_ORDER.indexOf(name);
+	return FIXTURE_ORDER[(index + 1) % FIXTURE_ORDER.length] ?? name;
+}
+
+export function previousFixture(name: FixtureName): FixtureName {
+	const index = FIXTURE_ORDER.indexOf(name);
+	return FIXTURE_ORDER[(index - 1 + FIXTURE_ORDER.length) % FIXTURE_ORDER.length] ?? name;
+}

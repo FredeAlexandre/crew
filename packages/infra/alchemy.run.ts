@@ -1,3 +1,5 @@
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import * as Alchemy from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
 import { config } from "dotenv";
@@ -9,8 +11,10 @@ config({ path: "./.env" });
 config({ path: "../../apps/web/.env" });
 config({ path: "../../apps/server/.env" });
 
+const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), "../db/src/migrations");
+
 export const db = Cloudflare.D1.Database("database", {
-	migrationsDir: "../../packages/db/src/migrations",
+	migrationsDir,
 });
 
 export const server = Cloudflare.Worker("server", {
@@ -39,6 +43,7 @@ export default Alchemy.Stack(
 		state: Cloudflare.state(),
 	},
 	Effect.gen(function* () {
+		yield* db;
 		const serverWorker = yield* server;
 		const webWorker = yield* Cloudflare.Website.Vite("web", {
 			rootDir: "../../apps/web",

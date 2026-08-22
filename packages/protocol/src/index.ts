@@ -14,6 +14,7 @@ export {
 	cardIdSchema,
 	isColorSuit,
 	SUBMARINE_VALUES,
+	splitCardId,
 } from "./cards.ts";
 export type { IllegalReason, RoomErrorCode, RoomRuleErrorCode } from "./errors.ts";
 export { illegalReasonSchema, roomErrorCodeSchema, roomRuleErrorCodeSchema } from "./errors.ts";
@@ -77,6 +78,19 @@ export {
 	taskPassIntentSchema,
 	taskTakeIntentSchema,
 } from "./intents.ts";
+export type { PlayerCount, RoomTicket } from "./rooms.ts";
+export {
+	createRoomRequestSchema,
+	isRoomCode,
+	normalizeRoomCode,
+	PLAYER_COUNTS,
+	playerCountSchema,
+	ROOM_CODE_ALPHABET,
+	ROOM_CODE_MAX_LENGTH,
+	ROOM_CODE_MIN_LENGTH,
+	roomCodeSchema,
+	roomTicketSchema,
+} from "./rooms.ts";
 export type { DifficultyByPlayers, TaskPublic } from "./tasks.ts";
 export { difficultyByPlayersSchema, taskPublicSchema } from "./tasks.ts";
 

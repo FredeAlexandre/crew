@@ -1,12 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { CARD_IDS } from "./cards.ts";
 import {
+	createRoomRequestSchema,
 	echoFact,
 	echoIntentSchema,
 	factSchema,
 	intentSchema,
+	isRoomCode,
+	normalizeRoomCode,
+	playerCountSchema,
+	ROOM_CODE_MAX_LENGTH,
+	ROOM_CODE_MIN_LENGTH,
+	roomTicketSchema,
 	serverMessageSchema,
 	snapshotEnvelopeSchema,
+	splitCardId,
 } from "./index.ts";
 
 describe("echoFact", () => {
@@ -77,6 +85,8 @@ describe("wire schemas", () => {
 
 	it("names all 40 playing cards", () => {
 		expect(CARD_IDS).toHaveLength(40);
+		expect(splitCardId("pink-7")).toEqual({ suit: "pink", value: 7 });
+		expect(splitCardId("submarine-4")).toEqual({ suit: "submarine", value: 4 });
 	});
 
 	it("parses lobby intents", () => {
@@ -109,5 +119,22 @@ describe("wire schemas", () => {
 				message: "table is full",
 			}).type,
 		).toBe("error");
+	});
+
+	it("normalizes and accepts HTTP room tickets", () => {
+		expect(normalizeRoomCode(" ab-12 ")).toBe("AB12");
+		expect(normalizeRoomCode("a".repeat(10)).length).toBe(ROOM_CODE_MAX_LENGTH);
+		expect(isRoomCode("AB12")).toBe(true);
+		expect(isRoomCode("ab12")).toBe(false);
+		expect(isRoomCode("A".repeat(ROOM_CODE_MIN_LENGTH - 1))).toBe(false);
+		expect(playerCountSchema.parse(3)).toBe(3);
+		expect(createRoomRequestSchema.parse({ playerCount: 4 }).playerCount).toBe(4);
+		expect(
+			roomTicketSchema.parse({
+				code: "AB12",
+				playerCount: 4,
+				wsPath: "/room/AB12",
+			}).code,
+		).toBe("AB12");
 	});
 });
