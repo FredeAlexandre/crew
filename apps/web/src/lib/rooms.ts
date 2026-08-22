@@ -8,6 +8,7 @@ import {
 	roomTicketSchema,
 } from "@crew/protocol";
 import { authClient } from "./auth-client.ts";
+import { normalizeDisplayName } from "./display-name.ts";
 
 class RoomHttpError extends Error {
 	readonly code: RoomErrorCode | "unexpected";
@@ -23,15 +24,32 @@ function serverOrigin() {
 	return env.VITE_SERVER_URL.replace(/\/$/, "");
 }
 
-export async function ensureGuestSession(): Promise<void> {
-	const session = await authClient.getSession();
-	if (session.data?.user) {
-		return;
+export async function ensureGuestSession(): Promise<{ displayName: string }> {
+	let session = await authClient.getSession();
+	if (!session.data?.user) {
+		const result = await authClient.signIn.anonymous();
+		if (result.error && result.error.code !== "ANONYMOUS_USERS_CANNOT_SIGN_IN_AGAIN_ANONYMOUSLY") {
+			throw new RoomHttpError("unauthenticated", result.error.message ?? "sign in first");
+		}
+		session = await authClient.getSession();
 	}
-	const result = await authClient.signIn.anonymous();
-	if (result.error && result.error.code !== "ANONYMOUS_USERS_CANNOT_SIGN_IN_AGAIN_ANONYMOUSLY") {
-		throw new RoomHttpError("unauthenticated", result.error.message ?? "sign in first");
+	return { displayName: session.data?.user.name ?? "" };
+}
+
+export async function persistDisplayName(raw: string): Promise<string | null> {
+	const name = normalizeDisplayName(raw);
+	if (name.length === 0) {
+		return null;
 	}
+	const session = await ensureGuestSession();
+	if (session.displayName === name) {
+		return name;
+	}
+	const result = await authClient.updateUser({ name });
+	if (result.error) {
+		throw new RoomHttpError("unexpected", result.error.message ?? "could not save name");
+	}
+	return name;
 }
 
 async function readTicket(response: Response): Promise<RoomTicket> {

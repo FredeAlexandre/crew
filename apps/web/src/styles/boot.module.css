@@ -24,6 +24,12 @@
 	color: var(--muted);
 }
 
+.identity {
+	display: grid;
+	gap: 0.35rem;
+	width: min(40rem, 100%);
+}
+
 .choices {
 	display: grid;
 	gap: 1rem;
@@ -97,11 +103,13 @@
 
 .count:focus-visible,
 .action:focus-visible,
-.codeInput:focus-visible {
+.codeInput:focus-visible,
+.nameInput:focus-visible {
 	outline: 2px solid var(--accent);
 	outline-offset: 2px;
 }
 
+.nameInput,
 .codeInput {
 	width: 100%;
 	min-height: 44px;
@@ -110,6 +118,14 @@
 	background: transparent;
 	color: inherit;
 	font: inherit;
+}
+
+.nameInput:disabled,
+.codeInput:disabled {
+	opacity: 0.5;
+}
+
+.codeInput {
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
 }
