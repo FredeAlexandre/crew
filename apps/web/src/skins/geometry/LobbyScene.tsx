@@ -10,6 +10,7 @@ export type LobbyActions = {
 	alert?: string | null;
 	onCopyCode?: () => void;
 	onReady?: (ready: boolean) => void;
+	onFillBots?: () => void;
 	onStart?: () => void;
 };
 
@@ -58,6 +59,11 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 				})}
 			</div>
 			<div className={styles.boardActions}>
+				{actions?.onFillBots ? (
+					<Button className={styles.ghost} onPress={actions.onFillBots}>
+						Fill empty seats
+					</Button>
+				) : null}
 				{actions?.onStart ? (
 					<Button className={styles.primary} onPress={actions.onStart}>
 						Start

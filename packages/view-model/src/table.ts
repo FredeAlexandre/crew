@@ -124,6 +124,7 @@ export const affordancesSchema = z.object({
 	canPassDistressCard: z.boolean(),
 	canPeekLastTrick: z.boolean(),
 	canStart: z.boolean(),
+	canFillBots: z.boolean(),
 	canRetry: z.boolean(),
 });
 export type Affordances = z.infer<typeof affordancesSchema>;

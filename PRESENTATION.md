@@ -58,8 +58,9 @@ Responsibilities:
 - mark which of *my* cards are legal right now
 - rotate seats so the viewer is always in region `seat.self`
 - expose public table information (trick, tasks, sonar faces, last trick)
-- expose action affordances (`canPlay`, `canSonar`, `canTakeTask`, `canPassTask`, `canRetry`, …)
+- expose action affordances (`canPlay`, `canSonar`, `canTakeTask`, `canPassTask`, `canRetry`, `canFillBots`, …)
 - result actions: `canRetry` is true only for the host; Retry sends `host.retry` (same mission, new deal). Same-tasks and next-mission are later.
+- lobby: `canFillBots` is true only for the seated host while empty chairs remain. Fill sends `host.fillBots` (ready dummy seats for solo testing).
 
 The view model is the API the skin binds to. If the skin needs a new piece of information, add it here, not by peeking into the engine.
 

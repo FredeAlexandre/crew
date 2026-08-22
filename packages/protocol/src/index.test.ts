@@ -93,6 +93,7 @@ describe("wire schemas", () => {
 		expect(intentSchema.parse({ type: "player.ready", ready: true }).type).toBe("player.ready");
 		expect(intentSchema.parse({ type: "host.start" }).type).toBe("host.start");
 		expect(intentSchema.parse({ type: "host.retry" }).type).toBe("host.retry");
+		expect(intentSchema.parse({ type: "host.fillBots" }).type).toBe("host.fillBots");
 	});
 
 	it("parses table-life facts and a lobby snapshot", () => {

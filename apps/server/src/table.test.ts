@@ -1,3 +1,4 @@
+import { pickSeatIntent } from "@crew/engine";
 import { describe, expect, it } from "vitest";
 import {
 	connect,
@@ -5,6 +6,7 @@ import {
 	disconnect,
 	factsForSeat,
 	handleIntent,
+	isBotPlayerId,
 	seatOf,
 	snapshotMessage,
 	summary,
@@ -240,6 +242,69 @@ describe("table play", () => {
 		expect(retried.facts.some((fact) => fact.type === "task.offeredTurn")).toBe(true);
 		expect(viewForSeat(retried.state, 0).scene).toBe("taskDraft");
 		expect(viewForSeat(retried.state, 0).affordances.canRetry).toBe(false);
+	});
+});
+
+describe("table bots", () => {
+	it("lets the host fill empty seats and rejects a guest", () => {
+		const host = sit(fresh(), "p0", "Alex");
+		expect(viewForSeat(host, 0).affordances.canFillBots).toBe(true);
+		const filled = mustOk(handleIntent(host, "p0", { type: "host.fillBots" })).state;
+		expect(filled.seats.map((seat) => seat?.displayName)).toEqual(["Alex", "Bot 1", "Bot 2"]);
+		expect(filled.seats.slice(1).every((seat) => seat?.ready && seat.connected)).toBe(true);
+		expect(
+			filled.seats.slice(1).every((seat) => seat !== null && isBotPlayerId(seat.playerId)),
+		).toBe(true);
+		expect(viewForSeat(filled, 0).affordances.canFillBots).toBe(false);
+		expect(viewForSeat(filled, 0).affordances.canStart).toBe(false);
+
+		const withGuest = sit(sit(fresh(), "p0", "Alex"), "p1", "Bea");
+		const guest = handleIntent(withGuest, "p1", { type: "host.fillBots" });
+		expect(guest.ok).toBe(false);
+		if (!guest.ok) {
+			expect(guest.code).toBe("notHost");
+		}
+		const oneBot = mustOk(handleIntent(withGuest, "p0", { type: "host.fillBots" })).state;
+		expect(oneBot.seats.map((seat) => seat?.displayName)).toEqual(["Alex", "Bea", "Bot 1"]);
+	});
+
+	it("plays bot turns until a human must act, and pauses on distress", () => {
+		const lobby = mustOk(
+			handleIntent(sit(fresh(), "p0", "Alex"), "p0", { type: "host.fillBots" }),
+		).state;
+		const ready = mustOk(handleIntent(lobby, "p0", { type: "player.ready", ready: true })).state;
+		const started = mustOk(
+			handleIntent(ready, "p0", { type: "host.start" }, { seed: 1, attemptId: "a1" }),
+		).state;
+		expect(started.status).toBe("playing");
+		expect(started.engine).not.toBeNull();
+
+		let current = started;
+		while (current.engine?.phase === "taskDraft") {
+			const seat = current.engine.currentSeat;
+			expect(seat).toBe(0);
+			const intent = pickSeatIntent(current.engine, 0);
+			if (intent === null) {
+				throw new Error("host had no draft intent");
+			}
+			current = mustOk(handleIntent(current, "p0", intent)).state;
+		}
+		expect(current.engine?.phase).toBe("distressOffer");
+		expect(current.engine?.currentSeat).toBeNull();
+
+		const playing = mustOk(
+			handleIntent(current, "p0", {
+				type: "distress.skip",
+				attemptId: "a1",
+				seatId: 0,
+			}),
+		).state;
+		const turn = playing.engine?.currentSeat;
+		expect(turn).not.toBeNull();
+		if (turn === undefined || turn === null) {
+			throw new Error("expected a leader");
+		}
+		expect(isBotPlayerId(playing.seats[turn]?.playerId ?? "")).toBe(false);
 	});
 });
 

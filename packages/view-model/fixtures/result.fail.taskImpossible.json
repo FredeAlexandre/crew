@@ -244,6 +244,7 @@
 		"canPassDistressCard": false,
 		"canPeekLastTrick": true,
 		"canStart": false,
+		"canFillBots": false,
 		"canRetry": true
 	},
 	"result": {

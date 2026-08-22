@@ -79,6 +79,7 @@ describe("apply", () => {
 		expect(apply(state, { type: "player.ready", ready: true }).ok).toBe(false);
 		expect(apply(state, { type: "host.start" }).ok).toBe(false);
 		expect(apply(state, { type: "host.retry" }).ok).toBe(false);
+		expect(apply(state, { type: "host.fillBots" }).ok).toBe(false);
 	});
 });
 
