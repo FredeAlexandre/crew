@@ -1,8 +1,10 @@
 import { isRoomCode, normalizeRoomCode, PLAYER_COUNTS, type PlayerCount } from "@crew/protocol";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button, Input, Label, Radio, RadioGroup, TextField } from "react-aria-components";
-import { createRoom, ensureGuestSession, joinRoom, roomErrorCopy } from "../lib/rooms.ts";
+import { useDisplayName } from "../hooks/use-display-name.ts";
+import { DISPLAY_NAME_MAX } from "../lib/display-name.ts";
+import { createRoom, joinRoom, roomErrorCopy } from "../lib/rooms.ts";
 import styles from "../styles/boot.module.css";
 
 export const Route = createFileRoute("/")({
@@ -15,17 +17,13 @@ function BootRoute() {
 	const [code, setCode] = useState("");
 	const [busy, setBusy] = useState<"idle" | "create" | "join">("idle");
 	const [error, setError] = useState<string | null>(null);
-
-	useEffect(() => {
-		void ensureGuestSession().catch(() => {
-			setError("Could not start a guest session. Try again.");
-		});
-	}, []);
+	const displayName = useDisplayName();
 
 	async function openTable() {
 		setBusy("create");
 		setError(null);
 		try {
+			await displayName.flush();
 			const ticket = await createRoom(playerCount);
 			await navigate({ to: "/lobby/$code", params: { code: ticket.code } });
 		} catch (caught) {
@@ -43,6 +41,7 @@ function BootRoute() {
 		setBusy("join");
 		setError(null);
 		try {
+			await displayName.flush();
 			const ticket = await joinRoom(normalized);
 			await navigate({ to: "/lobby/$code", params: { code: ticket.code } });
 		} catch (caught) {
@@ -52,6 +51,7 @@ function BootRoute() {
 	}
 
 	const blocked = busy !== "idle";
+	const shownError = error ?? displayName.sessionError;
 
 	return (
 		<section className={styles.table}>
@@ -59,6 +59,21 @@ function BootRoute() {
 				<h1 className={styles.title}>Crew</h1>
 				<p className={styles.lede}>Sit at a table. Three to five players.</p>
 			</header>
+			<TextField
+				className={styles.identity}
+				value={displayName.name}
+				onChange={displayName.onChange}
+				isDisabled={blocked || !displayName.ready}
+			>
+				<Label className={styles.fieldLabel}>Name</Label>
+				<Input
+					className={styles.nameInput}
+					placeholder="Your name"
+					autoComplete="nickname"
+					maxLength={DISPLAY_NAME_MAX}
+					spellCheck="false"
+				/>
+			</TextField>
 			<div className={styles.choices}>
 				<form
 					className={styles.choice}
@@ -120,9 +135,9 @@ function BootRoute() {
 					</Button>
 				</form>
 			</div>
-			{error ? (
+			{shownError ? (
 				<p className={styles.error} role="alert">
-					{error}
+					{shownError}
 				</p>
 			) : null}
 		</section>
