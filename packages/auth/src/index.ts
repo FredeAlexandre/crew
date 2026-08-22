@@ -4,6 +4,7 @@ import { env } from "@crew/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { anonymous } from "better-auth/plugins";
+import { convertAnonymous } from "./convert.ts";
 
 export function createAuth() {
 	const db = createDb(env.DB);
@@ -15,12 +16,14 @@ export function createAuth() {
 		}),
 		trustedOrigins: [env.CORS_ORIGIN],
 		emailAndPassword: {
-			enabled: false,
+			enabled: true,
 		},
 		plugins: [
 			anonymous({
 				generateName: () => `Guest ${crypto.randomUUID().slice(0, 8)}`,
+				disableDeleteAnonymousUser: true,
 			}),
+			convertAnonymous(),
 		],
 		secret: env.BETTER_AUTH_SECRET,
 		baseURL: env.BETTER_AUTH_URL,

@@ -4,7 +4,8 @@ import {
 	DISPLAY_NAME_DEBOUNCE_MS,
 	visibleDisplayName,
 } from "../lib/display-name.ts";
-import { ensureGuestSession, persistDisplayName } from "../lib/rooms.ts";
+import { persistDisplayName } from "../lib/rooms.ts";
+import { useIdentity } from "./use-identity.ts";
 
 export function useDisplayName(): {
 	name: string;
@@ -13,45 +14,42 @@ export function useDisplayName(): {
 	onChange: (value: string) => void;
 	flush: () => Promise<void>;
 } {
+	const identity = useIdentity();
 	const [name, setName] = useState("");
-	const [ready, setReady] = useState(false);
-	const [sessionError, setSessionError] = useState<string | null>(null);
 	const nameRef = useRef(name);
+	const refetchRef = useRef(identity.refetch);
+	const storedName = identity.user?.name;
 	const saverRef = useRef(
 		createDebouncedAction(async (value) => {
 			await persistDisplayName(value);
+			await refetchRef.current();
 		}, DISPLAY_NAME_DEBOUNCE_MS),
 	);
+
+	refetchRef.current = identity.refetch;
 
 	useEffect(() => {
 		nameRef.current = name;
 	}, [name]);
 
 	useEffect(() => {
-		let cancelled = false;
-		void ensureGuestSession()
-			.then((session) => {
-				if (cancelled) {
-					return;
-				}
-				setName(visibleDisplayName(session.displayName));
-				setReady(true);
-			})
-			.catch(() => {
-				if (!cancelled) {
-					setSessionError("Could not start a guest session. Try again.");
-				}
-			});
+		if (!identity.ready || storedName === undefined) {
+			return;
+		}
+		setName(visibleDisplayName(storedName));
+	}, [identity.ready, storedName]);
+
+	useEffect(() => {
+		const saver = saverRef.current;
 		return () => {
-			cancelled = true;
-			saverRef.current.cancel();
+			saver.cancel();
 		};
 	}, []);
 
 	return {
 		name,
-		ready,
-		sessionError,
+		ready: identity.ready,
+		sessionError: identity.sessionError,
 		onChange(value: string) {
 			setName(value);
 			saverRef.current.schedule(value);

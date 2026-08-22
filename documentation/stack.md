@@ -70,7 +70,8 @@ React + Vite + TypeScript. TanStack Router for `boot` (`/`), `lobby`,
 - Bind the skin to the view-model only. Local UI state stays in the client
   — a thin `useTable()` hook (snapshot + `sendIntent`). No Redux.
 - **React Aria Components** (headless) for overlay focus trap later.
-  Style them as table objects, not dialogs.
+  Profile uses RAC `Dialog` / `Modal` as a table-object sheet, not a
+  settings dashboard. Style them as table objects, not dialogs.
 - **CSS modules + custom properties** for tokens. Layout = CSS grid +
   container queries. No Tailwind, no component kit with chrome, no Framer
   Motion.
@@ -113,9 +114,13 @@ from `packages/db/src/migrations` during deploy / `alchemy dev`.
 | Campaign / logbook | later | D1 |
 
 v1 D1 tables: Better Auth tables + `players` + `rooms` (code, host,
-status). Auth is **Better Auth** anonymous/guest plugin. v1 is a guest
-`PlayerId` that survives refresh. Email/OAuth only when campaign needs a
-durable crew. Sessions are cookies, not tokens in logs or `localStorage`.
+status). Auth is **Better Auth** anonymous/guest plus email/password.
+Boot mints a guest `PlayerId` that survives refresh. **Convert** (Keep
+this crew) attaches email and password to **that same user id** so seats
+and hosted rooms stay put. **Sign in** abandons a throwaway guest and
+does not merge. Profile photo and client prefs (theme, SFX, animations)
+are shell stubs; mute/skip-anim stay table chrome when they ship.
+Sessions are cookies, not tokens in logs or `localStorage`.
 
 ## Import graph (enforced in CI)
 

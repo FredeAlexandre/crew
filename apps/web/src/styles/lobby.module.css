@@ -1,24 +1,5 @@
 .page {
-	display: grid;
-	grid-template-rows: auto 1fr;
-	gap: 0.35rem;
-	min-height: calc(100svh - 2.5rem);
-}
-
-.bar {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 0.5rem 0.75rem;
-}
-
-.home {
-	color: var(--muted);
-	text-decoration: none;
-}
-
-.home:hover {
-	color: var(--accent);
+	min-height: 100%;
 }
 
 .stage {
