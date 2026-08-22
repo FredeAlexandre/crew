@@ -119,10 +119,12 @@ Boot mints a guest `PlayerId` that survives refresh. **Create account**
 attaches email and password to **that same user id** so later prefs and
 mission history can follow the person — not a lobby seat. Convert does
 not reserve a chair; if you already sit at a table, you stay seated only
-because the id did not change. **Sign in** abandons a throwaway guest
-and does not merge. Profile photo and client prefs (theme, SFX,
-animations) are shell stubs; mute/skip-anim stay table chrome when they
-ship. Sessions are cookies, not tokens in logs or `localStorage`.
+because the id did not change. **Sign in** (boot + profile sheet) keeps
+the guest cookie, then Better Auth links: guest name (if the account has
+none), photo, and hosted `rooms` rows move onto the existing user, then
+the anonymous user is deleted. Profile photo and client prefs (theme,
+SFX, animations) are shell stubs; mute/skip-anim stay table chrome when
+they ship. Sessions are cookies, not tokens in logs or `localStorage`.
 
 ## Import graph (enforced in CI)
 

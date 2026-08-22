@@ -50,15 +50,14 @@ export async function convertAnonymousAccount(email: string, password: string): 
 }
 
 export async function signInAccount(email: string, password: string): Promise<void> {
-	await authClient.signOut();
 	const result = await authClient.signIn.email({ email, password });
 	if (result.error) {
-		await ensureGuestSession();
 		throw new AccountError(
 			result.error.code ?? "unexpected",
 			result.error.message ?? "Could not sign in.",
 		);
 	}
+	await authClient.getSession();
 }
 
 export async function signOutAccount(): Promise<void> {

@@ -13,6 +13,7 @@
 		"@crew/db": "workspace:*",
 		"@crew/env": "workspace:*",
 		"better-auth": "catalog:",
+		"drizzle-orm": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {

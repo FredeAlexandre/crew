@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	Button,
 	Dialog,
@@ -27,10 +27,12 @@ import {
 } from "../lib/display-name.ts";
 import { persistDisplayName } from "../lib/rooms.ts";
 import styles from "../styles/identity.module.css";
+import { useIdentitySheet } from "./identity-sheet.tsx";
 
 type SheetMode = "home" | "create" | "signin" | "password";
 
 export function ProfileControl() {
+	const sheet = useIdentitySheet();
 	const identity = useIdentity();
 	const refetchRef = useRef(identity.refetch);
 	const [mode, setMode] = useState<SheetMode>("home");
@@ -49,6 +51,8 @@ export function ProfileControl() {
 	);
 	refetchRef.current = identity.refetch;
 
+	const [open, setOpen] = useState(false);
+	const skipHomeResetRef = useRef(false);
 	const user = identity.user;
 	const isAnonymous = user?.isAnonymous !== false;
 	const shownError = error ?? identity.sessionError;
@@ -60,8 +64,8 @@ export function ProfileControl() {
 			? `Profile, ${identity.displayName}`
 			: "Your profile";
 
-	function resetSheet(nextName: string) {
-		setMode("home");
+	function resetSheet(nextName: string, nextMode: SheetMode = "home") {
+		setMode(nextMode);
 		setBusy(false);
 		setError(null);
 		setName(nextName);
@@ -70,6 +74,16 @@ export function ProfileControl() {
 		setCurrentPassword("");
 		setNewPassword("");
 	}
+
+	useEffect(() => {
+		if (sheet.intent === null) {
+			return;
+		}
+		skipHomeResetRef.current = true;
+		resetSheet(identity.displayName, sheet.intent);
+		setOpen(true);
+		sheet.clearIntent();
+	}, [sheet.intent, sheet.clearIntent, identity.displayName]);
 
 	async function run(action: () => Promise<void>) {
 		setBusy(true);
@@ -90,8 +104,14 @@ export function ProfileControl() {
 
 	return (
 		<DialogTrigger
-			onOpenChange={(open) => {
-				if (open) {
+			isOpen={open}
+			onOpenChange={(nextOpen: boolean) => {
+				setOpen(nextOpen);
+				if (nextOpen) {
+					if (skipHomeResetRef.current) {
+						skipHomeResetRef.current = false;
+						return;
+					}
 					resetSheet(identity.displayName);
 				} else {
 					void nameSaver.flush(name);
@@ -151,13 +171,13 @@ export function ProfileControl() {
 													Create account
 												</Button>
 												<Button
-													className={styles.ghost}
+													className={styles.primary}
 													onPress={() => {
 														setError(null);
 														setMode("signin");
 													}}
 												>
-													Already have an account?
+													Sign in
 												</Button>
 											</div>
 										) : (
@@ -222,8 +242,7 @@ export function ProfileControl() {
 										}}
 									>
 										<p className={styles.copy}>
-											Keeps this name on other devices. Preferences and mission history come
-											later.
+											Keeps this name on other devices. Preferences and mission history come later.
 										</p>
 										<EmailPasswordFields
 											email={email}
@@ -261,8 +280,8 @@ export function ProfileControl() {
 										}}
 									>
 										<p className={styles.copy}>
-											This guest stays on this device. Sign in to the account you already
-											created.
+											Sign in to an account you already created. A name or hosted tables from this
+											guest move over, then the guest is removed.
 										</p>
 										<EmailPasswordFields
 											email={email}
