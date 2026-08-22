@@ -1,4 +1,10 @@
-import { apply, createAttempt, type EngineState, type PlayerCount } from "@crew/engine";
+import {
+	apply,
+	createAttempt,
+	type EngineState,
+	type PlayerCount,
+	pickSeatIntent,
+} from "@crew/engine";
 import type {
 	Fact,
 	Intent,
@@ -11,6 +17,8 @@ import type { TableView } from "@crew/view-model";
 import { type Occupancy, project, projectFacts, projectLobby } from "@crew/view-model/project";
 
 const DEFAULT_MISSION = { id: "1", difficulty: 4 } as const;
+const BOT_PLAYER_PREFIX = "bot:";
+const BOT_TURN_CAP = 400;
 
 export type Occupant = {
 	playerId: string;
@@ -91,6 +99,10 @@ export function seatOf(state: TableState, playerId: string): SeatId | null {
 	return index === -1 ? null : (index as SeatId);
 }
 
+export function isBotPlayerId(playerId: string): boolean {
+	return playerId.startsWith(BOT_PLAYER_PREFIX);
+}
+
 function occupancyOf(state: TableState): Occupancy {
 	return state.seats.map((seat) =>
 		seat === null
@@ -160,6 +172,10 @@ export function connect(state: TableState, playerId: string, displayName: string
 		return fail(state, "alreadyStarted", "game already started");
 	}
 
+	if (isBotPlayerId(playerId)) {
+		return fail(state, "illegalIntent", "reserved seat");
+	}
+
 	const empty = state.seats.indexOf(null);
 	if (empty === -1) {
 		return fail(state, "roomFull", "no empty seat");
@@ -226,6 +242,9 @@ export function handleIntent(
 	}
 	if (intent.type === "host.retry") {
 		return retry(state, playerId, options);
+	}
+	if (intent.type === "host.fillBots") {
+		return fillBots(state, playerId);
 	}
 	return play(state, seatId, intent);
 }
@@ -298,7 +317,8 @@ function beginAttempt(state: TableState, options?: StartOptions): TableResult {
 		},
 	);
 	const stamped = stampFacts(started.state, created.facts);
-	return succeed(stamped.state, [started.fact, ...stamped.facts], false);
+	const drained = drainBots(stamped.state);
+	return succeed(drained.state, [started.fact, ...stamped.facts, ...drained.facts], false);
 }
 
 function play(state: TableState, seatId: SeatId, intent: PlayIntent): TableResult {
@@ -315,7 +335,98 @@ function play(state: TableState, seatId: SeatId, intent: PlayIntent): TableResul
 		return fail(state, result.error, result.error);
 	}
 	const stamped = stampFacts({ ...state, engine: result.state }, result.facts);
-	return succeed(stamped.state, stamped.facts, false);
+	const drained = drainBots(stamped.state);
+	return succeed(drained.state, [...stamped.facts, ...drained.facts], false);
+}
+
+function fillBots(state: TableState, playerId: string): TableResult {
+	if (playerId !== state.hostPlayerId) {
+		return fail(state, "notHost", "only the host can fill bots");
+	}
+	if (state.status !== "lobby") {
+		return fail(state, "alreadyStarted", "game already started");
+	}
+	if (seatOf(state, playerId) === null) {
+		return fail(state, "notSeated", "sit before filling seats");
+	}
+
+	let next = state;
+	const facts: Fact[] = [];
+	let botNumber = 1;
+	for (let index = 0; index < next.seats.length; index += 1) {
+		if (next.seats[index] !== null) {
+			continue;
+		}
+		const seatId = index as SeatId;
+		const botId = `${BOT_PLAYER_PREFIX}${seatId}`;
+		const displayName = `Bot ${botNumber}`;
+		botNumber += 1;
+		const seats = cloneSeats(next);
+		seats[index] = {
+			playerId: botId,
+			displayName,
+			connected: true,
+			ready: true,
+		};
+		const sat = pushFact(
+			{ ...next, seats },
+			{
+				type: "player.sat",
+				attemptId: null,
+				seatId,
+				playerId: botId,
+				displayName,
+			},
+		);
+		const readied = pushFact(sat.state, {
+			type: "player.ready",
+			attemptId: null,
+			seatId,
+			ready: true,
+		});
+		facts.push(sat.fact, readied.fact);
+		next = readied.state;
+	}
+
+	return succeed(next, facts, false);
+}
+
+function drainBots(state: TableState): { state: TableState; facts: Fact[] } {
+	if (state.engine === null) {
+		return { state, facts: [] };
+	}
+	const facts: Fact[] = [];
+	let current = state;
+	for (let step = 0; step < BOT_TURN_CAP; step += 1) {
+		const engine = current.engine;
+		if (engine === null || engine.phase === "result") {
+			break;
+		}
+		const seat = engine.currentSeat;
+		if (seat === null) {
+			break;
+		}
+		const occupant = current.seats[seat];
+		if (occupant === null || occupant === undefined || !isBotPlayerId(occupant.playerId)) {
+			break;
+		}
+		const intent = pickSeatIntent(engine, seat);
+		if (intent === null) {
+			break;
+		}
+		const result = apply(engine, {
+			...intent,
+			seatId: seat,
+			attemptId: engine.attemptId,
+		});
+		if (!result.ok) {
+			break;
+		}
+		const stamped = stampFacts({ ...current, engine: result.state }, result.facts);
+		facts.push(...stamped.facts);
+		current = stamped.state;
+	}
+	return { state: current, facts };
 }
 
 function randomSeed(): number {

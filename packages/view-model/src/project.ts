@@ -200,6 +200,7 @@ export function project(
 			canPassDistressCard,
 			canPeekLastTrick: lastTrick !== null,
 			canStart: false,
+			canFillBots: false,
 			canRetry: state.phase === "result" && hostSeatId === viewerSeat,
 		},
 		result: state.result === null ? null : { outcome: state.result, reason: state.failReason },
@@ -266,6 +267,7 @@ export function projectLobby(
 			canPassDistressCard: false,
 			canPeekLastTrick: false,
 			canStart: lobbyCanStart(occupancy, viewerSeat, hostSeatId),
+			canFillBots: lobbyCanFillBots(occupancy, viewerSeat, hostSeatId),
 			canRetry: false,
 		},
 		result: null,
@@ -281,6 +283,21 @@ function lobbyCanStart(
 		return false;
 	}
 	return occupancy.every((seat) => seat?.ready);
+}
+
+function lobbyCanFillBots(
+	occupancy: Occupancy,
+	viewerSeat: SeatId,
+	hostSeatId: SeatId | null,
+): boolean {
+	if (hostSeatId === null || viewerSeat !== hostSeatId) {
+		return false;
+	}
+	const host = occupancy[hostSeatId];
+	if (host === null || host === undefined) {
+		return false;
+	}
+	return occupancy.some((seat) => seat === null);
 }
 
 function occupancyFields(

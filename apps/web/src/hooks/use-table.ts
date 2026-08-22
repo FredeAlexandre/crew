@@ -17,6 +17,7 @@ export type ClientIntent =
 	| { type: "player.ready"; ready: boolean }
 	| { type: "host.start" }
 	| { type: "host.retry" }
+	| { type: "host.fillBots" }
 	| { type: "task.take"; taskInstanceId: TaskInstanceId }
 	| { type: "task.pass" }
 	| { type: "distress.skip" }
@@ -121,6 +122,7 @@ function stampIntent(intent: ClientIntent, view: TableView | null): Intent | nul
 		intent.type === "player.ready" ||
 		intent.type === "host.start" ||
 		intent.type === "host.retry" ||
+		intent.type === "host.fillBots" ||
 		intent.type === "echo"
 	) {
 		const parsed = intentSchema.safeParse(intent);

@@ -110,6 +110,7 @@ export function isPlayIntent(intent: Intent): intent is PlayIntent {
 		intent.type !== "echo" &&
 		intent.type !== "player.ready" &&
 		intent.type !== "host.start" &&
-		intent.type !== "host.retry"
+		intent.type !== "host.retry" &&
+		intent.type !== "host.fillBots"
 	);
 }

@@ -104,6 +104,9 @@ function LobbyRoute() {
 						alert: error ?? table.error,
 						onCopyCode: isRoomCode(code) ? () => void copyCode() : undefined,
 						onReady: (ready) => table.sendIntent({ type: "player.ready", ready }),
+						onFillBots: view.affordances.canFillBots
+							? () => table.sendIntent({ type: "host.fillBots" })
+							: undefined,
 						onStart: view.affordances.canStart
 							? () => table.sendIntent({ type: "host.start" })
 							: undefined,

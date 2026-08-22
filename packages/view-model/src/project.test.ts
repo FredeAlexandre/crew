@@ -321,6 +321,23 @@ describe("occupancy", () => {
 		);
 	});
 
+	it("lets only the seated host fill empty chairs", () => {
+		const hostOnly = [
+			{ playerId: "p0", displayName: "Alex", connected: true, ready: false },
+			null,
+			null,
+		] as const;
+		expect(projectLobby(hostOnly, 0, 1, 0).affordances.canFillBots).toBe(true);
+		expect(projectLobby(hostOnly, 1, 1, 0).affordances.canFillBots).toBe(false);
+		expect(projectLobby([null, null, null], 0, 0, 0).affordances.canFillBots).toBe(false);
+		const full = [
+			{ playerId: "p0", displayName: "Alex", connected: true, ready: true },
+			{ playerId: "p1", displayName: "Bea", connected: true, ready: true },
+			{ playerId: "p2", displayName: "Cam", connected: true, ready: true },
+		] as const;
+		expect(projectLobby(full, 0, 5, 0).affordances.canFillBots).toBe(false);
+	});
+
 	it("keeps occupancy names after a deal", () => {
 		const occupancy = [
 			{ playerId: "p0", displayName: "Alex", connected: true, ready: true },
