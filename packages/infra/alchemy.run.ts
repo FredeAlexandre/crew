@@ -17,7 +17,7 @@ function websiteDomain(stage: string): string | undefined {
 		return "crew.aleno.casa";
 	}
 	const pr = previewPrNumber(stage);
-	return pr === undefined ? undefined : `pr-${pr}.preview.aleno.casa`;
+	return pr === undefined ? undefined : `crew-pr-${pr}.aleno.casa`;
 }
 
 export const db = Cloudflare.D1.Database("database", {

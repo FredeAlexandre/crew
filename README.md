@@ -34,7 +34,7 @@ Cloudflare (`Cloudflare.state()`), not in `.alchemy/` on a laptop.
 
 Pushes to `main` deploy production via GitHub Actions (after `nub run check`).
 The site is `https://crew.aleno.casa`. Same-repo PRs deploy an isolated
-preview at `https://pr-{n}.preview.aleno.casa` and tear it down when the
+preview at `https://crew-pr-{n}.aleno.casa` and tear it down when the
 PR closes. Manual deploy from a laptop still works after
 `cd packages/infra && nubx alchemy login --configure`:
 

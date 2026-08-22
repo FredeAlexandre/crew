@@ -34,7 +34,7 @@ jobs:
           : "${PR:?missing pull request number}"
           umask 077
           printf 'CORS_ORIGIN=%s\nBETTER_AUTH_SECRET=%s\n' \
-            "https://pr-${PR}.preview.aleno.casa" \
+            "https://crew-pr-${PR}.aleno.casa" \
             "$BETTER_AUTH_SECRET" \
             > .env.preview
       - name: Deploy preview
@@ -53,7 +53,7 @@ jobs:
           PR: ${{ github.event.number }}
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          url="https://pr-${PR}.preview.aleno.casa"
+          url="https://crew-pr-${PR}.aleno.casa"
           marker="<!-- crew-preview -->"
           short="${SHA:0:7}"
           body="$(cat <<EOF
@@ -108,7 +108,7 @@ jobs:
           : "${BETTER_AUTH_SECRET:?missing GitHub secret PREVIEW_BETTER_AUTH_SECRET}"
           umask 077
           printf 'CORS_ORIGIN=%s\nBETTER_AUTH_SECRET=%s\n' \
-            "https://pr-${PR}.preview.aleno.casa" \
+            "https://crew-pr-${PR}.aleno.casa" \
             "$BETTER_AUTH_SECRET" \
             > .env.preview
       - name: Destroy preview

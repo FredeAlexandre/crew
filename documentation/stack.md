@@ -163,7 +163,7 @@ secrets `CLOUDFLARE_API_TOKEN` (must include **Secrets Store Write**),
 `CLOUDFLARE_ACCOUNT_ID`, `BETTER_AUTH_SECRET`, and variable `CORS_ORIGIN`.
 
 **PR previews:** same-repo pull requests deploy Alchemy stage `pr-{n}` to
-`https://pr-{n}.preview.aleno.casa` (own D1, Durable Objects, auth). A bot
+`https://crew-pr-{n}.aleno.casa` (own D1, Durable Objects, auth). A bot
 comment on the PR keeps the URL. Closing or merging the PR runs
 `alchemy destroy --stage pr-{n}`. Fork PRs are not deployed. Needs the
 same Cloudflare secrets plus `PREVIEW_BETTER_AUTH_SECRET` (not the prod
