@@ -52,7 +52,6 @@ export default Alchemy.Stack(
 	Effect.gen(function* () {
 		const stack = yield* Alchemy.Stack;
 		const domain = websiteDomain(stack.stage);
-		const pr = previewPrNumber(stack.stage);
 		yield* db;
 		const serverWorker = yield* server;
 		const webWorker = yield* Cloudflare.Website.Vite("web", {
@@ -64,7 +63,6 @@ export default Alchemy.Stack(
 			},
 			env: {
 				VITE_SERVER_URL: serverWorker.url.as<string>(),
-				...(pr === undefined ? {} : { VITE_PREVIEW_LABEL: `Preview · PR ${pr}` }),
 			},
 			dev: {
 				port: 3001,

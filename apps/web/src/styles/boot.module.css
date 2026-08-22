@@ -24,12 +24,6 @@
 	color: var(--muted);
 }
 
-.preview {
-	margin: 0;
-	font-size: 0.85rem;
-	color: var(--accent);
-}
-
 .identity {
 	display: grid;
 	gap: 0.35rem;
