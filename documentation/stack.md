@@ -144,13 +144,23 @@ server       → protocol, db, auth, engine, view-model
 
 ## Host + CI
 
-**Host:** Cloudflare. Web → Pages (Alchemy Vite website). Server → Workers
-+ Durable Objects + D1. Not Vercel for the play path. No Docker in v1.
+**Host:** Cloudflare. Web → Worker (Alchemy Vite website) at
+`https://crew.aleno.casa`. Server → Workers + Durable Objects + D1. Not
+Vercel for the play path. No Docker in v1.
+
+Alchemy state is remote (`Cloudflare.state()`): a Durable Object Worker
+(`alchemy-state-store`) plus Secrets Store credentials. Local `.alchemy/`
+is not how prod is tracked. GitHub Actions sets `CI=true` so each run
+reads those credentials from the Secrets Store instead of a laptop file.
 
 **CI (GitHub Actions), every PR:** `nub run check` = format, lint,
 typecheck, Knip, dependency-cruiser, unit tests. Playwright smoke may skip
-until playground fixtures exist. Preview deploy after green (needs
-Cloudflare secrets).
+until playground fixtures exist.
+
+**CD:** push to `main` (and manual `workflow_dispatch`) runs check, then
+`alchemy deploy --stage prod`. Needs Actions secrets
+`CLOUDFLARE_API_TOKEN` (must include **Secrets Store Write**),
+`CLOUDFLARE_ACCOUNT_ID`, `BETTER_AUTH_SECRET`, and variable `CORS_ORIGIN`.
 
 **Local:**
 

@@ -29,15 +29,26 @@ fail until the web hook is rewired.
 
 Local and production do not share env files. `nub run dev` reads
 `apps/server/.env` (localhost CORS). `nub run deploy` targets Alchemy stage
-`prod` and reads `packages/infra/.env.prod`.
+`prod` and reads `packages/infra/.env.prod`. Production state lives in
+Cloudflare (`Cloudflare.state()`), not in `.alchemy/` on a laptop.
 
-Deploy: `cd packages/infra && nubx alchemy login --configure`, then:
+Pushes to `main` deploy production via GitHub Actions (after `nub run check`).
+The site is `https://crew.aleno.casa`. Manual deploy from a laptop still
+works after `cd packages/infra && nubx alchemy login --configure`:
 
 ```bash
 cp packages/infra/.env.prod.example packages/infra/.env.prod
-# Set CORS_ORIGIN to the production website origin and a dedicated secret.
+# CORS_ORIGIN=https://crew.aleno.casa and a dedicated BETTER_AUTH_SECRET.
 nub run deploy
 ```
 
-CI writes the same `.env.prod` keys from GitHub Actions secrets/variables.
-Destroy with `nub run destroy`.
+Actions needs these repository secrets/variables:
+
+| Name | Kind | Purpose |
+| --- | --- | --- |
+| `CLOUDFLARE_API_TOKEN` | secret | Deploy Workers/D1 and read the Alchemy state-store token. Must include **Secrets Store Write** (not just Read), plus Workers Scripts Write, D1 Write, Account Settings Write, Workers Routes Write, DNS Write, Workers Tail Read. |
+| `CLOUDFLARE_ACCOUNT_ID` | secret | Cloudflare account |
+| `BETTER_AUTH_SECRET` | secret | Production cookie signing (not the local `.env` value) |
+| `CORS_ORIGIN` | variable | `https://crew.aleno.casa` |
+
+Create the API token at [Cloudflare API tokens](https://dash.cloudflare.com/profile/api-tokens), then `gh secret set CLOUDFLARE_API_TOKEN`. Destroy with `nub run destroy`.

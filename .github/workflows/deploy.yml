@@ -1,7 +1,13 @@
 name: Deploy
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -10,18 +16,27 @@ jobs:
       - uses: actions/checkout@v4
       - uses: nubjs/setup-nub@v0
       - run: nub ci
+      - run: nub run check
       - name: Write production env
         working-directory: packages/infra
+        env:
+          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
         run: |
+          : "${CORS_ORIGIN:?missing GitHub variable CORS_ORIGIN}"
+          : "${BETTER_AUTH_SECRET:?missing GitHub secret BETTER_AUTH_SECRET}"
           umask 077
           printf 'CORS_ORIGIN=%s\nBETTER_AUTH_SECRET=%s\n' \
             "$CORS_ORIGIN" \
             "$BETTER_AUTH_SECRET" \
             > .env.prod
+      - name: Deploy production
+        working-directory: packages/infra
         env:
-          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-      - run: nub run deploy -- --yes
-        env:
+          CI: true
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          : "${CLOUDFLARE_API_TOKEN:?missing GitHub secret CLOUDFLARE_API_TOKEN}"
+          : "${CLOUDFLARE_ACCOUNT_ID:?missing GitHub secret CLOUDFLARE_ACCOUNT_ID}"
+          nubx alchemy deploy --stage prod --env-file .env.prod --yes
