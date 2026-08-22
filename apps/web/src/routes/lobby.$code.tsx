@@ -3,6 +3,7 @@ import { fixtures, type TableView } from "@crew/view-model/fixtures";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTable } from "../hooks/use-table.ts";
+import { lobbyShareUrl } from "../lib/lobby-code.ts";
 import { joinRoom, roomErrorCopy } from "../lib/rooms.ts";
 import { GeometryTable } from "../skins/geometry/Table.tsx";
 import styles from "../styles/lobby.module.css";
@@ -71,7 +72,7 @@ function LobbyRoute() {
 
 	async function copyCode() {
 		try {
-			await navigator.clipboard.writeText(code);
+			await navigator.clipboard.writeText(lobbyShareUrl(code, window.location.origin));
 			setCopied(true);
 		} catch {
 			setCopied(false);

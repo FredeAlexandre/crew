@@ -54,24 +54,140 @@
 	color: var(--accent);
 }
 
-.arc {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	align-items: end;
-	gap: 1.25rem 1.75rem;
-	width: min(24rem, 100%);
-	margin-block: 0.75rem;
+.lobby {
+	grid-template-rows: auto minmax(0, 1fr);
+	align-content: stretch;
+	justify-items: stretch;
+	gap: 0.55rem;
+	height: 100%;
 }
 
-.chair[data-self="true"] {
-	flex-basis: 100%;
+.lobbyHead {
+	display: grid;
+	justify-items: center;
+	gap: 0.35rem;
+}
+
+.ring {
+	display: grid;
+	width: min(42rem, 100%);
+	min-height: 16rem;
+	height: 100%;
+	justify-self: center;
+	gap: 0.4rem 0.65rem;
+}
+
+.ring[data-count="3"] {
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	grid-template-rows: minmax(0, 1fr) auto;
+	grid-template-areas:
+		"west well east"
+		"self self self";
+}
+
+.ring[data-count="4"] {
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	grid-template-rows: auto minmax(0, 1fr) auto;
+	grid-template-areas:
+		". north ."
+		"west well east"
+		"self self self";
+}
+
+.ring[data-count="5"] {
+	display: block;
+	position: relative;
+}
+
+.lobbyWell {
+	grid-area: well;
+	display: grid;
+	justify-items: center;
+	align-content: center;
+	gap: 0.55rem;
+	padding: 0.35rem;
 }
 
 .chair {
 	display: grid;
 	justify-items: center;
 	gap: 0.4rem;
+}
+
+.chair[data-slot="self"] {
+	grid-area: self;
+	justify-self: center;
+	align-self: end;
+}
+
+.chair[data-slot="west"] {
+	grid-area: west;
+	align-self: center;
+	justify-self: start;
+}
+
+.chair[data-slot="east"] {
+	grid-area: east;
+	align-self: center;
+	justify-self: end;
+}
+
+.chair[data-slot="north"] {
+	grid-area: north;
+	justify-self: center;
+	align-self: start;
+}
+
+.chair[data-slot="northwest"] {
+	grid-area: nw;
+	justify-self: center;
+	align-self: start;
+}
+
+.chair[data-slot="northeast"] {
+	grid-area: ne;
+	justify-self: center;
+	align-self: start;
+}
+
+.ring[data-count="5"] .lobbyWell,
+.ring[data-count="5"] .chair {
+	position: absolute;
+	transform: translate(-50%, -50%);
+}
+
+.ring[data-count="5"] .lobbyWell {
+	left: 50%;
+	top: 46%;
+}
+
+.ring[data-count="5"] .chair[data-slot="self"] {
+	left: 50%;
+	top: auto;
+	bottom: 0;
+	transform: translate(-50%, 0);
+}
+
+.ring[data-count="5"] .chair[data-slot="west"] {
+	left: 0;
+	top: 62%;
+	transform: translate(0, -50%);
+}
+
+.ring[data-count="5"] .chair[data-slot="east"] {
+	left: 100%;
+	top: 62%;
+	transform: translate(-100%, -50%);
+}
+
+.ring[data-count="5"] .chair[data-slot="northwest"] {
+	left: 24%;
+	top: 16%;
+}
+
+.ring[data-count="5"] .chair[data-slot="northeast"] {
+	left: 76%;
+	top: 16%;
 }
 
 .notch {
