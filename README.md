@@ -24,8 +24,12 @@ nub run test
 
 `nub run dev` starts Vite + the Hono worker + D1 + the Room Durable Object.
 HTTP create/join mints a room code; WS `/room/:code` is the table host.
-Boot can mint a guest cookie. Playground echo ping still speaks echo and will
-fail until the web hook is rewired.
+Boot mints a guest cookie. The shell avatar (and a Sign in control on
+boot) can create an account on that guest or sign in to an existing
+account. Sign-in merges guest name and hosted tables, then deletes the
+anonymous user. An account does not reserve a lobby seat.
+Playground echo ping still speaks echo and will fail until the web hook
+is rewired.
 
 Local and production do not share env files. `nub run dev` reads
 `apps/server/.env` (localhost CORS). `nub run deploy` targets Alchemy stage

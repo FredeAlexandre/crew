@@ -24,6 +24,17 @@
 	color: var(--muted);
 }
 
+.signIn {
+	border-color: transparent;
+	color: var(--muted);
+	min-height: 44px;
+}
+
+.signIn:hover,
+.signIn:focus-visible {
+	color: var(--accent);
+}
+
 .identity {
 	display: grid;
 	gap: 0.35rem;

@@ -2,7 +2,9 @@ import { isRoomCode, PLAYER_COUNTS, type PlayerCount } from "@crew/protocol";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button, Input, Label, Radio, RadioGroup, TextField } from "react-aria-components";
+import { useIdentitySheet } from "../components/identity-sheet.tsx";
 import { useDisplayName } from "../hooks/use-display-name.ts";
+import { useIdentity } from "../hooks/use-identity.ts";
 import { DISPLAY_NAME_MAX } from "../lib/display-name.ts";
 import { extractLobbyCode } from "../lib/lobby-code.ts";
 import { createRoom, joinRoom, roomErrorCopy } from "../lib/rooms.ts";
@@ -19,6 +21,8 @@ function BootRoute() {
 	const [busy, setBusy] = useState<"idle" | "create" | "join">("idle");
 	const [error, setError] = useState<string | null>(null);
 	const displayName = useDisplayName();
+	const identity = useIdentity();
+	const sheet = useIdentitySheet();
 
 	async function openTable() {
 		setBusy("create");
@@ -59,6 +63,11 @@ function BootRoute() {
 			<header className={styles.masthead}>
 				<h1 className={styles.title}>Crew</h1>
 				<p className={styles.lede}>Sit at a table. Three to five players.</p>
+				{identity.user?.isAnonymous !== false ? (
+					<Button className={styles.signIn} onPress={sheet.openSignIn}>
+						Sign in
+					</Button>
+				) : null}
 			</header>
 			<TextField
 				className={styles.identity}
