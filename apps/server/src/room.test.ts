@@ -1,14 +1,13 @@
-import { echoFact, echoIntentSchema } from "@crew/protocol";
 import { describe, expect, it } from "vitest";
+import { playerHeaders, readPlayerHeaders } from "./player-headers.ts";
 
-describe("room echo", () => {
-	it("fans out a fact with a bumped seq", () => {
-		const intent = echoIntentSchema.parse({
-			type: "echo",
-			attemptId: "attempt-1",
-			seq: 0,
-			payload: "ping",
+describe("room player headers", () => {
+	it("round-trips playerId and displayName for the DO", () => {
+		const headers = new Headers(playerHeaders("p1", "Guest ä"));
+		expect(readPlayerHeaders(headers)).toEqual({
+			playerId: "p1",
+			displayName: "Guest ä",
 		});
-		expect(echoFact(intent, 4).seq).toBe(4);
+		expect(readPlayerHeaders(new Headers())).toBeNull();
 	});
 });

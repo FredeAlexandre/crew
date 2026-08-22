@@ -23,8 +23,9 @@ nub run test
 ```
 
 `nub run dev` starts Vite + the Hono worker + D1 + the Room Durable Object.
-The playground route is echo WS only until scene fixtures exist. Boot can mint a
-guest cookie. Playground echo WS hits `/room/:name`.
+HTTP create/join mints a room code; WS `/room/:code` is the table host.
+Boot can mint a guest cookie. Playground echo ping still speaks echo and will
+fail until the web hook is rewired.
 
 Deploy: `cd packages/infra && nubx alchemy login --configure`, then
 `nub run deploy`. Destroy with `nub run destroy`.

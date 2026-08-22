@@ -23,3 +23,19 @@ export const illegalReasonSchema = z.enum([
 ]);
 
 export type IllegalReason = z.infer<typeof illegalReasonSchema>;
+
+export const roomRuleErrorCodeSchema = z.enum([
+	"unauthenticated",
+	"unknownRoom",
+	"roomFull",
+	"notSeated",
+	"notHost",
+	"notReady",
+	"alreadyStarted",
+	"illegalIntent",
+]);
+
+export const roomErrorCodeSchema = z.union([roomRuleErrorCodeSchema, illegalReasonSchema]);
+
+export type RoomRuleErrorCode = z.infer<typeof roomRuleErrorCodeSchema>;
+export type RoomErrorCode = z.infer<typeof roomErrorCodeSchema>;

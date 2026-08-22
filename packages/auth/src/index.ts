@@ -6,7 +6,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { anonymous } from "better-auth/plugins";
 
 export function createAuth() {
-	const db = createDb();
+	const db = createDb(env.DB);
 
 	return betterAuth({
 		database: drizzleAdapter(db, {

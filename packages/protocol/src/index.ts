@@ -1,5 +1,7 @@
 import { z } from "zod";
+import { roomErrorCodeSchema } from "./errors.ts";
 import type { EchoFact } from "./facts.ts";
+import { factSchema } from "./facts.ts";
 import type { Seq } from "./ids.ts";
 import { attemptIdSchema, seqSchema } from "./ids.ts";
 import type { EchoIntent } from "./intents.ts";
@@ -13,8 +15,8 @@ export {
 	isColorSuit,
 	SUBMARINE_VALUES,
 } from "./cards.ts";
-export type { IllegalReason } from "./errors.ts";
-export { illegalReasonSchema } from "./errors.ts";
+export type { IllegalReason, RoomErrorCode, RoomRuleErrorCode } from "./errors.ts";
+export { illegalReasonSchema, roomErrorCodeSchema, roomRuleErrorCodeSchema } from "./errors.ts";
 export type { EchoFact, Fact } from "./facts.ts";
 export { echoFactSchema, factSchema } from "./facts.ts";
 export type {
@@ -53,7 +55,10 @@ export type {
 	DistressPassCardIntent,
 	DistressSkipIntent,
 	EchoIntent,
+	HostStartIntent,
 	Intent,
+	LobbyIntent,
+	PlayerReadyIntent,
 	PlayIntent,
 	SonarUseIntent,
 	TaskPassIntent,
@@ -65,7 +70,9 @@ export {
 	distressPassCardIntentSchema,
 	distressSkipIntentSchema,
 	echoIntentSchema,
+	hostStartIntentSchema,
 	intentSchema,
+	playerReadyIntentSchema,
 	sonarUseIntentSchema,
 	taskPassIntentSchema,
 	taskTakeIntentSchema,
@@ -74,12 +81,29 @@ export type { DifficultyByPlayers, TaskPublic } from "./tasks.ts";
 export { difficultyByPlayersSchema, taskPublicSchema } from "./tasks.ts";
 
 export const snapshotEnvelopeSchema = z.object({
-	attemptId: attemptIdSchema,
+	type: z.literal("room.snapshot"),
+	attemptId: attemptIdSchema.nullable(),
 	seq: seqSchema,
 	viewModel: z.unknown(),
 });
 
 export type SnapshotEnvelope = z.infer<typeof snapshotEnvelopeSchema>;
+
+export const roomErrorMessageSchema = z.object({
+	type: z.literal("error"),
+	code: roomErrorCodeSchema,
+	message: z.string(),
+});
+
+export type RoomErrorMessage = z.infer<typeof roomErrorMessageSchema>;
+
+export const serverMessageSchema = z.union([
+	factSchema,
+	snapshotEnvelopeSchema,
+	roomErrorMessageSchema,
+]);
+
+export type ServerMessage = z.infer<typeof serverMessageSchema>;
 
 export function echoFact(intent: EchoIntent, seq: Seq): EchoFact {
 	return {

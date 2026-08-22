@@ -73,6 +73,12 @@ describe("apply", () => {
 		const state = startAttempt();
 		expect(apply(state, { type: "echo", attemptId: "a1", seq: 0, payload: null }).ok).toBe(false);
 	});
+
+	it("rejects lobby intents", () => {
+		const state = startAttempt();
+		expect(apply(state, { type: "player.ready", ready: true }).ok).toBe(false);
+		expect(apply(state, { type: "host.start" }).ok).toBe(false);
+	});
 });
 
 describe("play", () => {

@@ -60,7 +60,7 @@ client  <--snapshot- view-model                    room.snapshot
 - HTTP (Hono) only for health, auth session, create/join room by code.
   Not for playing cards.
 - No tRPC, GraphQL, or Socket.io. No sending full engine state to a client.
-- v1 stub: health + echo WS. Real play intents land when the table is wired.
+- Create/join over HTTP; play over WS. The Room DO is the table host.
 
 ## Frontend (`apps/web`)
 
@@ -124,7 +124,7 @@ engine       → protocol
 view-model   → protocol, engine          (@crew/view-model/project)
 db           → (nothing in the game graph)
 web          → protocol
-server       → protocol, db, auth
+server       → protocol, db, auth, engine, view-model
 ```
 
 - Do not deep-import another package’s `src/`.
@@ -156,10 +156,11 @@ Cloudflare secrets).
 
 ```text
 nub install
-nub run dev      web + worker via alchemy; playground echo WS, no room
+nub run dev      web + worker via alchemy; HTTP create/join + room WS
 nub run check    same gates as CI
-nub run test     engine/protocol/view-model/server unit tests (stubs ok)
+nub run test     engine/protocol/view-model/server unit tests
 ```
 
-Two browser profiles against one room code is the multi-seat check once
-rooms exist; for this task, health + playground route + echo WS is enough.
+Two browser profiles against one room code is the multi-seat check once the
+web hook sends play intents. Playground echo ping still speaks echo and will
+fail against the table host until that hook is rewired.
