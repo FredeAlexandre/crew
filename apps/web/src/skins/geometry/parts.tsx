@@ -1,8 +1,11 @@
 import type { CardId } from "@crew/protocol";
 import type { HandCard, SeatView, TableView, TaskView } from "@crew/view-model/fixtures";
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "react-aria-components";
 import { CardFace } from "./Card.tsx";
 import { seatIsEmpty, seatName, turnCopy } from "./copy.ts";
+import { fanAngle, fanRise, fanShift, fanSpread, nearestFanIndex } from "./hand-fan.ts";
 import styles from "./parts.module.css";
 import { taskLabel } from "./task-label.ts";
 
@@ -174,19 +177,124 @@ export function HandStrip({
 	quiet?: boolean;
 	onSelect?: (cardId: CardId) => void;
 }) {
+	const rootRef = useRef<HTMLDivElement>(null);
+	const dragging = useRef(false);
+	const peekedIndex = useRef(0);
+	const peekedId = useRef<CardId | null>(null);
+	const [peeked, setPeeked] = useState<CardId | null>(null);
+	const [fanWidth, setFanWidth] = useState(320);
+	const spread = fanSpread(cards.length);
+
+	useEffect(() => {
+		const el = rootRef.current;
+		if (!el) {
+			return;
+		}
+		const measure = () => setFanWidth(el.getBoundingClientRect().width);
+		measure();
+		const observer = new ResizeObserver(measure);
+		observer.observe(el);
+		return () => observer.disconnect();
+	}, []);
+
+	function cardAtPointer(
+		event: ReactPointerEvent<HTMLDivElement>,
+		sticky?: number,
+	): { id: CardId; index: number } | null {
+		const el = rootRef.current;
+		if (!el || cards.length === 0) {
+			return null;
+		}
+		const rect = el.getBoundingClientRect();
+		const index = nearestFanIndex(event.clientX - rect.left, rect.width, cards.length, sticky);
+		const id = cards[index]?.cardId;
+		if (id === undefined) {
+			return null;
+		}
+		return { id, index };
+	}
+
+	function beginPeek(event: ReactPointerEvent<HTMLDivElement>) {
+		if (event.button !== 0 || cards.length === 0) {
+			return;
+		}
+		event.preventDefault();
+		dragging.current = true;
+		event.currentTarget.setPointerCapture(event.pointerId);
+		const hit = cardAtPointer(event);
+		if (hit) {
+			peekedIndex.current = hit.index;
+			peekedId.current = hit.id;
+			setPeeked(hit.id);
+		}
+	}
+
+	function movePeek(event: ReactPointerEvent<HTMLDivElement>) {
+		if (!dragging.current) {
+			return;
+		}
+		const hit = cardAtPointer(event, peekedIndex.current);
+		if (hit && hit.index !== peekedIndex.current) {
+			peekedIndex.current = hit.index;
+			peekedId.current = hit.id;
+			setPeeked(hit.id);
+		}
+	}
+
+	function endPeek(event: ReactPointerEvent<HTMLDivElement>) {
+		if (!dragging.current) {
+			return;
+		}
+		dragging.current = false;
+		if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+			event.currentTarget.releasePointerCapture(event.pointerId);
+		}
+		const hit = peekedId.current;
+		peekedId.current = null;
+		setPeeked(null);
+		if (hit) {
+			onSelect?.(hit);
+		}
+	}
+
 	return (
-		<div className={quiet ? styles.handQuiet : styles.hand} data-region="hand">
-			{cards.map((card) => (
-				<CardFace
-					key={card.cardId}
-					cardId={card.cardId}
-					legal={card.legal}
-					communicated={card.communicated}
-					selected={selected === card.cardId}
-					muted={quiet}
-					onPress={onSelect ? () => onSelect(card.cardId) : undefined}
-				/>
-			))}
+		<div
+			ref={rootRef}
+			className={quiet ? `${styles.fan} ${styles.fanQuiet}` : styles.fan}
+			data-region="hand"
+			onPointerDown={beginPeek}
+			onPointerMove={movePeek}
+			onPointerUp={endPeek}
+			onPointerCancel={endPeek}
+		>
+			{cards.map((card, index) => {
+				const raised = peeked !== null ? peeked === card.cardId : selected === card.cardId;
+				const shift = fanShift(index, cards.length, fanWidth, 38);
+				const rise = fanRise(index, cards.length);
+				return (
+					<div
+						key={card.cardId}
+						className={styles.fanSlot}
+						data-raised={raised ? "true" : "false"}
+						style={
+							{
+								"--angle": `${fanAngle(index, cards.length, spread)}deg`,
+								"--x": `${shift}px`,
+								"--y": `${rise}px`,
+								"--z": raised ? 24 : index + 1,
+							} as CSSProperties
+						}
+					>
+						<CardFace
+							cardId={card.cardId}
+							legal={card.legal}
+							communicated={card.communicated}
+							selected={selected === card.cardId}
+							muted={quiet}
+						/>
+					</div>
+				);
+			})}
 		</div>
 	);
 }

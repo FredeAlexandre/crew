@@ -26,7 +26,7 @@ function RootComponent() {
 		<>
 			<HeadContent />
 			<IdentitySheetProvider>
-				<div className={styles.shell}>
+				<div className={styles.shell} data-table={atTable ? "true" : undefined}>
 					<header className={styles.bar}>
 						{atTable ? (
 							<Link className={styles.home} to="/">

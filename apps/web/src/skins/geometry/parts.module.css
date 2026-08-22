@@ -6,21 +6,29 @@
 	align-items: center;
 	justify-content: center;
 	gap: 0.35rem 0.5rem;
+	min-width: 0;
+	max-width: 100%;
 }
 
 .pip {
 	flex-direction: column;
-	min-width: 4.5rem;
+	min-width: 0;
+	max-width: 6.5rem;
 }
 
 .pipCompact {
 	flex-direction: row;
 	padding-inline: 0.15rem;
+	max-width: 100%;
 }
 
 .pipName {
 	margin: 0;
 	font-size: 0.92rem;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .pip[data-turn="true"] .pipName,
@@ -135,15 +143,23 @@
 .taskCard {
 	display: grid;
 	place-items: center;
-	width: 7.5rem;
-	min-height: 9.5rem;
-	padding: 0.75rem;
+	width: min(7.5rem, 42cqi, 100%);
+	min-height: 5.5rem;
+	padding: 0.55rem 0.45rem;
 	border-radius: 0.45rem;
 	background: color-mix(in srgb, var(--table) 70%, var(--ink) 12%);
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--muted) 45%, transparent);
 	color: inherit;
 	font: inherit;
 	text-align: center;
+}
+
+@container (min-width: 40rem) {
+	.taskCard {
+		width: 7.5rem;
+		min-height: 9.5rem;
+		padding: 0.75rem;
+	}
 }
 
 .taskCard[data-takeable="true"] {
@@ -167,38 +183,71 @@
 	color: var(--accent);
 }
 
-.hand,
-.handQuiet {
-	display: flex;
-	justify-content: center;
-	align-items: flex-end;
-	min-height: 5rem;
-	padding-bottom: 0.25rem;
+.fan {
+	--card-w: 2.55rem;
+	--card-h: 3.7rem;
+	--lift: 2.05rem;
+	position: relative;
+	width: min(calc(100% - 0.35rem), 24rem);
+	max-width: 100%;
+	min-width: 0;
+	height: calc(var(--card-h) + var(--lift) + 1.1rem);
+	justify-self: center;
+	touch-action: none;
+	user-select: none;
+	cursor: pointer;
 }
 
-.hand > *,
-.handQuiet > * {
-	margin-left: -0.7rem;
+@container (max-width: 28rem) {
+	.fan {
+		--card-w: 2.35rem;
+		--card-h: 3.45rem;
+	}
 }
 
-.hand > *:first-child,
-.handQuiet > *:first-child {
-	margin-left: 0;
+.fanQuiet {
+	--card-w: 2.2rem;
+	--card-h: 3.2rem;
+	--lift: 1.2rem;
+	opacity: 0.92;
 }
 
-.handQuiet {
-	opacity: 0.72;
-	transform: scale(0.92);
-	transform-origin: center bottom;
+.fanSlot {
+	position: absolute;
+	left: 50%;
+	bottom: 0.2rem;
+	width: var(--card-w);
+	margin-left: calc(var(--card-w) / -2);
+	transform-origin: 50% 100%;
+	transform: translateX(var(--x, 0px)) translateY(var(--y, 0px)) rotate(var(--angle, 0deg));
+	transition: transform var(--motion-travel) ease-out;
+	z-index: var(--z, 1);
+	pointer-events: none;
+}
+
+.fanSlot[data-raised="true"] {
+	transform: translateX(var(--x, 0px)) translateY(calc(var(--y, 0px) + var(--lift) * -1))
+		rotate(var(--angle, 0deg));
+}
+
+.fanSlot > * {
+	width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fanSlot {
+		transition-duration: 80ms;
+	}
 }
 
 .chrome {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.65rem 1rem;
+	gap: 0.35rem 0.75rem;
 	justify-content: center;
 	color: var(--muted);
 	font-size: 0.88rem;
+	max-width: 100%;
 }
 
 .turn {

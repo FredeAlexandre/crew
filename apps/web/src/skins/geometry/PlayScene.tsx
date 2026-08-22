@@ -199,11 +199,7 @@ export function PlayScene({
 			) : null}
 			<div className={styles.handWrap}>
 				{hint && overlay !== "sonar" ? <p className={styles.hint}>{hint}</p> : null}
-				<HandStrip
-					cards={displayHand}
-					selected={selected}
-					onSelect={(cardId) => setSelected((current) => (current === cardId ? null : cardId))}
-				/>
+				<HandStrip cards={displayHand} selected={selected} onSelect={setSelected} />
 			</div>
 		</div>
 	);
