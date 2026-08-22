@@ -30,6 +30,10 @@ export const hostStartIntentSchema = z.object({
 	type: z.literal("host.start"),
 });
 
+export const hostRetryIntentSchema = z.object({
+	type: z.literal("host.retry"),
+});
+
 export const taskTakeIntentSchema = z.object({
 	type: z.literal("task.take"),
 	...playMeta,
@@ -75,6 +79,7 @@ export const intentSchema = z.discriminatedUnion("type", [
 	echoIntentSchema,
 	playerReadyIntentSchema,
 	hostStartIntentSchema,
+	hostRetryIntentSchema,
 	taskTakeIntentSchema,
 	taskPassIntentSchema,
 	distressSkipIntentSchema,
@@ -87,6 +92,7 @@ export const intentSchema = z.discriminatedUnion("type", [
 export type EchoIntent = z.infer<typeof echoIntentSchema>;
 export type PlayerReadyIntent = z.infer<typeof playerReadyIntentSchema>;
 export type HostStartIntent = z.infer<typeof hostStartIntentSchema>;
+export type HostRetryIntent = z.infer<typeof hostRetryIntentSchema>;
 export type TaskTakeIntent = z.infer<typeof taskTakeIntentSchema>;
 export type TaskPassIntent = z.infer<typeof taskPassIntentSchema>;
 export type DistressSkipIntent = z.infer<typeof distressSkipIntentSchema>;
@@ -95,5 +101,5 @@ export type DistressPassCardIntent = z.infer<typeof distressPassCardIntentSchema
 export type CardPlayIntent = z.infer<typeof cardPlayIntentSchema>;
 export type SonarUseIntent = z.infer<typeof sonarUseIntentSchema>;
 export type Intent = z.infer<typeof intentSchema>;
-export type LobbyIntent = PlayerReadyIntent | HostStartIntent;
+export type LobbyIntent = PlayerReadyIntent | HostStartIntent | HostRetryIntent;
 export type PlayIntent = Exclude<Intent, EchoIntent | LobbyIntent>;

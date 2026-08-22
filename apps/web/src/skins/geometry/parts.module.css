@@ -81,6 +81,19 @@
 	height: 0.7rem;
 }
 
+.wonPeek {
+	min-width: 44px;
+	min-height: 44px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	font: inherit;
+	font-variant-numeric: tabular-nums;
+	font-size: 0.78rem;
+	color: var(--accent);
+	cursor: pointer;
+}
+
 .taskCount::before {
 	content: "· ";
 }

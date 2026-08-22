@@ -243,7 +243,8 @@
 		"canActivateDistress": false,
 		"canPassDistressCard": false,
 		"canPeekLastTrick": true,
-		"canStart": false
+		"canStart": false,
+		"canRetry": true
 	},
 	"result": {
 		"outcome": "failed",
