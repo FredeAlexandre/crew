@@ -167,7 +167,7 @@ Named slots. Layouts change *where* they sit, not *what they are called*. Skins 
 | `undealt` | The leftover card in a 3-player deal (unplayed at the end). Hidden or face-down per rules; region exists so layout does not jump. |
 | `overlay` | Sonar, distress, last trick, reminder, reconnect banner. One overlay at a time unless reconnect (banner may stack). |
 
-**App shell (not a table region).** Account identity is a persistent avatar disc in the SPA shell (top-right; “Table” home link on the left when you are at a lobby). It is **not** `chrome`, **not** `seat.self`, and **not** the lobby chair notch. Opening it shows a table-object sheet (React Aria dialog): guests convert this same `PlayerId` to email/password; signed-in users manage password. Profile photo, theme, SFX volume, and animation prefs may appear as stubs. Mute and skip-animations stay table chrome when they ship. Other players do not see this avatar on seats yet.
+**App shell (not a table region).** Account identity is a persistent avatar disc in the SPA shell (top-right; “Table” home link on the left when you are at a lobby). It is **not** `chrome`, **not** `seat.self`, and **not** the lobby chair notch. Opening it shows a table-object sheet (React Aria dialog): guests may create an email/password account on this same `PlayerId` (name now; prefs and history later); signed-in users manage password. Creating an account does **not** reserve a lobby seat. Profile photo, theme, SFX volume, and animation prefs may appear as stubs. Mute and skip-animations stay table chrome when they ship. Other players do not see this avatar on seats yet.
 
 **Seat contents (every `seat.*`):**
 

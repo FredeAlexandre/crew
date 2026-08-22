@@ -115,12 +115,14 @@ from `packages/db/src/migrations` during deploy / `alchemy dev`.
 
 v1 D1 tables: Better Auth tables + `players` + `rooms` (code, host,
 status). Auth is **Better Auth** anonymous/guest plus email/password.
-Boot mints a guest `PlayerId` that survives refresh. **Convert** (Keep
-this crew) attaches email and password to **that same user id** so seats
-and hosted rooms stay put. **Sign in** abandons a throwaway guest and
-does not merge. Profile photo and client prefs (theme, SFX, animations)
-are shell stubs; mute/skip-anim stay table chrome when they ship.
-Sessions are cookies, not tokens in logs or `localStorage`.
+Boot mints a guest `PlayerId` that survives refresh. **Create account**
+attaches email and password to **that same user id** so later prefs and
+mission history can follow the person — not a lobby seat. Convert does
+not reserve a chair; if you already sit at a table, you stay seated only
+because the id did not change. **Sign in** abandons a throwaway guest
+and does not merge. Profile photo and client prefs (theme, SFX,
+animations) are shell stubs; mute/skip-anim stay table chrome when they
+ship. Sessions are cookies, not tokens in logs or `localStorage`.
 
 ## Import graph (enforced in CI)
 

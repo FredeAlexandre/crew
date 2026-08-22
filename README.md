@@ -24,8 +24,9 @@ nub run test
 
 `nub run dev` starts Vite + the Hono worker + D1 + the Room Durable Object.
 HTTP create/join mints a room code; WS `/room/:code` is the table host.
-Boot mints a guest cookie. The shell avatar can convert that guest to
-email/password (same `PlayerId`) or sign in to an existing account.
+Boot mints a guest cookie. The shell avatar can create an account on
+that guest (same `PlayerId`, for name / later prefs and history) or sign
+in to an existing account. An account does not reserve a lobby seat.
 Playground echo ping still speaks echo and will fail until the web hook
 is rewired.
 

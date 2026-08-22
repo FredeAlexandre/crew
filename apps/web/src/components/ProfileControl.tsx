@@ -148,7 +148,7 @@ export function ProfileControl() {
 														setMode("create");
 													}}
 												>
-													Keep this crew
+													Create account
 												</Button>
 												<Button
 													className={styles.ghost}
@@ -222,7 +222,8 @@ export function ProfileControl() {
 										}}
 									>
 										<p className={styles.copy}>
-											Same seat on other devices. This crew stays yours.
+											Keeps this name on other devices. Preferences and mission history come
+											later.
 										</p>
 										<EmailPasswordFields
 											email={email}
@@ -260,7 +261,8 @@ export function ProfileControl() {
 										}}
 									>
 										<p className={styles.copy}>
-											This guest stays on this device. Sign in with the account you already kept.
+											This guest stays on this device. Sign in to the account you already
+											created.
 										</p>
 										<EmailPasswordFields
 											email={email}
@@ -363,7 +365,7 @@ export function ProfileControl() {
 
 function sheetTitle(mode: SheetMode, isAnonymous: boolean): string {
 	if (mode === "create") {
-		return "Keep this crew";
+		return "Create account";
 	}
 	if (mode === "signin") {
 		return "Sign in";
