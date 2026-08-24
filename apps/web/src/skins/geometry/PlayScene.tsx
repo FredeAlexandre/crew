@@ -30,6 +30,7 @@ export function PlayScene({
 	const [sonarOpen, setSonarOpen] = useState(false);
 	const [queuedSonar, setQueuedSonar] = useState<QueuedSonar | null>(null);
 	const [lastTrickOpen, setLastTrickOpen] = useState(false);
+	const [showCompletedTricks, setShowCompletedTricks] = useState(false);
 	const [sonarDetailRegion, setSonarDetailRegion] = useState<
 		TableView["seats"][number]["region"] | null
 	>(null);
@@ -84,16 +85,17 @@ export function PlayScene({
 		view.affordances.canPeekLastTrick &&
 		view.overlay === "none" &&
 		!sonarOpen &&
+		showCompletedTricks &&
 		view.lastTrick !== null;
 	const isDraft = view.scene === "taskDraft";
 	const quietHand = isDraft || view.scene === "deal";
 	const turn = isDraft ? turnCopy(view) : null;
-	const shownTrickCards = heldCards ?? view.trick.cards;
+	const shownTrickCards = showCompletedTricks ? (heldCards ?? view.trick.cards) : view.trick.cards;
 	const shownLeadRegion =
-		heldCards === null
+		!showCompletedTricks || heldCards === null
 			? view.trick.leadRegion
 			: (heldCards.find((card) => card.order === 1)?.region ?? null);
-	const landKeySet = new Set(heldCards === null ? landKeys : []);
+	const landKeySet = new Set(showCompletedTricks && heldCards !== null ? [] : landKeys);
 
 	useEffect(() => {
 		if (view.overlay !== "none") {
@@ -107,6 +109,7 @@ export function PlayScene({
 	useEffect(() => {
 		setSonarOpen(false);
 		setLastTrickOpen(false);
+		setShowCompletedTricks(false);
 		setSonarDetailRegion(null);
 		setInspectedTask(null);
 		setSelected(null);
@@ -126,7 +129,7 @@ export function PlayScene({
 		if (juice.playWin) {
 			playCue("win", `win:${view.attemptId ?? "none"}:${view.lastTrick?.trickId ?? "x"}`);
 		}
-		if (juice.holdCards && heldCards === null) {
+		if (showCompletedTricks && juice.holdCards && heldCards === null) {
 			setHeldCards(juice.holdCards);
 			setWinnerRegion(juice.winnerRegion);
 			setTrickTransition({ remaining: TRICK_TRANSITION_MS, paused: false });
@@ -135,7 +138,7 @@ export function PlayScene({
 			setWinnerRegion(null);
 			setTrickTransition(null);
 		}
-	}, [view]);
+	}, [showCompletedTricks, view]);
 
 	useEffect(() => {
 		if (landKeys.length === 0) {
@@ -185,6 +188,18 @@ export function PlayScene({
 		setTrickTransition((current) => (current ? { ...current, paused: true } : null));
 	}
 
+	function toggleCompletedTricks() {
+		setShowCompletedTricks((shown) => {
+			if (shown) {
+				setLastTrickOpen(false);
+				setHeldCards(null);
+				setWinnerRegion(null);
+				setTrickTransition(null);
+			}
+			return !shown;
+		});
+	}
+
 	useEffect(() => {
 		if (queuedSonar === null) {
 			return;
@@ -228,7 +243,12 @@ export function PlayScene({
 	}, [sonarOpen, lastTrickOpen, sonarDetailRegion, inspectedTask]);
 
 	function peekLastTrick() {
-		if (view.overlay !== "none" || sonarOpen || !view.affordances.canPeekLastTrick) {
+		if (
+			view.overlay !== "none" ||
+			sonarOpen ||
+			!showCompletedTricks ||
+			!view.affordances.canPeekLastTrick
+		) {
 			return;
 		}
 		setSonarDetailRegion(null);
@@ -369,6 +389,7 @@ export function PlayScene({
 							slot={lobbySlot(seat.region, view.playerCount)}
 							chairClassName={`${sceneStyles.chair} ${styles.playChair}`}
 							onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
+							showCompletedTricks={showCompletedTricks}
 							onSonarDetail={() => openSonarDetail(seat.region)}
 							onInspectTask={inspectTask}
 							canSonar={isSelf && sonarEnabled && !sonarOpen}
@@ -391,15 +412,19 @@ export function PlayScene({
 					);
 				})}
 				<div className={`${sceneStyles.lobbyWell} ${styles.playWell}`}>
-					<ChromeLine view={view} />
+					<ChromeLine
+						view={view}
+						showCompletedTricks={showCompletedTricks}
+						onToggleCompletedTricks={toggleCompletedTricks}
+					/>
 					<Well
 						view={view}
 						turn={turn}
 						trickCards={shownTrickCards}
 						leadRegion={shownLeadRegion}
 						landKeys={landKeySet}
-						winnerRegion={heldCards === null ? null : winnerRegion}
-						trickTransition={heldCards === null ? null : trickTransition}
+						winnerRegion={showCompletedTricks && heldCards !== null ? winnerRegion : null}
+						trickTransition={showCompletedTricks && heldCards !== null ? trickTransition : null}
 						onToggleTrickTransition={toggleTrickTransition}
 						onTake={
 							sendIntent
