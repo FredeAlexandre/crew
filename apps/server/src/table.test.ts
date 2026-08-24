@@ -7,6 +7,7 @@ import {
 	factsForSeat,
 	handleIntent,
 	isBotPlayerId,
+	removeLeaving,
 	seatOf,
 	snapshotMessage,
 	summary,
@@ -264,6 +265,16 @@ describe("table lobby", () => {
 		expect(back.reconnect).toBe(true);
 		expect(seatOf(back.state, "p1")).toBe(1);
 		expect(back.state.seats[1]?.connected).toBe(true);
+	});
+
+	it("marks a voluntary departure and clears the seat after two seconds", () => {
+		const seated = sitAll();
+		const left = mustOk(handleIntent(seated, "p1", { type: "player.leave" }));
+		expect(left.state.seats[1]?.connected).toBe(false);
+		expect(left.state.seats[1]?.leaving).toBe(true);
+		expect(viewForSeat(left.state, 0).seats[1]?.leaving).toBe(true);
+		expect(removeLeaving(left.state, Date.now() + 1_999).seats[1]).not.toBeNull();
+		expect(removeLeaving(left.state, Date.now() + 2_000).seats[1]).toBeNull();
 	});
 });
 

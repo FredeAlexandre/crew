@@ -69,6 +69,7 @@ export const seatViewSchema = z.object({
 	/** Public account avatar, when the seated player has chosen one. */
 	image: z.string().nullable().optional(),
 	connected: z.boolean(),
+	leaving: z.boolean().default(false),
 	ready: z.boolean(),
 	isCaptain: z.boolean(),
 	sonar: z.object({

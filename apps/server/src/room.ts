@@ -11,6 +11,7 @@ import {
 	handleIntent,
 	type RoomSummary,
 	reconnectBlockedUntil,
+	removeLeaving,
 	seatOf,
 	snapshotMessage,
 	summary,
@@ -93,6 +94,21 @@ export default class Room extends DurableObject<RoomBindings> {
 		return new Response(null, { status: 101, webSocket: client });
 	}
 
+	async alarm() {
+		const loaded = await this.load();
+		if (loaded === null) return;
+		const next = removeLeaving(loaded);
+		if (next === loaded) {
+			const pending = Object.values(loaded.leavingUntil ?? {});
+			if (pending.length > 0) await this.ctx.storage.setAlarm(Math.min(...pending));
+			return;
+		}
+		await this.save(next);
+		const pending = Object.values(next.leavingUntil ?? {});
+		if (pending.length > 0) await this.ctx.storage.setAlarm(Math.min(...pending));
+		this.fanout(next, [], null);
+	}
+
 	async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer) {
 		const playerId = this.playerIdOf(socket);
 		if (playerId === null) {
@@ -124,6 +140,9 @@ export default class Room extends DurableObject<RoomBindings> {
 			return;
 		}
 		await this.save(result.state);
+		if (parsed.data.type === "player.leave") {
+			await this.ctx.storage.setAlarm(Date.now() + 2_000);
+		}
 		if (parsed.data.type === "host.kick") {
 			const removed = loaded.seats[parsed.data.seatId];
 			if (removed !== null && removed !== undefined) {

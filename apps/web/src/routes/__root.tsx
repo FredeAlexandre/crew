@@ -38,7 +38,11 @@ function RootShell() {
 				<div className={styles.shell} data-table={atTable ? "true" : undefined}>
 					<header className={styles.bar}>
 						{atTable ? (
-							<Link className={styles.home} to="/">
+							<Link
+								className={styles.home}
+								to="/"
+								onClick={() => window.dispatchEvent(new Event("crew:leave-table"))}
+							>
 								{t("table")}
 							</Link>
 						) : (
