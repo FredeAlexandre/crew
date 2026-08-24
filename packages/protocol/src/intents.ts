@@ -3,6 +3,7 @@ import { cardIdSchema } from "./cards.ts";
 import {
 	attemptIdSchema,
 	distressDirectionSchema,
+	missionDifficultySchema,
 	seatIdSchema,
 	seqSchema,
 	sonarPositionSchema,
@@ -28,6 +29,13 @@ export const playerReadyIntentSchema = z.object({
 
 export const hostStartIntentSchema = z.object({
 	type: z.literal("host.start"),
+});
+
+export const hostConfigureIntentSchema = z.object({
+	type: z.literal("host.configure"),
+	difficulty: missionDifficultySchema,
+	captainSeat: seatIdSchema.nullable(),
+	distressDisabled: z.boolean().default(false),
 });
 
 export const hostRetryIntentSchema = z.object({
@@ -83,6 +91,7 @@ export const intentSchema = z.discriminatedUnion("type", [
 	echoIntentSchema,
 	playerReadyIntentSchema,
 	hostStartIntentSchema,
+	hostConfigureIntentSchema,
 	hostRetryIntentSchema,
 	hostFillBotsIntentSchema,
 	taskTakeIntentSchema,
@@ -97,6 +106,7 @@ export const intentSchema = z.discriminatedUnion("type", [
 export type EchoIntent = z.infer<typeof echoIntentSchema>;
 export type PlayerReadyIntent = z.infer<typeof playerReadyIntentSchema>;
 export type HostStartIntent = z.infer<typeof hostStartIntentSchema>;
+export type HostConfigureIntent = z.infer<typeof hostConfigureIntentSchema>;
 export type HostRetryIntent = z.infer<typeof hostRetryIntentSchema>;
 export type HostFillBotsIntent = z.infer<typeof hostFillBotsIntentSchema>;
 export type TaskTakeIntent = z.infer<typeof taskTakeIntentSchema>;
@@ -110,6 +120,7 @@ export type Intent = z.infer<typeof intentSchema>;
 export type LobbyIntent =
 	| PlayerReadyIntent
 	| HostStartIntent
+	| HostConfigureIntent
 	| HostRetryIntent
 	| HostFillBotsIntent;
 export type PlayIntent = Exclude<Intent, EchoIntent | LobbyIntent>;

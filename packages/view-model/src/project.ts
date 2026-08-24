@@ -1,12 +1,13 @@
 import { type EngineState, legalIntents } from "@crew/engine";
-import type {
-	CardId,
-	Fact,
-	IllegalReason,
-	SeatId,
-	SonarPosition,
-	Suit,
-	TaskInstanceId,
+import {
+	type CardId,
+	DEFAULT_MISSION_DIFFICULTY,
+	type Fact,
+	type IllegalReason,
+	type SeatId,
+	type SonarPosition,
+	type Suit,
+	type TaskInstanceId,
 } from "@crew/protocol";
 import {
 	regionForSeat,
@@ -26,6 +27,18 @@ type OccupancySeat = {
 } | null;
 
 export type Occupancy = readonly OccupancySeat[];
+
+export type LobbySetup = {
+	difficulty: number;
+	captainSeat: SeatId | null;
+	distressDisabled: boolean;
+};
+
+const DEFAULT_LOBBY_SETUP: LobbySetup = {
+	difficulty: DEFAULT_MISSION_DIFFICULTY,
+	captainSeat: null,
+	distressDisabled: false,
+};
 
 /**
  * Per-seat projection. Server-only — `apps/web` must not import this file.
@@ -174,6 +187,7 @@ export function project(
 			flags: {
 				sonarDisabled: state.mission?.flags?.sonarDisabled === true,
 				discussionAllowed: state.mission?.flags?.discussionAllowed === true,
+				distressDisabled: state.mission?.flags?.distressDisabled === true,
 			},
 		},
 		seats,
@@ -201,6 +215,7 @@ export function project(
 			canPeekLastTrick: lastTrick !== null,
 			canStart: false,
 			canFillBots: false,
+			canConfigure: false,
 			canRetry: state.phase === "result" && hostSeatId === viewerSeat,
 		},
 		result: state.result === null ? null : { outcome: state.result, reason: state.failReason },
@@ -216,6 +231,7 @@ export function projectLobby(
 	viewerSeat: SeatId,
 	seq: number,
 	hostSeatId: SeatId | null,
+	setup: LobbySetup = DEFAULT_LOBBY_SETUP,
 ): TableView {
 	const playerCount = occupancy.length;
 	const seats: TableView["seats"] = [];
@@ -225,7 +241,7 @@ export function projectLobby(
 			region: regionForSeat(seatId, viewerSeat, playerCount),
 			seatId,
 			...occupancyFields(occupancy, seatId),
-			isCaptain: false,
+			isCaptain: setup.captainSeat === seatId,
 			sonar: { state: "available", communication: null },
 			handCount: 0,
 			wonTrickCount: 0,
@@ -243,12 +259,16 @@ export function projectLobby(
 		overlay: "none",
 		chrome: {
 			missionId: null,
-			difficulty: null,
+			difficulty: setup.difficulty,
 			trickId: null,
 			turnRegion: null,
 			distress: { active: false, direction: null },
 			sonarAvailable: false,
-			flags: { sonarDisabled: false, discussionAllowed: false },
+			flags: {
+				sonarDisabled: false,
+				discussionAllowed: false,
+				distressDisabled: setup.distressDisabled,
+			},
 		},
 		seats,
 		hand: [],
@@ -268,6 +288,7 @@ export function projectLobby(
 			canPeekLastTrick: false,
 			canStart: lobbyCanStart(occupancy, viewerSeat, hostSeatId),
 			canFillBots: lobbyCanFillBots(occupancy, viewerSeat, hostSeatId),
+			canConfigure: lobbyCanConfigure(occupancy, viewerSeat, hostSeatId),
 			canRetry: false,
 		},
 		result: null,
@@ -298,6 +319,18 @@ function lobbyCanFillBots(
 		return false;
 	}
 	return occupancy.some((seat) => seat === null);
+}
+
+function lobbyCanConfigure(
+	occupancy: Occupancy,
+	viewerSeat: SeatId,
+	hostSeatId: SeatId | null,
+): boolean {
+	if (hostSeatId === null || viewerSeat !== hostSeatId) {
+		return false;
+	}
+	const host = occupancy[hostSeatId];
+	return host !== null && host !== undefined;
 }
 
 function occupancyFields(

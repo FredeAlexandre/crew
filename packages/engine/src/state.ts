@@ -21,6 +21,7 @@ export type PlayerCount = 3 | 4 | 5;
 export type MissionFlags = {
 	readonly sonarDisabled?: boolean;
 	readonly discussionAllowed?: boolean;
+	readonly distressDisabled?: boolean;
 };
 
 export type MissionDef = {
@@ -110,6 +111,7 @@ export function isPlayIntent(intent: Intent): intent is PlayIntent {
 		intent.type !== "echo" &&
 		intent.type !== "player.ready" &&
 		intent.type !== "host.start" &&
+		intent.type !== "host.configure" &&
 		intent.type !== "host.retry" &&
 		intent.type !== "host.fillBots"
 	);

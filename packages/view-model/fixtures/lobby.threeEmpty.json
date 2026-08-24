@@ -7,7 +7,7 @@
 	"overlay": "none",
 	"chrome": {
 		"missionId": null,
-		"difficulty": null,
+		"difficulty": 4,
 		"trickId": null,
 		"turnRegion": null,
 		"distress": {
@@ -17,7 +17,8 @@
 		"sonarAvailable": false,
 		"flags": {
 			"sonarDisabled": false,
-			"discussionAllowed": false
+			"discussionAllowed": false,
+			"distressDisabled": false
 		}
 	},
 	"seats": [
@@ -97,6 +98,7 @@
 		"canPeekLastTrick": false,
 		"canStart": false,
 		"canFillBots": false,
+		"canConfigure": false,
 		"canRetry": false
 	},
 	"result": null

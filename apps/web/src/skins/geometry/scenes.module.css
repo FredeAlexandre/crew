@@ -128,6 +128,46 @@
 	max-width: 100%;
 }
 
+.setup {
+	display: grid;
+	justify-items: center;
+	gap: 0.35rem;
+	min-width: 0;
+	max-width: 100%;
+}
+
+.setupRow {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.2rem 0.35rem;
+	min-width: 0;
+	max-width: 100%;
+}
+
+.setupLabel {
+	color: var(--muted);
+	font-size: 0.75rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.setupValue {
+	min-width: 1.6rem;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
+.setupPicks {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.2rem;
+	min-width: 0;
+	max-width: 100%;
+}
+
 .chair {
 	display: grid;
 	justify-items: center;
@@ -287,6 +327,10 @@
 
 .notch[data-ready="true"] {
 	background: color-mix(in srgb, var(--accent) 16%, var(--table));
+}
+
+.notch[data-captain="true"] {
+	background: color-mix(in srgb, var(--accent) 28%, var(--table));
 }
 
 .chairName {

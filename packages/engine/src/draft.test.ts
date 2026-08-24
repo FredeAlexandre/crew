@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { must, startAttempt, takeAllTasks } from "./harness.ts";
-import { apply, legalIntents } from "./index.ts";
+import { apply, createAttempt, legalIntents } from "./index.ts";
 
 describe("task draft", () => {
 	it("allows passing only when there are fewer tasks than players", () => {
@@ -26,6 +26,19 @@ describe("task draft", () => {
 		expect(state.centerTaskIds).toHaveLength(0);
 		expect(state.tasks.every((task) => task.ownerSeat !== null)).toBe(true);
 		expect(state.phase).toBe("distressOffer");
+	});
+
+	it("skips the distress offer when the mission disables it", () => {
+		const { state: started } = createAttempt({
+			attemptId: "a1",
+			mission: { id: "m1", difficulty: 3, flags: { distressDisabled: true } },
+			playerCount: 4,
+			seed: 5,
+		});
+		const state = takeAllTasks(started);
+		expect(state.phase).toBe("play");
+		expect(state.distressActive).toBe(false);
+		expect(state.currentSeat).toBe(state.captainSeat);
 	});
 
 	it("forbids the captain from taking a captain-restricted task", () => {

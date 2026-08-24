@@ -125,6 +125,7 @@ export const affordancesSchema = z.object({
 	canPeekLastTrick: z.boolean(),
 	canStart: z.boolean(),
 	canFillBots: z.boolean(),
+	canConfigure: z.boolean(),
 	canRetry: z.boolean(),
 });
 export type Affordances = z.infer<typeof affordancesSchema>;
@@ -142,6 +143,7 @@ export const chromeSchema = z.object({
 	flags: z.object({
 		sonarDisabled: z.boolean(),
 		discussionAllowed: z.boolean(),
+		distressDisabled: z.boolean(),
 	}),
 });
 export type Chrome = z.infer<typeof chromeSchema>;

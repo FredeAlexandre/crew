@@ -16,6 +16,12 @@ const RECONNECT_MS = 400;
 export type ClientIntent =
 	| { type: "player.ready"; ready: boolean }
 	| { type: "host.start" }
+	| {
+			type: "host.configure";
+			difficulty: number;
+			captainSeat: number | null;
+			distressDisabled?: boolean;
+	  }
 	| { type: "host.retry" }
 	| { type: "host.fillBots" }
 	| { type: "task.take"; taskInstanceId: TaskInstanceId }
@@ -121,6 +127,7 @@ function stampIntent(intent: ClientIntent, view: TableView | null): Intent | nul
 	if (
 		intent.type === "player.ready" ||
 		intent.type === "host.start" ||
+		intent.type === "host.configure" ||
 		intent.type === "host.retry" ||
 		intent.type === "host.fillBots" ||
 		intent.type === "echo"

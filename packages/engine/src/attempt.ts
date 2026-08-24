@@ -1,5 +1,5 @@
-import type { AttemptId, Fact } from "@crew/protocol";
-import { dealHands, seatWithCard } from "./deal.ts";
+import type { AttemptId, Fact, SeatId } from "@crew/protocol";
+import { dealHands, giveCardToSeat, seatWithCard } from "./deal.ts";
 import { DECK, seats } from "./deck.ts";
 import { replaceImpossibleTasks } from "./draft.ts";
 import { emit } from "./emit.ts";
@@ -13,6 +13,7 @@ export type CreateAttemptConfig = {
 	mission: MissionDef;
 	playerCount: PlayerCount;
 	seed: number;
+	captainSeat?: SeatId | null;
 };
 
 export function createAttempt(config: CreateAttemptConfig): ApplyOk {
@@ -52,6 +53,9 @@ export function createAttempt(config: CreateAttemptConfig): ApplyOk {
 
 	const shuffled = shuffle(DECK, rng);
 	state.hands = dealHands(shuffled, config.playerCount);
+	if (config.captainSeat !== undefined && config.captainSeat !== null) {
+		giveCardToSeat(state.hands, "submarine-4", config.captainSeat);
+	}
 	state.captainSeat = seatWithCard(state.hands, "submarine-4");
 	state.tricksWon = seats(config.playerCount).map(() => []);
 	state.captured = seats(config.playerCount).map(() => []);
