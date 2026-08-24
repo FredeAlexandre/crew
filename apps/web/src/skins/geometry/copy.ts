@@ -83,10 +83,6 @@ export function resultCopy(reason: string | null): string | null {
 	return reason;
 }
 
-export function selfSeat(view: TableView): SeatView | undefined {
-	return view.seats.find((seat) => seat.region === "seat.self");
-}
-
 export type LobbySlot = "self" | "west" | "east" | "north" | "northwest" | "northeast";
 
 export function lobbySlot(region: SeatView["region"], playerCount: number): LobbySlot {
