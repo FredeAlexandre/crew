@@ -1,6 +1,7 @@
 import type { Fact, IllegalReason, SeatId, TaskInstanceId } from "@crew/protocol";
 import { nextSeat } from "./deck.ts";
 import { emit } from "./emit.ts";
+import { startPlay } from "./play.ts";
 import type { EngineState } from "./state.ts";
 import { taskCost } from "./tasks/catalog.ts";
 import { pickReplacement, structurallyImpossible } from "./tasks/draw.ts";
@@ -53,9 +54,13 @@ export function replaceImpossibleTasks(state: EngineState, facts: Fact[]): void 
 }
 
 function beginDistress(state: EngineState, facts: Fact[]): void {
-	state.phase = "distressOffer";
 	state.currentSeat = null;
 	emit(state, facts, { type: "draft.completed" });
+	if (state.mission?.flags?.distressDisabled === true) {
+		startPlay(state, facts);
+		return;
+	}
+	state.phase = "distressOffer";
 	emit(state, facts, { type: "distress.offered" });
 }
 

@@ -3,6 +3,7 @@ import { cardIdSchema } from "./cards.ts";
 import {
 	attemptIdSchema,
 	distressDirectionSchema,
+	missionDifficultySchema,
 	missionIdSchema,
 	playerIdSchema,
 	seatIdSchema,
@@ -56,6 +57,14 @@ const hostStartedFactSchema = z.object({
 	type: z.literal("host.started"),
 	...tableLifeMeta,
 	missionId: missionIdSchema,
+});
+
+const hostConfiguredFactSchema = z.object({
+	type: z.literal("host.configured"),
+	...tableLifeMeta,
+	difficulty: missionDifficultySchema,
+	captainSeat: seatIdSchema.nullable(),
+	distressDisabled: z.boolean().default(false),
 });
 
 const cardDealtFactSchema = z.object({
@@ -219,6 +228,7 @@ export const factSchema = z.discriminatedUnion("type", [
 	playerReadyFactSchema,
 	playerConnectionFactSchema,
 	hostStartedFactSchema,
+	hostConfiguredFactSchema,
 	cardDealtFactSchema,
 	captainRevealedFactSchema,
 	tasksDrawnFactSchema,

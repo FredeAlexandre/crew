@@ -12,10 +12,13 @@
 	"dependencies": {
 		"@crew/db": "workspace:*",
 		"@crew/env": "workspace:*",
-		"better-auth": "catalog:"
+		"better-auth": "catalog:",
+		"drizzle-orm": "catalog:",
+		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@crew/config": "workspace:*",
-		"typescript": "catalog:"
+		"typescript": "catalog:",
+		"vitest": "catalog:"
 	}
 }

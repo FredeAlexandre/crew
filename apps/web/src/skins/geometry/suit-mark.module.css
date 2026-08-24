@@ -1,0 +1,50 @@
+.mark {
+	display: block;
+	flex-shrink: 0;
+	background: var(--suit, var(--muted));
+}
+
+.sm {
+	width: 0.55rem;
+	height: 0.55rem;
+}
+
+.md {
+	width: 0.85rem;
+	height: 0.85rem;
+}
+
+.lg {
+	width: 1.15rem;
+	height: 1.15rem;
+}
+
+.xl {
+	width: 1.55rem;
+	height: 1.55rem;
+}
+
+.mark[data-suit="pink"] {
+	--suit: var(--suit-pink);
+	border-radius: 50%;
+}
+
+.mark[data-suit="yellow"] {
+	--suit: var(--suit-yellow);
+	clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.mark[data-suit="green"] {
+	--suit: var(--suit-green);
+	border-radius: 0.08rem;
+}
+
+.mark[data-suit="blue"] {
+	--suit: var(--suit-blue);
+	clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.mark[data-suit="submarine"] {
+	--suit: var(--suit-submarine);
+	clip-path: polygon(0 40%, 70% 40%, 70% 15%, 100% 50%, 70% 85%, 70% 60%, 0 60%);
+}

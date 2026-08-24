@@ -1,7 +1,50 @@
 .shell {
-	min-height: 100svh;
+	display: grid;
+	grid-template-rows: auto minmax(0, 1fr);
+	min-height: 100dvh;
+	width: 100%;
+	max-width: 100%;
+	padding: max(0.5rem, env(safe-area-inset-top, 0px)) max(0.5rem, env(safe-area-inset-right, 0px))
+		max(0.7rem, env(safe-area-inset-bottom, 0px)) max(0.5rem, env(safe-area-inset-left, 0px));
+}
+
+.shell[data-table] {
+	height: 100dvh;
+	max-height: 100dvh;
+	overflow: hidden;
+}
+
+@media (min-width: 40rem) {
+	.shell {
+		padding: 1.25rem;
+	}
+}
+
+.bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	min-height: 44px;
+	margin-bottom: 0.35rem;
+}
+
+.home {
+	color: var(--muted);
+	text-decoration: none;
+}
+
+.home:hover,
+.home:focus-visible {
+	color: var(--accent);
 }
 
 .main {
-	padding: 1.25rem;
+	min-width: 0;
+	min-height: 0;
+	display: grid;
+}
+
+.shell[data-table] .main {
+	overflow: hidden;
 }

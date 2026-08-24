@@ -70,7 +70,8 @@ React + Vite + TypeScript. TanStack Router for `boot` (`/`), `lobby`,
 - Bind the skin to the view-model only. Local UI state stays in the client
   — a thin `useTable()` hook (snapshot + `sendIntent`). No Redux.
 - **React Aria Components** (headless) for overlay focus trap later.
-  Style them as table objects, not dialogs.
+  Profile uses RAC `Dialog` / `Modal` as a table-object sheet, not a
+  settings dashboard. Style them as table objects, not dialogs.
 - **CSS modules + custom properties** for tokens. Layout = CSS grid +
   container queries. No Tailwind, no component kit with chrome, no Framer
   Motion.
@@ -113,9 +114,17 @@ from `packages/db/src/migrations` during deploy / `alchemy dev`.
 | Campaign / logbook | later | D1 |
 
 v1 D1 tables: Better Auth tables + `players` + `rooms` (code, host,
-status). Auth is **Better Auth** anonymous/guest plugin. v1 is a guest
-`PlayerId` that survives refresh. Email/OAuth only when campaign needs a
-durable crew. Sessions are cookies, not tokens in logs or `localStorage`.
+status). Auth is **Better Auth** anonymous/guest plus email/password.
+Boot mints a guest `PlayerId` that survives refresh. **Create account**
+attaches email and password to **that same user id** so later prefs and
+mission history can follow the person — not a lobby seat. Convert does
+not reserve a chair; if you already sit at a table, you stay seated only
+because the id did not change. **Sign in** (boot + profile sheet) keeps
+the guest cookie, then Better Auth links: guest name (if the account has
+none), photo, and hosted `rooms` rows move onto the existing user, then
+the anonymous user is deleted. Profile photo and client prefs (theme,
+SFX, animations) are shell stubs; mute/skip-anim stay table chrome when
+they ship. Sessions are cookies, not tokens in logs or `localStorage`.
 
 ## Import graph (enforced in CI)
 
@@ -158,9 +167,18 @@ typecheck, Knip, dependency-cruiser, unit tests. Playwright smoke may skip
 until playground fixtures exist.
 
 **CD:** push to `main` (and manual `workflow_dispatch`) runs check, then
-`alchemy deploy --stage prod`. Needs Actions secrets
-`CLOUDFLARE_API_TOKEN` (must include **Secrets Store Write**),
+`alchemy deploy --stage prod` at `https://crew.aleno.casa`. Needs Actions
+secrets `CLOUDFLARE_API_TOKEN` (must include **Secrets Store Write**),
 `CLOUDFLARE_ACCOUNT_ID`, `BETTER_AUTH_SECRET`, and variable `CORS_ORIGIN`.
+
+**PR previews:** same-repo pull requests deploy Alchemy stage `pr-{n}` to
+`https://crew-pr-{n}.aleno.casa` (own D1, Durable Objects, auth). A bot
+comment on the PR keeps the URL. Closing or merging the PR runs
+`alchemy destroy --stage pr-{n}`. Fork PRs are not deployed. Needs the
+same Cloudflare secrets plus `PREVIEW_BETTER_AUTH_SECRET` (not the prod
+cookie secret). `CORS_ORIGIN` for a preview is computed as that hostname;
+do not reuse the prod variable. The custom domain `crew.aleno.casa` is
+attached only when `stage === "prod"`.
 
 **Local:**
 

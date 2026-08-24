@@ -1,5 +1,7 @@
-import { createRootRoute, HeadContent, Outlet } from "@tanstack/react-router";
+import { createRootRoute, HeadContent, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { IdentitySheetProvider } from "../components/identity-sheet.tsx";
+import { ProfileControl } from "../components/ProfileControl.tsx";
 import styles from "../styles/root.module.css";
 import "../styles/tokens.css";
 
@@ -17,14 +19,29 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+	const pathname = useRouterState({ select: (state) => state.location.pathname });
+	const atTable = pathname.startsWith("/lobby/");
+
 	return (
 		<>
 			<HeadContent />
-			<div className={styles.shell}>
-				<main className={styles.main}>
-					<Outlet />
-				</main>
-			</div>
+			<IdentitySheetProvider>
+				<div className={styles.shell} data-table={atTable ? "true" : undefined}>
+					<header className={styles.bar}>
+						{atTable ? (
+							<Link className={styles.home} to="/">
+								Table
+							</Link>
+						) : (
+							<span />
+						)}
+						<ProfileControl />
+					</header>
+					<main className={styles.main}>
+						<Outlet />
+					</main>
+				</div>
+			</IdentitySheetProvider>
 			<TanStackRouterDevtools position="bottom-left" />
 		</>
 	);

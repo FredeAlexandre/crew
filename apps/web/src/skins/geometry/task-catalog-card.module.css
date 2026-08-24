@@ -1,0 +1,133 @@
+.card {
+	--face: #f3eee4;
+	display: grid;
+	grid-template-rows: auto minmax(0, 1fr) auto auto;
+	gap: 0.25rem;
+	width: 100%;
+	min-height: 8.5rem;
+	padding: 0.4rem 0.35rem 0.45rem;
+	border: 2px solid color-mix(in srgb, var(--kind-accent, var(--muted)) 45%, #8a8276);
+	border-radius: 0.5rem;
+	background:
+		radial-gradient(
+			circle at 50% 0%,
+			color-mix(in srgb, var(--kind-accent, var(--muted)) 12%, #fff) 0%,
+			transparent 55%
+		),
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--face) 94%, var(--kind-accent, var(--muted)) 6%) 0%,
+			var(--face) 100%
+		);
+	color: #1c1914;
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, #fff 70%, transparent),
+		0 2px 8px rgb(0 0 0 / 0.18);
+}
+
+.card[data-kind="winCards"],
+.card[data-kind="winColor"],
+.card[data-kind="winValue"],
+.card[data-kind="winSubmarines"],
+.card[data-kind="winWith"],
+.card[data-kind="collectAllColors"],
+.card[data-kind="collectAllOfOneColor"],
+.card[data-kind="collectMoreColor"] {
+	--kind-accent: var(--accent);
+}
+
+.card[data-kind="avoid"] {
+	--kind-accent: #c44b4b;
+}
+
+.card[data-kind="trickCount"],
+.card[data-kind="consecutiveTricks"],
+.card[data-kind="nthTrick"],
+.card[data-kind="compareTricks"],
+.card[data-kind="trickSum"],
+.card[data-kind="trickFilter"] {
+	--kind-accent: var(--suit-blue);
+}
+
+.top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.25rem;
+	min-height: 0.95rem;
+}
+
+.id {
+	font-size: 0.58rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, #1c1914 45%, var(--muted));
+}
+
+.captain {
+	display: grid;
+	place-items: center;
+	width: 0.95rem;
+	height: 0.95rem;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--accent) 24%, #f3eee4);
+	color: #1c1914;
+	font-size: 0.55rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.artSlot {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 4.5rem;
+	padding-inline: 0.1rem;
+}
+
+.caption {
+	margin: 0;
+	font-size: 0.68rem;
+	line-height: 1.25;
+	text-align: center;
+	color: color-mix(in srgb, #1c1914 78%, var(--muted));
+}
+
+.footer {
+	display: grid;
+	gap: 0.18rem;
+	justify-items: center;
+}
+
+.difficulty {
+	display: flex;
+	gap: 0.35rem;
+	align-items: center;
+	font-size: 0.58rem;
+	font-variant-numeric: tabular-nums;
+	color: color-mix(in srgb, #1c1914 50%, var(--muted));
+}
+
+.difficultyGroup {
+	display: inline-flex;
+	gap: 0.08rem;
+	align-items: center;
+}
+
+.pip {
+	width: 0.34rem;
+	height: 0.34rem;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--muted) 35%, transparent);
+}
+
+.pip[data-on="true"] {
+	background: var(--kind-accent, var(--accent));
+}
+
+.playerLabel {
+	font-size: 0.52rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+}

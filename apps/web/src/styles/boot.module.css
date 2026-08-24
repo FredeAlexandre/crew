@@ -24,6 +24,30 @@
 	color: var(--muted);
 }
 
+.catalogLink {
+	color: var(--muted);
+	text-decoration: none;
+	min-height: 44px;
+	display: inline-flex;
+	align-items: center;
+}
+
+.catalogLink:hover,
+.catalogLink:focus-visible {
+	color: var(--accent);
+}
+
+.signIn {
+	border-color: transparent;
+	color: var(--muted);
+	min-height: 44px;
+}
+
+.signIn:hover,
+.signIn:focus-visible {
+	color: var(--accent);
+}
+
 .identity {
 	display: grid;
 	gap: 0.35rem;

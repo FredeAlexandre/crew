@@ -15,6 +15,28 @@ export function visibleDisplayName(stored: string): string {
 	return isGeneratedGuestName(stored) ? "" : stored;
 }
 
+export function displayInitials(stored: string): string {
+	const visible = visibleDisplayName(stored);
+	if (visible.length === 0) {
+		return "";
+	}
+	const parts = visible.split(" ").filter((part) => part.length > 0);
+	const first = parts[0];
+	const last = parts.length > 1 ? parts[parts.length - 1] : undefined;
+	if (first === undefined) {
+		return "";
+	}
+	if (last === undefined || last === first) {
+		return first.slice(0, 2).toUpperCase();
+	}
+	const lead = first[0];
+	const trail = last[0];
+	if (lead === undefined || trail === undefined) {
+		return first.slice(0, 2).toUpperCase();
+	}
+	return `${lead}${trail}`.toUpperCase();
+}
+
 export function createDebouncedAction(
 	action: (value: string) => Promise<void>,
 	delayMs: number,

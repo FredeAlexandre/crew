@@ -1,103 +1,190 @@
 .card {
+	--face: #f3eee4;
+	--ink-face: #1c1914;
+	--card-shadow: 0 1px 2px rgb(0 0 0 / 0.18), 0 4px 10px rgb(0 0 0 / 0.14);
 	display: grid;
 	justify-items: center;
 	align-content: center;
-	gap: 0.2rem;
-	padding: 0.25rem;
-	border: 2px solid var(--suit, var(--muted));
-	border-radius: 0.4rem;
-	background: color-mix(in srgb, var(--table) 55%, var(--ink) 18%);
-	color: inherit;
+	gap: 0.15rem;
+	padding: 0.32rem 0.26rem;
+	border: 2.5px solid var(--suit, var(--muted));
+	border-radius: 0.55rem;
+	background-color: var(--face);
+	background-image: linear-gradient(
+		168deg,
+		color-mix(in srgb, var(--face) 88%, #fff) 0%,
+		var(--face) 42%,
+		color-mix(in srgb, var(--face) 92%, #000) 100%
+	);
+	color: var(--ink-face);
 	font: inherit;
 	cursor: default;
+	position: relative;
+	z-index: 0;
+	isolation: isolate;
+	flex-shrink: 0;
+	max-width: 100%;
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--muted)) 28%, #fff),
+		var(--card-shadow);
+}
+
+button.card {
+	background-color: var(--face);
+	background-image: linear-gradient(
+		168deg,
+		color-mix(in srgb, var(--face) 88%, #fff) 0%,
+		var(--face) 42%,
+		color-mix(in srgb, var(--face) 92%, #000) 100%
+	);
+	border: 2.5px solid var(--suit, var(--muted));
+	color: var(--ink-face);
+	min-height: 0;
+	min-width: 0;
+	padding: 0.32rem 0.26rem;
 }
 
 .hand {
-	width: 3.15rem;
-	min-width: 44px;
-	min-height: 44px;
-	height: 4.55rem;
+	width: var(--card-w, 4.25rem);
+	aspect-ratio: 2.5 / 3.6;
+	height: auto;
+	min-width: 0;
+	min-height: 0;
+	display: grid;
+	grid-template-rows: auto minmax(0, 1fr) auto;
+	justify-items: start;
+	align-content: stretch;
+	padding: 0.26rem 0.22rem 0.22rem;
 }
 
 .trick {
-	width: 3.7rem;
-	min-width: 44px;
-	height: 5.2rem;
+	width: var(--trick-w, 4.65rem);
+	aspect-ratio: 2.5 / 3.6;
+	height: auto;
+	min-width: 0;
+	min-height: 0;
+	display: grid;
+	grid-template-rows: auto minmax(0, 1fr) auto;
+	justify-items: start;
+	align-content: stretch;
+	padding: 0.32rem 0.28rem 0.26rem;
 }
 
 .token {
-	width: 2.35rem;
-	min-width: 2.35rem;
-	height: 3.25rem;
-	min-height: 44px;
+	width: var(--token-w, 2.85rem);
+	min-width: 0;
+	aspect-ratio: 2.5 / 3.5;
+	height: auto;
+	min-height: 0;
+	padding: 0.18rem 0.14rem;
 }
 
 .card[data-suit="pink"] {
 	--suit: var(--suit-pink);
+	--face: color-mix(in srgb, #f3ece1 86%, var(--suit-pink) 14%);
 }
 
 .card[data-suit="yellow"] {
 	--suit: var(--suit-yellow);
+	--face: color-mix(in srgb, #f3ece1 86%, var(--suit-yellow) 14%);
 }
 
 .card[data-suit="green"] {
 	--suit: var(--suit-green);
+	--face: color-mix(in srgb, #f3ece1 86%, var(--suit-green) 14%);
 }
 
 .card[data-suit="blue"] {
 	--suit: var(--suit-blue);
+	--face: color-mix(in srgb, #f3ece1 86%, var(--suit-blue) 14%);
 }
 
 .card[data-suit="submarine"] {
 	--suit: var(--ink);
-	--hull-sheen:
-		inset 0 1px 0 color-mix(in srgb, var(--ink) 28%, transparent),
-		inset 0 -2px 5px color-mix(in srgb, #000 60%, transparent);
-	color: var(--ink);
-	background: linear-gradient(
-		165deg,
-		color-mix(in srgb, var(--ink) 16%, var(--suit-submarine)) 0%,
-		#12110f 42%,
-		var(--suit-submarine) 100%
-	);
-	border-color: color-mix(in srgb, var(--ink) 38%, var(--suit-submarine));
-	border-radius: 0.4rem 0.4rem 0.85rem 0.85rem;
-	box-shadow: var(--hull-sheen);
+	--face: var(--suit-submarine);
+	--ink-face: var(--ink);
+	border-radius: 0.5rem 0.5rem 0.95rem 0.95rem;
 }
 
-.value {
-	font-size: 1.35rem;
-	font-variant-numeric: tabular-nums;
+.index {
+	display: flex;
+	align-items: center;
+	gap: 0.14rem;
 	line-height: 1;
 }
 
+.indexTail {
+	justify-self: end;
+	transform: rotate(180deg);
+}
+
+.value {
+	font-size: 1.28rem;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	font-weight: 600;
+}
+
+.hand .value,
+.trick .value {
+	font-size: 1.22rem;
+}
+
 .token .value {
-	font-size: 1rem;
+	font-size: 1.08rem;
+}
+
+.mark,
+.pip {
+	background: var(--suit, var(--muted));
+	flex-shrink: 0;
 }
 
 .mark {
-	width: 0.72rem;
-	height: 0.72rem;
-	background: var(--suit, var(--muted));
+	width: 0.68rem;
+	height: 0.68rem;
 }
 
-.mark[data-suit="pink"] {
+.hand .mark,
+.trick .mark {
+	width: 0.76rem;
+	height: 0.76rem;
+}
+
+.pip {
+	width: 1.35rem;
+	height: 1.35rem;
+	justify-self: center;
+	align-self: center;
+}
+
+.trick .pip {
+	width: 1.6rem;
+	height: 1.6rem;
+}
+
+.mark[data-suit="pink"],
+.pip[data-suit="pink"] {
 	border-radius: 50%;
 }
 
-.mark[data-suit="yellow"] {
+.mark[data-suit="yellow"],
+.pip[data-suit="yellow"] {
 	clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
 
-.mark[data-suit="green"] {
+.mark[data-suit="green"],
+.pip[data-suit="green"] {
 	border-radius: 0.08rem;
 }
 
-.mark[data-suit="blue"] {
+.mark[data-suit="blue"],
+.pip[data-suit="blue"] {
 	clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 
-.mark[data-suit="submarine"] {
+.mark[data-suit="submarine"],
+.pip[data-suit="submarine"] {
 	clip-path: polygon(0 40%, 70% 40%, 70% 15%, 100% 50%, 70% 85%, 70% 60%, 0 60%);
 	background: linear-gradient(
 		180deg,
@@ -106,53 +193,59 @@
 	);
 }
 
+.stowed .pip,
+.stowed .indexTail {
+	visibility: hidden;
+}
+
+.illegal .value,
+.illegal .mark,
+.illegal .pip {
+	opacity: 0.38;
+}
+
 .illegal {
-	opacity: 0.42;
+	--face: #d8d2c6;
+	border-color: color-mix(in srgb, var(--suit, var(--muted)) 55%, var(--muted));
 }
 
 .selected {
-	position: relative;
-	z-index: 2;
-	transform: translateY(-0.45rem);
+	z-index: 3;
 	outline: 2px solid var(--accent);
 	outline-offset: 2px;
 }
 
 .communicated {
-	box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-.card[data-suit="submarine"].communicated {
 	box-shadow:
-		var(--hull-sheen),
-		inset 0 0 0 1px var(--accent);
+		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--muted)) 28%, #fff),
+		inset 0 0 0 2px var(--accent),
+		var(--card-shadow);
 }
 
-.muted {
-	opacity: 0.55;
+.muted .value,
+.muted .mark,
+.muted .pip {
+	opacity: 0.72;
 }
 
 .lead {
-	box-shadow: 0 0 0 1px var(--accent);
-}
-
-.card[data-suit="submarine"].lead {
 	box-shadow:
-		var(--hull-sheen),
-		0 0 0 1px var(--accent);
+		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--muted)) 28%, #fff),
+		0 0 0 1px var(--accent),
+		var(--card-shadow);
 }
 
 .back {
-	border-color: color-mix(in srgb, var(--muted) 45%, transparent);
-	background: repeating-linear-gradient(
-		-18deg,
-		color-mix(in srgb, var(--table) 70%, var(--ink)) 0 6px,
-		color-mix(in srgb, var(--table) 55%, var(--muted)) 6px 12px
-	);
+	border-color: color-mix(in srgb, var(--muted) 55%, #6b655c);
+	background-color: #cfc6b4;
+	background-image: repeating-linear-gradient(-18deg, #cfc6b4 0 7px, #b9b09e 7px 14px);
+	box-shadow: var(--card-shadow);
 }
 
 .back .value,
-.back .mark {
+.back .mark,
+.back .index,
+.back .pip {
 	display: none;
 }
 

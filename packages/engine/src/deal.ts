@@ -23,6 +23,25 @@ export function seatWithCard(hands: readonly CardId[][], cardId: CardId): SeatId
 	return null;
 }
 
+export function giveCardToSeat(hands: CardId[][], cardId: CardId, seat: SeatId): void {
+	const current = seatWithCard(hands, cardId);
+	if (current === null || current === seat) {
+		return;
+	}
+	const fromHand = hands[current];
+	const toHand = hands[seat];
+	if (fromHand === undefined || toHand === undefined || toHand.length === 0) {
+		return;
+	}
+	const fromIndex = fromHand.indexOf(cardId);
+	const swapped = toHand[0];
+	if (fromIndex === -1 || swapped === undefined) {
+		return;
+	}
+	toHand[0] = cardId;
+	fromHand[fromIndex] = swapped;
+}
+
 export function remainingTricks(hands: readonly CardId[][]): number {
 	if (hands.length === 0) {
 		return 0;
