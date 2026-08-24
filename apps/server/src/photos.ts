@@ -1,4 +1,4 @@
-export const PHOTO_MAX_BYTES = 1024 * 1024;
+export const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 
 const PHOTO_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

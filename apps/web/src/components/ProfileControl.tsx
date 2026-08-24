@@ -211,40 +211,42 @@ export function ProfileControl() {
 												<p className={styles.hint}>Change email later.</p>
 											</>
 										)}
-										<div className={styles.photoRow}>
-											<span className={styles.label}>Photo</span>
-											<div className={styles.photoActions}>
-												<FileTrigger
-													acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}
-													onSelect={(files: FileList | null) => {
-														const file = files?.item(0);
-														if (file === null || file === undefined) {
-															return;
-														}
-														void run(async () => {
-															await uploadAccountPhoto(file);
-														});
-													}}
-												>
-													<Button className={styles.ghost} isDisabled={busy || !identity.ready}>
-														{user?.image ? "Replace" : "Choose"}
-													</Button>
-												</FileTrigger>
-												{user?.image ? (
-													<Button
-														className={styles.ghost}
-														isDisabled={busy}
-														onPress={() => {
+										{!isAnonymous ? (
+											<div className={styles.photoRow}>
+												<span className={styles.label}>Photo</span>
+												<div className={styles.photoActions}>
+													<FileTrigger
+														acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}
+														onSelect={(files: FileList | null) => {
+															const file = files?.item(0);
+															if (file === null || file === undefined) {
+																return;
+															}
 															void run(async () => {
-																await removeAccountPhoto();
+																await uploadAccountPhoto(file);
 															});
 														}}
 													>
-														Remove
-													</Button>
-												) : null}
+														<Button className={styles.ghost} isDisabled={busy || !identity.ready}>
+															{user?.image ? "Replace" : "Choose"}
+														</Button>
+													</FileTrigger>
+													{user?.image ? (
+														<Button
+															className={styles.ghost}
+															isDisabled={busy}
+															onPress={() => {
+																void run(async () => {
+																	await removeAccountPhoto();
+																});
+															}}
+														>
+															Remove
+														</Button>
+													) : null}
+												</div>
 											</div>
-										</div>
+										) : null}
 										<fieldset className={styles.stubs} disabled>
 											<legend className={styles.legend}>Table feel</legend>
 											<p className={styles.hint}>Coming later.</p>
