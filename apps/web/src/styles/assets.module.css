@@ -1,0 +1,136 @@
+.layout {
+	display: grid;
+	gap: 1.5rem;
+	width: min(56rem, 100%);
+	margin-inline: auto;
+	padding-block: 1rem 2.5rem;
+	container-type: inline-size;
+}
+
+.nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.15rem 1.35rem;
+	align-items: baseline;
+	justify-content: center;
+}
+
+.brand {
+	color: var(--muted);
+	font-size: 0.95rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	text-decoration: none;
+	min-height: 44px;
+	display: inline-flex;
+	align-items: center;
+}
+
+.brand:hover,
+.brand:focus-visible {
+	color: var(--accent);
+}
+
+.navLink {
+	color: var(--muted);
+	text-decoration: none;
+	min-height: 44px;
+	display: inline-flex;
+	align-items: center;
+}
+
+.navLink[data-active],
+.navLink:hover,
+.navLink:focus-visible {
+	color: var(--accent);
+}
+
+.hub {
+	display: grid;
+	gap: 1.25rem;
+}
+
+.masthead {
+	display: grid;
+	gap: 0.5rem;
+	text-align: center;
+}
+
+.title {
+	margin: 0;
+	font-size: clamp(1.75rem, 6vw, 2.5rem);
+	font-weight: 600;
+}
+
+.lede {
+	margin: 0;
+	color: var(--muted);
+}
+
+.tiles {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 1fr;
+}
+
+@container (min-width: 36rem) {
+	.tiles {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.tile {
+	display: grid;
+	gap: 0.55rem;
+	align-content: start;
+	padding: 1.15rem 1rem;
+	color: inherit;
+	text-decoration: none;
+	border: 1px solid color-mix(in srgb, var(--muted) 32%, transparent);
+	border-radius: 0.55rem;
+	min-height: 44px;
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, #fff 6%, transparent);
+}
+
+.tile:hover,
+.tile:focus-visible {
+	border-color: var(--accent);
+	outline: none;
+}
+
+.tileTitle {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 600;
+}
+
+.tileCopy,
+.tileMeta {
+	margin: 0;
+	color: var(--muted);
+}
+
+.tileMeta {
+	font-size: 0.95rem;
+}
+
+.preview {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	min-height: 1.55rem;
+}
+
+.back {
+	justify-self: center;
+	color: var(--muted);
+	text-decoration: none;
+	min-height: 44px;
+	display: inline-flex;
+	align-items: center;
+}
+
+.back:hover,
+.back:focus-visible {
+	color: var(--accent);
+}
