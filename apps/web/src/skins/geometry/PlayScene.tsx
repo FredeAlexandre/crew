@@ -143,7 +143,10 @@ export function PlayScene({
 
 	return (
 		<div className={styles.table} data-scene={view.scene} data-overlay={overlay}>
-			<div className={sceneStyles.ring} data-count={String(view.playerCount)}>
+			<div
+				className={`${sceneStyles.ring} ${styles.playRing}`}
+				data-count={String(view.playerCount)}
+			>
 				{view.seats.map((seat) => {
 					const isSelf = seat.region === "seat.self";
 					return (
@@ -151,7 +154,7 @@ export function PlayScene({
 							key={seat.region}
 							seat={seat}
 							slot={lobbySlot(seat.region, view.playerCount)}
-							chairClassName={sceneStyles.chair}
+							chairClassName={`${sceneStyles.chair} ${styles.playChair}`}
 							onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
 							onSonarDetail={() => openSonarDetail(seat.region)}
 							canSonar={isSelf && view.affordances.canSonar && !sonarOpen}

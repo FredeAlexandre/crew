@@ -12,8 +12,80 @@
 	container-type: size;
 }
 
+.playRing {
+	width: 100%;
+	min-width: 0;
+	min-height: 0;
+	height: 100%;
+	justify-self: center;
+}
+
+.playRing[data-count="3"] {
+	grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+	grid-template-rows: minmax(0, 1fr) auto;
+	grid-template-areas:
+		"west well east"
+		"self self self";
+}
+
+.playRing[data-count="4"] {
+	grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+	grid-template-rows: auto minmax(0, 1fr) auto;
+	grid-template-areas:
+		". north ."
+		"west well east"
+		"self self self";
+}
+
 .playWell {
 	position: relative;
+	min-height: 0;
+}
+
+.playRing[data-count="5"] {
+	display: block;
+	position: relative;
+	min-height: 0;
+}
+
+.playRing[data-count="5"] .playWell,
+.playRing[data-count="5"] .playChair {
+	position: absolute;
+	transform: translate(-50%, -50%);
+}
+
+.playRing[data-count="5"] .playWell {
+	left: 50%;
+	top: 44%;
+}
+
+.playRing[data-count="5"] .playChair[data-slot="self"] {
+	left: 50%;
+	top: auto;
+	bottom: 0;
+	transform: translate(-50%, 0);
+}
+
+.playRing[data-count="5"] .playChair[data-slot="west"] {
+	left: 0;
+	top: 58%;
+	transform: translate(0, -50%);
+}
+
+.playRing[data-count="5"] .playChair[data-slot="east"] {
+	left: 100%;
+	top: 58%;
+	transform: translate(-100%, -50%);
+}
+
+.playRing[data-count="5"] .playChair[data-slot="northwest"] {
+	left: 22%;
+	top: 12%;
+}
+
+.playRing[data-count="5"] .playChair[data-slot="northeast"] {
+	left: 78%;
+	top: 12%;
 }
 
 .handWrap {
@@ -146,6 +218,106 @@
 	gap: 0.35rem;
 	justify-content: center;
 	max-width: 100%;
+}
+
+/* Play keeps the lobby ring on phones; lobby flex-collapse hides seat panels. */
+@container (max-width: 40rem) {
+	.table {
+		padding: 0.15rem 0.15rem 0.55rem;
+		gap: 0.25rem;
+	}
+
+	.playRing.ring,
+	.playRing[data-count="3"],
+	.playRing[data-count="4"] {
+		display: grid;
+		width: 100%;
+		height: 100%;
+		min-height: 0;
+		gap: 0.18rem 0.28rem;
+		position: relative;
+	}
+
+	.playRing[data-count="5"] {
+		display: block;
+		width: 100%;
+		height: 100%;
+		min-height: 10.5rem;
+		position: relative;
+		gap: unset;
+	}
+
+	.playRing[data-count="5"] .playWell,
+	.playRing[data-count="5"] .playChair {
+		position: absolute;
+		transform: translate(-50%, -50%);
+	}
+
+	.playRing[data-count="5"] .playWell {
+		left: 50%;
+		top: 44%;
+	}
+
+	.playRing[data-count="5"] .playChair[data-slot="self"] {
+		left: 50%;
+		top: auto;
+		bottom: 0;
+		transform: translate(-50%, 0);
+	}
+
+	.playRing[data-count="5"] .playChair[data-slot="west"] {
+		left: 0;
+		top: 58%;
+		transform: translate(0, -50%);
+	}
+
+	.playRing[data-count="5"] .playChair[data-slot="east"] {
+		left: 100%;
+		top: 58%;
+		transform: translate(-100%, -50%);
+	}
+
+	.playRing[data-count="5"] .playChair[data-slot="northwest"] {
+		left: 22%;
+		top: 12%;
+	}
+
+	.playRing[data-count="5"] .playChair[data-slot="northeast"] {
+		left: 78%;
+		top: 12%;
+	}
+
+	.playRing .playChair {
+		flex: unset;
+		min-width: 0;
+		max-width: 100%;
+		order: unset;
+	}
+
+	.playRing .playChair[data-slot="self"] {
+		flex: unset;
+		align-self: end;
+		justify-self: stretch;
+	}
+
+	.playRing .playWell {
+		flex: unset;
+		order: unset;
+		min-height: 0;
+	}
+
+	.trick {
+		--trick-w: min(3.35rem, 22cqi);
+		width: min(16rem, 100%);
+	}
+}
+
+@media (max-width: 40rem) {
+	.playRing.ring,
+	.playRing[data-count="3"],
+	.playRing[data-count="4"] {
+		display: grid;
+	}
 }
 
 @container (min-width: 40rem) {

@@ -141,7 +141,7 @@ export function PlaySeat({
 			data-empty={empty ? "true" : "false"}
 			data-self={self ? "true" : "false"}
 		>
-			<div className={styles.playSeat}>
+			<div className={styles.playSeat} data-slot={slot}>
 				<div className={styles.seatHead}>
 					<span className={styles.pipName}>{seatName(seat)}</span>
 					<span className={styles.captain} data-on={seat.isCaptain ? "true" : "false"}>

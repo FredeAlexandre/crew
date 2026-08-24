@@ -450,3 +450,88 @@ button.wonPile {
 .seatActions {
 	gap: 0.35rem;
 }
+
+@container (max-width: 40rem) {
+	.playSeat {
+		width: 100%;
+	}
+
+	.playSeat[data-slot="self"] {
+		padding-inline: 0.15rem;
+	}
+
+	.playSeat[data-slot="self"] .seatBody {
+		justify-content: center;
+		gap: 0.5rem 0.65rem;
+	}
+
+	.playSeat:not([data-slot="self"]) {
+		max-width: 4.75rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .seatHead {
+		flex-direction: column;
+		gap: 0.12rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .pipName {
+		font-size: 0.72rem;
+		max-width: 4.5rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .seatBody {
+		flex-direction: column;
+		align-items: center;
+		gap: 0.18rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .wonPile,
+	.playSeat:not([data-slot="self"]) .wonStack {
+		width: 2rem;
+		min-width: 2rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .wonStack > * {
+		--token-w: 2rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .wonCount {
+		font-size: 0.82rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .seatTasks,
+	.playSeat:not([data-slot="self"]) .taskHole {
+		min-width: 2rem;
+		min-height: 2rem;
+		width: 2rem;
+		height: 2rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .task {
+		font-size: 0.62rem;
+		text-align: center;
+		line-height: 1.15;
+		max-width: 4.5rem;
+		word-break: break-word;
+	}
+
+	.playSeat:not([data-slot="self"]) .seatSonar {
+		min-width: 2.2rem;
+		min-height: 2.2rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .sonarToken {
+		width: 1.45rem;
+		height: 1.45rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .sonarIcon {
+		width: 0.82rem;
+		height: 0.82rem;
+	}
+
+	.playSeat[data-slot="self"] .seatActions {
+		width: 100%;
+		justify-content: center;
+	}
+}
