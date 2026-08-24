@@ -24,6 +24,58 @@ function SonarIcon() {
 	);
 }
 
+function CrownIcon() {
+	return (
+		<svg className={styles.crown} viewBox="0 0 20 14" aria-hidden="true">
+			<path d="M2 11.5 4.2 4.8l3.3 3.6L10 3.5l2.5 4.9 3.3-3.6L18 11.5H2Z" fill="currentColor" />
+			<rect x="2" y="11.5" width="16" height="2" rx="0.4" fill="currentColor" />
+		</svg>
+	);
+}
+
+function seatInitial(seat: SeatView): string {
+	if (seatIsEmpty(seat)) {
+		return "";
+	}
+	const name = seatName(seat).trim();
+	if (name.length === 0) {
+		return "?";
+	}
+	return name.charAt(0).toUpperCase();
+}
+
+function SeatAvatar({
+	seat,
+	self = false,
+	compact = false,
+}: {
+	seat: SeatView;
+	self?: boolean;
+	compact?: boolean;
+}) {
+	const empty = seatIsEmpty(seat);
+	return (
+		<div
+			className={compact ? styles.avatarWrapCompact : styles.avatarWrap}
+			data-turn={seat.isTurn ? "true" : "false"}
+			data-captain={seat.isCaptain ? "true" : "false"}
+		>
+			{seat.isCaptain ? <CrownIcon /> : <span className={styles.crownHole} aria-hidden="true" />}
+			{seat.isCaptain ? <span className={styles.srOnly}>Captain</span> : null}
+			{seat.isTurn ? <span className={styles.srOnly}>Their turn</span> : null}
+			<span
+				className={compact ? styles.avatarCompact : styles.avatar}
+				data-empty={empty ? "true" : "false"}
+				data-self={self ? "true" : "false"}
+				aria-hidden="true"
+			>
+				{seatInitial(seat)}
+			</span>
+			<span className={styles.pipName}>{empty ? "Empty" : seatName(seat)}</span>
+		</div>
+	);
+}
+
 function WonTrickPile({ count, onPeek }: { count: number; onPeek?: () => void }) {
 	const body = (
 		<>
@@ -143,10 +195,7 @@ export function PlaySeat({
 		>
 			<div className={styles.playSeat} data-slot={slot}>
 				<div className={styles.seatHead}>
-					<span className={styles.pipName}>{seatName(seat)}</span>
-					<span className={styles.captain} data-on={seat.isCaptain ? "true" : "false"}>
-						C
-					</span>
+					<SeatAvatar seat={seat} self={self} />
 					{!self ? <span className={styles.count}>{seat.handCount}</span> : null}
 				</div>
 				<div className={styles.seatBody}>
@@ -257,10 +306,7 @@ export function SeatPip({
 			data-turn={seat.isTurn ? "true" : "false"}
 			data-empty={empty ? "true" : "false"}
 		>
-			<span className={styles.pipName}>{seatName(seat)}</span>
-			<span className={styles.captain} data-on={seat.isCaptain ? "true" : "false"}>
-				C
-			</span>
+			<SeatAvatar seat={seat} self={seat.region === "seat.self"} compact={compact} />
 			<span className={styles.sonar} data-state={seat.sonar.state} />
 			{seat.region !== "seat.self" ? <span className={styles.count}>{seat.handCount}</span> : null}
 			<WonCount count={seat.wonTrickCount} onPeek={onPeekLastTrick} hole />
@@ -307,10 +353,7 @@ export function SelfDock({
 			data-turn={seat.isTurn ? "true" : "false"}
 		>
 			<div className={styles.dockMeta}>
-				<span className={styles.pipName}>{seatName(seat)}</span>
-				<span className={styles.captain} data-on={seat.isCaptain ? "true" : "false"}>
-					C
-				</span>
+				<SeatAvatar seat={seat} self />
 				<span className={styles.sonar} data-state={seat.sonar.state} />
 				<WonCount count={seat.wonTrickCount} onPeek={onPeekLastTrick} />
 			</div>

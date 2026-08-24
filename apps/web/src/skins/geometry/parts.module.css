@@ -31,8 +31,11 @@
 	white-space: nowrap;
 }
 
-.pip[data-turn="true"] .pipName,
-.dock[data-turn="true"] .pipName {
+.pip[data-turn="true"] .avatarWrap .pipName,
+.pip[data-turn="true"] .avatarWrapCompact .pipName,
+.dock[data-turn="true"] .avatarWrap .pipName,
+.avatarWrap[data-turn="true"] .pipName,
+.avatarWrapCompact[data-turn="true"] .pipName {
 	color: var(--accent);
 }
 
@@ -40,19 +43,113 @@
 	opacity: 0.45;
 }
 
-.captain {
+.avatarWrap,
+.avatarWrapCompact {
+	position: relative;
 	display: grid;
-	place-items: center;
-	width: 1rem;
-	height: 1rem;
-	font-size: 0.68rem;
-	letter-spacing: 0.04em;
-	color: var(--accent);
-	opacity: 0;
+	justify-items: center;
+	align-content: start;
+	gap: 0.18rem;
+	padding-top: 0.72rem;
+	min-width: 0;
+	max-width: 100%;
 }
 
-.captain[data-on="true"] {
-	opacity: 1;
+.avatarWrapCompact {
+	padding-top: 0.55rem;
+	gap: 0.1rem;
+}
+
+.crown {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 1.15rem;
+	height: 0.82rem;
+	color: var(--accent);
+}
+
+.crownHole {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 1.15rem;
+	height: 0.82rem;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.srOnly {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.avatar,
+.avatarCompact {
+	display: grid;
+	place-items: center;
+	border-radius: 50%;
+	font-size: 0.95rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--ink);
+	background: color-mix(in srgb, var(--table) 55%, var(--ink) 8%);
+	box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
+.avatar {
+	width: 2.75rem;
+	height: 2.75rem;
+}
+
+.avatarCompact {
+	width: 2.15rem;
+	height: 2.15rem;
+	font-size: 0.82rem;
+}
+
+.avatar[data-self="true"] {
+	box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.avatar[data-empty="true"],
+.avatarCompact[data-empty="true"] {
+	opacity: 0.45;
+}
+
+.avatarWrap[data-turn="true"] .avatar,
+.avatarWrap[data-turn="true"] .avatarCompact,
+.avatarWrapCompact[data-turn="true"] .avatar,
+.avatarWrapCompact[data-turn="true"] .avatarCompact {
+	box-shadow:
+		inset 0 0 0 1.5px color-mix(in srgb, var(--muted) 50%, transparent),
+		0 0 0 2px var(--accent),
+		0 0 0 3.5px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.avatarWrap[data-turn="true"] .avatar[data-self="true"],
+.avatarWrapCompact[data-turn="true"] .avatar[data-self="true"],
+.avatarWrapCompact[data-turn="true"] .avatarCompact[data-self="true"] {
+	box-shadow:
+		inset 0 0 0 2px var(--accent),
+		0 0 0 2px var(--accent),
+		0 0 0 3.5px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.avatarWrap .pipName,
+.avatarWrapCompact .pipName {
+	font-size: 0.82rem;
+	max-width: 4.75rem;
+	text-align: center;
 }
 
 .sonar {
@@ -267,7 +364,7 @@
 .seatActions {
 	display: flex;
 	flex-wrap: wrap;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: center;
 	gap: 0.3rem 0.4rem;
 	min-width: 0;
@@ -471,12 +568,33 @@ button.wonPile {
 
 	.playSeat:not([data-slot="self"]) .seatHead {
 		flex-direction: column;
+		align-items: center;
 		gap: 0.12rem;
 	}
 
-	.playSeat:not([data-slot="self"]) .pipName {
-		font-size: 0.72rem;
-		max-width: 4.5rem;
+	.playSeat:not([data-slot="self"]) .avatarWrap {
+		padding-top: 0.55rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .avatar {
+		width: 2.15rem;
+		height: 2.15rem;
+		font-size: 0.78rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .crown {
+		width: 0.95rem;
+		height: 0.68rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .crownHole {
+		width: 0.95rem;
+		height: 0.68rem;
+	}
+
+	.playSeat:not([data-slot="self"]) .avatarWrap .pipName {
+		font-size: 0.68rem;
+		max-width: 4.25rem;
 	}
 
 	.playSeat:not([data-slot="self"]) .seatBody {
