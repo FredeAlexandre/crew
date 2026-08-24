@@ -39,4 +39,6 @@ showSonar(used.state);
 
 heading("table (turn unchanged — sonar is not a play)");
 showTable(used.state);
-note("the announced card stays on the seat until that trick ends, then sonar.cleared. next:  nub ./5-full-mission/index.ts");
+note(
+	"the announced card stays on the seat until that trick ends, then sonar.cleared. next:  nub ./5-full-mission/index.ts",
+);
