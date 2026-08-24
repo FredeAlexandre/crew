@@ -181,3 +181,34 @@
 	flex-wrap: wrap;
 	gap: 0.5rem;
 }
+
+.history {
+	display: grid;
+	gap: 0.35rem;
+	margin-top: 0.25rem;
+	padding-top: 0.6rem;
+	border-top: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+}
+
+.historyList {
+	display: grid;
+	gap: 0.25rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.historyRow {
+	display: grid;
+	grid-template-columns: 1fr auto auto;
+	gap: 0.5rem;
+	font-size: 0.85rem;
+}
+
+.historyRow time {
+	color: var(--muted);
+}
+
+.historyRow [data-result="won"] {
+	color: var(--accent);
+}

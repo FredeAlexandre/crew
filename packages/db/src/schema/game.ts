@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { user } from "./auth.ts";
 
 export const players = sqliteTable(
@@ -36,4 +36,26 @@ export const rooms = sqliteTable(
 			.notNull(),
 	},
 	(table) => [index("rooms_code_idx").on(table.code)],
+);
+
+export const playerHistory = sqliteTable(
+	"player_history",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		missionId: text("mission_id").notNull(),
+		attemptId: text("attempt_id").notNull(),
+		result: text("result", { enum: ["won", "failed"] }).notNull(),
+		roomCode: text("room_code").notNull(),
+		playerCount: integer("player_count").notNull(),
+		completedAt: integer("completed_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+	},
+	(table) => [
+		index("player_history_userId_idx").on(table.userId),
+		uniqueIndex("player_history_user_attempt_unique").on(table.userId, table.attemptId),
+	],
 );

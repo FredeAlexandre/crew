@@ -5,6 +5,7 @@ import { env } from "@crew/env/server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { registerHistoryRoutes } from "./history-http.ts";
 import { registerPhotoRoutes } from "./photos-http.ts";
 import { registerRoomRoutes } from "./rooms-http.ts";
 
@@ -33,5 +34,6 @@ app.get("/", (c) => c.text("OK"));
 
 registerRoomRoutes(app);
 registerPhotoRoutes(app);
+registerHistoryRoutes(app);
 
 export default app;

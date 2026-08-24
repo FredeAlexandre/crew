@@ -2,6 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import { createDb, rooms } from "@crew/db";
 import { type Fact, intentSchema, type RoomErrorCode } from "@crew/protocol";
 import { eq } from "drizzle-orm";
+import { recordPlayerHistory } from "./history.ts";
 import { readPlayerHeaders } from "./player-headers.ts";
 import {
 	connect,
@@ -143,6 +144,9 @@ export default class Room extends DurableObject<RoomBindings> {
 				attemptId: result.state.engine?.attemptId ?? null,
 				seq: result.state.seq,
 			});
+		}
+		if (loaded.engine?.phase !== "result" && result.state.engine?.phase === "result") {
+			await recordPlayerHistory(createDb(this.env.DB), result.state);
 		}
 		this.fanout(result.state, result.facts, null);
 	}
