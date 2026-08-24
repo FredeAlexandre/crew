@@ -25,6 +25,7 @@ const DEFAULT_SETUP: TableSetup = {
 };
 const BOT_PLAYER_PREFIX = "bot:";
 const BOT_TURN_CAP = 400;
+const KICK_COOLDOWN_MS = 10_000;
 
 export type Occupant = {
 	playerId: string;
@@ -51,6 +52,8 @@ export type TableState = {
 	seats: Array<Occupant | null>;
 	setup: TableSetup;
 	engine: EngineState | null;
+	/** Kept after a seat is vacated so repeat kicks lengthen the reconnect delay. */
+	kicks: Record<string, { count: number; blockedUntil: number }>;
 };
 
 type TableOk = {
@@ -73,6 +76,7 @@ type TableResult = TableOk | TableErr;
 type StartOptions = {
 	seed?: number;
 	attemptId?: string;
+	now?: number;
 };
 
 export type RoomSummary = {
@@ -96,7 +100,17 @@ export function createTable(input: {
 		seats: Array.from({ length: input.playerCount }, () => null),
 		setup: { ...DEFAULT_SETUP },
 		engine: null,
+		kicks: {},
 	};
+}
+
+export function reconnectBlockedUntil(
+	state: TableState,
+	playerId: string,
+	now = Date.now(),
+): number | null {
+	const blockedUntil = state.kicks?.[playerId]?.blockedUntil;
+	return blockedUntil !== undefined && blockedUntil > now ? blockedUntil : null;
 }
 
 export function summary(state: TableState): RoomSummary {
@@ -167,6 +181,14 @@ export function connect(
 	displayName: string,
 	image?: string | null,
 ): TableResult {
+	const blockedUntil = reconnectBlockedUntil(state, playerId);
+	if (blockedUntil !== null) {
+		return fail(
+			state,
+			"reconnectBlocked",
+			`you were kicked; try again in ${Math.ceil((blockedUntil - Date.now()) / 1000)} seconds`,
+		);
+	}
 	const existing = seatOf(state, playerId);
 	if (existing !== null) {
 		const seats = cloneSeats(state);
@@ -286,7 +308,46 @@ export function handleIntent(
 	if (intent.type === "host.fillBots") {
 		return fillBots(state, playerId);
 	}
+	if (intent.type === "host.kick") {
+		return kick(state, playerId, intent.seatId, options?.now);
+	}
 	return play(state, seatId, intent);
+}
+
+function kick(state: TableState, playerId: string, seatId: SeatId, now = Date.now()): TableResult {
+	if (playerId !== state.hostPlayerId) {
+		return fail(state, "notHost", "only the host can remove players");
+	}
+	if (state.status !== "lobby") {
+		return fail(state, "wrongPhase", "players can only be removed in the lobby");
+	}
+	if (seatId >= state.playerCount) {
+		return fail(state, "illegalSeat", "seat is not at this table");
+	}
+	const occupant = state.seats[seatId];
+	if (occupant === undefined || occupant === null || isBotPlayerId(occupant.playerId)) {
+		return fail(state, "notSeated", "seat has no player to remove");
+	}
+	if (occupant.playerId === state.hostPlayerId) {
+		return fail(state, "illegalIntent", "the host cannot remove themself");
+	}
+	const prior = state.kicks?.[occupant.playerId]?.count ?? 0;
+	const count = prior + 1;
+	const cooldown = KICK_COOLDOWN_MS * 2 ** (count - 1);
+	const seats = cloneSeats(state);
+	seats[seatId] = null;
+	return succeed(
+		{
+			...state,
+			seats,
+			kicks: {
+				...(state.kicks ?? {}),
+				[occupant.playerId]: { count, blockedUntil: now + cooldown },
+			},
+		},
+		[],
+		false,
+	);
 }
 
 function setReady(state: TableState, seatId: SeatId, ready: boolean): TableResult {

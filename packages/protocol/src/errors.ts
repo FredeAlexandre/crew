@@ -33,6 +33,7 @@ export const roomRuleErrorCodeSchema = z.enum([
 	"notReady",
 	"alreadyStarted",
 	"illegalIntent",
+	"reconnectBlocked",
 ]);
 
 export const roomErrorCodeSchema = z.union([roomRuleErrorCodeSchema, illegalReasonSchema]);

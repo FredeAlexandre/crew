@@ -23,6 +23,7 @@ export type LobbyActions = {
 	onCopyCode?: () => void;
 	onReady?: (ready: boolean) => void;
 	onFillBots?: () => void;
+	onKick?: (seatId: SeatId) => void;
 	onConfigure?: (setup: LobbySetup) => void;
 	onStart?: () => void;
 };
@@ -52,6 +53,7 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 						seat={seat}
 						slot={lobbySlot(seat.region, view.playerCount)}
 						onReady={actions?.onReady}
+						onKick={actions?.onKick}
 					/>
 				))}
 				<div className={styles.lobbyWell}>
@@ -158,10 +160,12 @@ function Chair({
 	seat,
 	slot,
 	onReady,
+	onKick,
 }: {
 	seat: SeatView;
 	slot: LobbySlot;
 	onReady?: (ready: boolean) => void;
+	onKick?: (seatId: SeatId) => void;
 }) {
 	const empty = seatIsEmpty(seat);
 	const self = slot === "self";
@@ -190,6 +194,11 @@ function Chair({
 				</Button>
 			) : seat.ready ? (
 				<span className={styles.readyMark}>Ready</span>
+			) : null}
+			{!self && !empty && onKick ? (
+				<Button className={styles.ghost} onPress={() => onKick(seat.seatId)}>
+					Remove
+				</Button>
 			) : null}
 		</div>
 	);
