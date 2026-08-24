@@ -152,7 +152,7 @@ describe("play", () => {
 		}
 	});
 
-	it("stores the last trick and leaves one unplayed card with 3 players", () => {
+	it("stores every completed trick and leaves one unplayed card with 3 players", () => {
 		const playing = skipDistressToPlay(startAttempt(3, 42));
 		const ended = playOut({
 			...playing,
@@ -173,6 +173,8 @@ describe("play", () => {
 			],
 		});
 		expect(ended.lastTrick).not.toBeNull();
+		expect(ended.trickHistory).toHaveLength(ended.tricksWon.flat().length);
+		expect(ended.trickHistory.at(-1)).toEqual(ended.lastTrick);
 		expect(ended.phase).toBe("result");
 		expect(ended.hands.flat()).toHaveLength(1);
 		expect(remainingTricks(ended.hands)).toBe(0);

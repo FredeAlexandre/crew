@@ -34,6 +34,7 @@ export function createAttempt(config: CreateAttemptConfig): ApplyOk {
 		ledSuit: null,
 		currentTrick: [],
 		lastTrick: null,
+		trickHistory: [],
 		tricksWon: [],
 		captured: [],
 		consecutiveWins: [],

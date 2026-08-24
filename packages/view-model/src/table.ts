@@ -116,6 +116,10 @@ export const lastTrickViewSchema = z.object({
 });
 export type LastTrickView = z.infer<typeof lastTrickViewSchema>;
 
+/** Every completed trick, revealed only once the mission has ended. */
+export const historyTrickViewSchema = lastTrickViewSchema;
+export type HistoryTrickView = z.infer<typeof historyTrickViewSchema>;
+
 export const affordancesSchema = z.object({
 	canPlay: z.boolean(),
 	canSonar: z.boolean(),
@@ -175,6 +179,7 @@ export const tableViewSchema = z.object({
 	trick: trickViewSchema,
 	centerTasks: z.array(taskViewSchema),
 	lastTrick: lastTrickViewSchema.nullable(),
+	history: z.array(historyTrickViewSchema).default([]),
 	undealt: z.object({ present: z.boolean() }),
 	sonarCandidates: z.array(sonarCandidateSchema),
 	affordances: affordancesSchema,

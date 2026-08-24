@@ -184,6 +184,7 @@ describe("project", () => {
 		expect(afterTrick.lastTrick).not.toBeNull();
 		const view = project(afterTrick, 2);
 		expect(view.lastTrick?.cards).toHaveLength(4);
+		expect(view.history).toHaveLength(afterTrick.phase === "result" ? 1 : 0);
 		expect(view.affordances.canPeekLastTrick).toBe(true);
 		expect(view.seats.filter((seat) => seat.isLastTrickWinner)).toHaveLength(1);
 		expect(view.undealt.present).toBe(false);
@@ -203,6 +204,8 @@ describe("project", () => {
 		const view = project(ended, 0);
 		expect(view.scene).toBe("result");
 		expect(view.result).toEqual({ outcome: "failed", reason: ended.failReason });
+		expect(view.history).toHaveLength(ended.trickHistory.length);
+		expect(view.history.at(-1)?.cards).toHaveLength(ended.playerCount);
 		expect(view.affordances.canPlay).toBe(false);
 		expect(view.affordances.canRetry).toBe(false);
 		expect(project(ended, 0, undefined, 0).affordances.canRetry).toBe(true);
