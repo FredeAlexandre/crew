@@ -1,11 +1,14 @@
-import { type EngineState, legalIntents } from "@crew/engine";
+import {
+	type EngineState,
+	legalIntents,
+	sonarCandidates as listSonarCandidates,
+} from "@crew/engine";
 import {
 	type CardId,
 	DEFAULT_MISSION_DIFFICULTY,
 	type Fact,
 	type IllegalReason,
 	type SeatId,
-	type SonarPosition,
 	type Suit,
 	type TaskInstanceId,
 } from "@crew/protocol";
@@ -56,7 +59,6 @@ export function project(
 	const takeable = new Set<TaskInstanceId>();
 	const legalPlay = new Set<CardId>();
 	const legalPass = new Set<CardId>();
-	const sonarCandidates: { cardId: CardId; position: SonarPosition }[] = [];
 	let canPlay = false;
 	let canSonar = false;
 	let canTakeTask = false;
@@ -73,7 +75,6 @@ export function project(
 				break;
 			case "sonar.use":
 				canSonar = true;
-				sonarCandidates.push({ cardId: intent.cardId, position: intent.position });
 				break;
 			case "task.take":
 				canTakeTask = true;
@@ -97,6 +98,7 @@ export function project(
 		}
 	}
 
+	const sonarCandidates = listSonarCandidates(state, viewerSeat);
 	const lastTrickWinner = state.lastTrick?.winnerSeat ?? null;
 	const seats: TableView["seats"] = [];
 	for (let relative = 0; relative < playerCount; relative += 1) {

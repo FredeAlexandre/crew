@@ -237,7 +237,7 @@ Optional later: “tap-to-play” for experts. Not the default.
 
 - **Take task:** tap the task in `tasks.center` when it is your draft turn. Confirm only if the task is an unusually heavy commitment (leave this for playtest; default is one tap).
 - **Pass** (when legal): a `Pass` control in `chrome` or `seat.self`, never hidden in a menu.
-- **Sonar:** a control on `seat.self` when `canSonar`. Opens overlay; pick card from hand (legal communicate-candidates highlighted), then pick `highest | only | lowest`. Invalid combinations cannot be confirmed.
+- **Sonar:** a control on `seat.self` while the token is still unused during `play` (including mid-trick). Opens overlay; pick card from hand (communicate-candidates highlighted), then pick `highest | only | lowest`. Invalid combinations cannot be confirmed. If a trick is in progress, the choice is queued on this client and revealed when the trick ends. It can be changed until then.
 - **Distress:** offered as overlay after draft; skip is as obvious as activate.
 - **Last trick:** tap the relevant won-trick pile.
 - **Ready / start:** lobby controls, large enough for thumbs. Host-only difficulty stepper, captain picks, and distress on/off live in the lobby well, not a settings page.
@@ -343,7 +343,7 @@ Group by phase. All events include `attemptId` and a monotonic `seq` so the skin
 | `task.failed` | `taskInstanceId`, reason code | fail mark, then `mission.failed` |
 | `sonar.opened` | `seatId` (self) | overlay |
 | `sonar.used` | `seatId`, `cardId`, `position` | card appears in seat slot, token moves |
-| `sonar.cleared` | `seatId` | slot empties when that card is later played |
+| `sonar.cleared` | `seatId` | slot empties when the trick that contained that card ends |
 | `lastTrick.shown` | cards, `winnerSeat` | overlay |
 | `mission.won` | `missionId`, `attemptId` | result scene |
 | `mission.failed` | `missionId`, `attemptId`, reason | result scene |

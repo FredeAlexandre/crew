@@ -10,6 +10,7 @@ export type { CreateAttemptConfig } from "./attempt.ts";
 export { createAttempt } from "./attempt.ts";
 export { pickSeatIntent } from "./bot.ts";
 export { legalIntents } from "./legality.ts";
+export { sonarCandidates } from "./sonar.ts";
 export type {
 	ApplyErr,
 	ApplyOk,

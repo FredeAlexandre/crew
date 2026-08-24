@@ -77,4 +77,51 @@ describe("sonar", () => {
 		);
 		expect(sonar).toBeUndefined();
 	});
+
+	it("keeps the communication visible until the trick that plays that card ends", () => {
+		const playing = skipDistressToPlay(startAttempt(4, 6));
+		const seat = playing.currentSeat ?? 0;
+		const uses = legalIntents(playing, seat).filter((intent) => intent.type === "sonar.use");
+		const use = uses[0];
+		if (use === undefined || use.type !== "sonar.use") {
+			throw new Error("expected sonar");
+		}
+		const announced = apply(playing, use);
+		if (!announced.ok) {
+			throw new Error(announced.error);
+		}
+		const led = apply(announced.state, {
+			type: "card.play",
+			attemptId: "a1",
+			seatId: seat,
+			cardId: use.cardId,
+		});
+		if (!led.ok) {
+			throw new Error(led.error);
+		}
+		expect(led.state.phase).toBe("trick");
+		expect(led.facts.some((fact) => fact.type === "sonar.cleared")).toBe(false);
+		expect(led.state.sonar[seat]?.communication).toEqual({
+			cardId: use.cardId,
+			position: use.position,
+		});
+
+		let current = led.state;
+		while (current.phase === "trick") {
+			const actor = current.currentSeat;
+			if (actor === null) {
+				throw new Error("no current seat");
+			}
+			const play = legalIntents(current, actor).find((intent) => intent.type === "card.play");
+			if (play === undefined) {
+				throw new Error("no legal play");
+			}
+			const next = apply(current, play);
+			if (!next.ok) {
+				throw new Error(next.error);
+			}
+			current = next.state;
+		}
+		expect(current.sonar[seat]?.communication).toBeNull();
+	});
 });
