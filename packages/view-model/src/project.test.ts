@@ -168,6 +168,16 @@ describe("project", () => {
 		expect(view.hand.find((card) => card.cardId === use.cardId)?.communicated).toBe(true);
 	});
 
+	it("lists sonar candidates during a trick even though canSonar is false", () => {
+		const playing = skipDistressToPlay(startAttempt(4, 11));
+		const mid = playFirstLegal(playing);
+		const viewer = mid.currentSeat ?? 0;
+		const view = project(mid, viewer);
+		expect(view.affordances.canSonar).toBe(false);
+		expect(view.chrome.sonarAvailable).toBe(true);
+		expect(view.sonarCandidates.length).toBeGreaterThan(0);
+	});
+
 	it("keeps last-trick contents public and peeks for every viewer", () => {
 		const playing = skipDistressToPlay(startAttempt(4, 11));
 		const afterTrick = playCards(playing, 4);

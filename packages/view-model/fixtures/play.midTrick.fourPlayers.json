@@ -191,7 +191,36 @@
 	"undealt": {
 		"present": false
 	},
-	"sonarCandidates": [],
+	"sonarCandidates": [
+		{
+			"cardId": "pink-6",
+			"position": "highest"
+		},
+		{
+			"cardId": "pink-4",
+			"position": "lowest"
+		},
+		{
+			"cardId": "green-5",
+			"position": "highest"
+		},
+		{
+			"cardId": "blue-1",
+			"position": "lowest"
+		},
+		{
+			"cardId": "yellow-3",
+			"position": "only"
+		},
+		{
+			"cardId": "green-2",
+			"position": "lowest"
+		},
+		{
+			"cardId": "blue-4",
+			"position": "highest"
+		}
+	],
 	"affordances": {
 		"canPlay": true,
 		"canSonar": false,
