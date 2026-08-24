@@ -20,6 +20,9 @@ const SONAR_POSITION_COPY: Record<SonarPosition, string> = {
 };
 
 type QueuedSonar = { cardId: CardId; position: SonarPosition };
+type TrickTransition = { remaining: number; paused: boolean };
+
+const TRICK_TRANSITION_MS = 2_000;
 
 export function PlayScene({
 	view,
@@ -42,6 +45,7 @@ export function PlayScene({
 	const [winnerRegion, setWinnerRegion] = useState<
 		TableView["trick"]["cards"][number]["region"] | null
 	>(null);
+	const [trickTransition, setTrickTransition] = useState<TrickTransition | null>(null);
 	const [nudged, setNudged] = useState<CardId | null>(null);
 	const overlay: Overlay =
 		view.overlay !== "none"
@@ -112,6 +116,9 @@ export function PlayScene({
 		setInspectedTask(null);
 		setSelected(null);
 		setQueuedSonar(null);
+		setHeldCards(null);
+		setWinnerRegion(null);
+		setTrickTransition(null);
 	}, [view.attemptId]);
 
 	useLayoutEffect(() => {
@@ -124,12 +131,14 @@ export function PlayScene({
 		if (juice.playWin) {
 			playCue("win", `win:${view.attemptId ?? "none"}:${view.lastTrick?.trickId ?? "x"}`);
 		}
-		if (juice.holdCards) {
+		if (juice.holdCards && heldCards === null) {
 			setHeldCards(juice.holdCards);
 			setWinnerRegion(juice.winnerRegion);
-		} else if (view.trick.cards.length > 0) {
+			setTrickTransition({ remaining: TRICK_TRANSITION_MS, paused: false });
+		} else if (view.trick.cards.length > 0 && heldCards === null) {
 			setHeldCards(null);
 			setWinnerRegion(null);
+			setTrickTransition(null);
 		}
 	}, [view]);
 
@@ -142,15 +151,44 @@ export function PlayScene({
 	}, [landKeys]);
 
 	useEffect(() => {
-		if (heldCards === null) {
+		if (heldCards === null || trickTransition === null || trickTransition.paused) {
 			return;
 		}
-		const timer = window.setTimeout(() => {
+		const startedAt = performance.now();
+		const startingRemaining = trickTransition.remaining;
+		let frame = 0;
+		function tick(now: number) {
+			const remaining = Math.max(0, startingRemaining - (now - startedAt));
+			if (remaining === 0) {
+				setHeldCards(null);
+				setWinnerRegion(null);
+				setTrickTransition(null);
+				return;
+			}
+			setTrickTransition((current) => {
+				if (current === null || current.paused) {
+					return current;
+				}
+				return { ...current, remaining };
+			});
+			frame = window.requestAnimationFrame(tick);
+		}
+		frame = window.requestAnimationFrame(tick);
+		return () => window.cancelAnimationFrame(frame);
+	}, [heldCards, trickTransition]);
+
+	function toggleTrickTransition() {
+		if (trickTransition === null) {
+			return;
+		}
+		if (trickTransition.paused) {
 			setHeldCards(null);
 			setWinnerRegion(null);
-		}, 180);
-		return () => window.clearTimeout(timer);
-	}, [heldCards]);
+			setTrickTransition(null);
+			return;
+		}
+		setTrickTransition((current) => (current ? { ...current, paused: true } : null));
+	}
 
 	useEffect(() => {
 		if (queuedSonar === null) {
@@ -366,6 +404,8 @@ export function PlayScene({
 						leadRegion={shownLeadRegion}
 						landKeys={landKeySet}
 						winnerRegion={heldCards === null ? null : winnerRegion}
+						trickTransition={heldCards === null ? null : trickTransition}
+						onToggleTrickTransition={toggleTrickTransition}
 						onTake={
 							sendIntent
 								? (task: TaskView) =>
@@ -411,6 +451,8 @@ function Well({
 	leadRegion,
 	landKeys,
 	winnerRegion,
+	trickTransition,
+	onToggleTrickTransition,
 	onTake,
 }: {
 	view: TableView;
@@ -419,6 +461,8 @@ function Well({
 	leadRegion: TableView["trick"]["leadRegion"];
 	landKeys: ReadonlySet<string>;
 	winnerRegion: TableView["trick"]["cards"][number]["region"] | null;
+	trickTransition: TrickTransition | null;
+	onToggleTrickTransition: () => void;
 	onTake?: (task: TaskView) => void;
 }) {
 	if (view.scene === "taskDraft") {
@@ -453,26 +497,58 @@ function Well({
 		);
 	}
 	return (
-		<div className={styles.trick} data-region="trick">
-			{(["top", "left", "right", "bottom"] as const).map((slot) => {
-				const cards = trickCards.filter(
-					(card) => trickSlot(card.region, view.playerCount) === slot,
-				);
-				return (
-					<div key={slot} className={styles.slot} data-slot={slot}>
-						{cards.map((card) => (
-							<div
-								key={`${card.seatId}-${card.order}`}
-								className={styles.trickCard}
-								data-land={landKeys.has(trickCardKey(card)) ? "true" : "false"}
-								data-win={winnerRegion === card.region ? "true" : "false"}
-							>
-								<CardFace cardId={card.cardId} size="trick" lead={leadRegion === card.region} />
-							</div>
-						))}
-					</div>
-				);
-			})}
+		<div className={styles.trickStage}>
+			<div className={styles.trick} data-region="trick">
+				{(["top", "left", "right", "bottom"] as const).map((slot) => {
+					const cards = trickCards.filter(
+						(card) => trickSlot(card.region, view.playerCount) === slot,
+					);
+					return (
+						<div key={slot} className={styles.slot} data-slot={slot}>
+							{cards.map((card) => (
+								<div
+									key={`${card.seatId}-${card.order}`}
+									className={styles.trickCard}
+									data-land={landKeys.has(trickCardKey(card)) ? "true" : "false"}
+									data-win={winnerRegion === card.region ? "true" : "false"}
+								>
+									<CardFace cardId={card.cardId} size="trick" lead={leadRegion === card.region} />
+								</div>
+							))}
+						</div>
+					);
+				})}
+			</div>
+			{trickTransition ? (
+				<TrickTransitionControl transition={trickTransition} onToggle={onToggleTrickTransition} />
+			) : null}
+		</div>
+	);
+}
+
+function TrickTransitionControl({
+	transition,
+	onToggle,
+}: {
+	transition: TrickTransition;
+	onToggle: () => void;
+}) {
+	const percent = Math.round((transition.remaining / TRICK_TRANSITION_MS) * 100);
+	return (
+		<div className={styles.trickTransition}>
+			<div
+				className={styles.trickProgress}
+				role="progressbar"
+				aria-label="Time until the next trick"
+				aria-valuemin={0}
+				aria-valuemax={100}
+				aria-valuenow={percent}
+			>
+				<span style={{ transform: `scaleX(${percent / 100})` }} />
+			</div>
+			<Button className={styles.trickTransitionAction} onPress={onToggle}>
+				{transition.paused ? "Start next trick" : "Keep trick visible"}
+			</Button>
 		</div>
 	);
 }
