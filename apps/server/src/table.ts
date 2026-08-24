@@ -29,6 +29,7 @@ const BOT_TURN_CAP = 400;
 export type Occupant = {
 	playerId: string;
 	displayName: string;
+	image?: string | null;
 	connected: boolean;
 	ready: boolean;
 };
@@ -124,6 +125,7 @@ function occupancyOf(state: TableState): Occupancy {
 			: {
 					playerId: seat.playerId,
 					displayName: seat.displayName,
+					...(seat.image ? { image: seat.image } : {}),
 					connected: seat.connected,
 					ready: seat.ready,
 				},
@@ -159,7 +161,12 @@ export function factsForSeat(facts: readonly Fact[], viewerSeat: SeatId): Fact[]
 	return projectFacts(facts, viewerSeat);
 }
 
-export function connect(state: TableState, playerId: string, displayName: string): TableResult {
+export function connect(
+	state: TableState,
+	playerId: string,
+	displayName: string,
+	image?: string | null,
+): TableResult {
 	const existing = seatOf(state, playerId);
 	if (existing !== null) {
 		const seats = cloneSeats(state);
@@ -169,6 +176,9 @@ export function connect(state: TableState, playerId: string, displayName: string
 		}
 		const wasDisconnected = !occupant.connected;
 		occupant.displayName = displayName;
+		if (image !== undefined) {
+			occupant.image = image;
+		}
 		occupant.connected = true;
 		const next = { ...state, seats };
 		if (!wasDisconnected) {
@@ -197,7 +207,13 @@ export function connect(state: TableState, playerId: string, displayName: string
 	}
 
 	const seats = cloneSeats(state);
-	seats[empty] = { playerId, displayName, connected: true, ready: false };
+	seats[empty] = {
+		playerId,
+		displayName,
+		...(image === undefined ? {} : { image }),
+		connected: true,
+		ready: false,
+	};
 	const pushed = pushFact(
 		{ ...state, seats },
 		{

@@ -25,6 +25,7 @@ import {
 type OccupancySeat = {
 	playerId: string;
 	displayName: string | null;
+	image?: string | null;
 	connected: boolean;
 	ready: boolean;
 } | null;
@@ -338,7 +339,7 @@ function lobbyCanConfigure(
 function occupancyFields(
 	occupancy: Occupancy | undefined,
 	seatId: SeatId,
-): Pick<TableView["seats"][number], "displayName" | "connected" | "ready"> {
+): Pick<TableView["seats"][number], "displayName" | "image" | "connected" | "ready"> {
 	if (occupancy === undefined) {
 		return { displayName: null, connected: true, ready: true };
 	}
@@ -348,6 +349,7 @@ function occupancyFields(
 	}
 	return {
 		displayName: slot.displayName,
+		...(slot.image ? { image: slot.image } : {}),
 		connected: slot.connected,
 		ready: slot.ready,
 	};

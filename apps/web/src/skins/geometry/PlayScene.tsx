@@ -7,6 +7,7 @@ import { playCue } from "../../lib/sfx.ts";
 import { trickCardKey, trickJuice } from "../../lib/trick-juice.ts";
 import { CardBack, CardFace } from "./Card.tsx";
 import { illegalCopy, lobbySlot, trickSlot, turnCopy } from "./copy.ts";
+import { sortHand } from "./hand-sort.ts";
 import { ChromeLine, HandStrip, PlaySeat, SonarDetailBody, TaskCard } from "./parts.tsx";
 import styles from "./play.module.css";
 import sceneStyles from "./scenes.module.css";
@@ -70,9 +71,11 @@ export function PlayScene({
 		!view.chrome.flags.sonarDisabled;
 	const shownSeats = withQueuedSonar(view.seats, queuedSonar);
 	const shownHand = withQueuedHand(view.hand, queuedSonar);
-	const displayHand = sonarOpen
-		? shownHand.map((card) => ({ ...card, legal: sonarIds.has(card.cardId) }))
-		: shownHand;
+	const displayHand = sortHand(
+		sonarOpen
+			? shownHand.map((card) => ({ ...card, legal: sonarIds.has(card.cardId) }))
+			: shownHand,
+	);
 	const sonarDetailSeat =
 		sonarDetailRegion === null
 			? null
@@ -514,13 +517,13 @@ function OverlayBody({
 						{onActivateDistress ? (
 							<>
 								<Button className={styles.overlayAction} onPress={() => onActivateDistress("left")}>
-									Pass left
+									Pass right
 								</Button>
 								<Button
 									className={styles.overlayAction}
 									onPress={() => onActivateDistress("right")}
 								>
-									Pass right
+									Pass left
 								</Button>
 							</>
 						) : null}
