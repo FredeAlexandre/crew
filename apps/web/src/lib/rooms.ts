@@ -105,6 +105,8 @@ export function roomErrorCopy(error: unknown, t: Translate): string {
 			return t("roomFull");
 		case "alreadyStarted":
 			return t("alreadyStarted");
+		case "reconnectBlocked":
+			return error.message;
 		case "illegalIntent":
 			return t("openRoomFailed");
 		default:

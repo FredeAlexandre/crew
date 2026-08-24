@@ -10,6 +10,7 @@ import {
 	factsForSeat,
 	handleIntent,
 	type RoomSummary,
+	reconnectBlockedUntil,
 	seatOf,
 	snapshotMessage,
 	summary,
@@ -42,6 +43,11 @@ export default class Room extends DurableObject<RoomBindings> {
 			return null;
 		}
 		return summary(state);
+	}
+
+	async reconnectBlockedUntil(playerId: string): Promise<number | null> {
+		const state = await this.load();
+		return state === null ? null : reconnectBlockedUntil(state, playerId);
 	}
 
 	async fetch(request: Request): Promise<Response> {
@@ -118,6 +124,17 @@ export default class Room extends DurableObject<RoomBindings> {
 			return;
 		}
 		await this.save(result.state);
+		if (parsed.data.type === "host.kick") {
+			const removed = loaded.seats[parsed.data.seatId];
+			if (removed !== null && removed !== undefined) {
+				for (const peer of this.ctx.getWebSockets()) {
+					if (this.playerIdOf(peer) === removed.playerId) {
+						this.sendError(peer, "reconnectBlocked", "you were kicked; try again shortly");
+						peer.close(4001, "kicked");
+					}
+				}
+			}
+		}
 		if (result.state.status === "playing" && loaded.status === "lobby") {
 			await this.markPlaying(result.state.code);
 			this.log({

@@ -1,5 +1,5 @@
 import { pickSeatIntent } from "@crew/engine";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
 	connect,
 	createTable,
@@ -49,6 +49,52 @@ function startGame(state = readyAll(sitAll()), seed = 1) {
 }
 
 describe("table lobby", () => {
+	it("lets the host remove a guest and doubles the reconnect cooldown for repeat removals", () => {
+		const seated = sitAll();
+		const guest = handleIntent(seated, "p1", { type: "host.kick", seatId: 2 }, { now: 1_000 });
+		expect(guest.ok).toBe(false);
+		if (!guest.ok) {
+			expect(guest.code).toBe("notHost");
+		}
+
+		const first = mustOk(
+			handleIntent(seated, "p0", { type: "host.kick", seatId: 1 }, { now: 1_000 }),
+		).state;
+		expect(first.seats[1]).toBeNull();
+		expect(first.kicks.p1).toEqual({ count: 1, blockedUntil: 11_000 });
+
+		vi.useFakeTimers();
+		vi.setSystemTime(5_000);
+		const blocked = connect(first, "p1", "Bea");
+		expect(blocked.ok).toBe(false);
+		if (!blocked.ok) {
+			expect(blocked.code).toBe("reconnectBlocked");
+		}
+		vi.setSystemTime(11_000);
+		const returned = mustOk(connect(first, "p1", "Bea")).state;
+		vi.useRealTimers();
+
+		const second = mustOk(
+			handleIntent(returned, "p0", { type: "host.kick", seatId: 1 }, { now: 12_000 }),
+		).state;
+		expect(second.kicks.p1).toEqual({ count: 2, blockedUntil: 32_000 });
+	});
+
+	it("does not let the host remove themself or a player after the game starts", () => {
+		const seated = sitAll();
+		const self = handleIntent(seated, "p0", { type: "host.kick", seatId: 0 });
+		expect(self.ok).toBe(false);
+		if (!self.ok) {
+			expect(self.code).toBe("illegalIntent");
+		}
+		const started = startGame(readyAll(seated)).state;
+		const afterStart = handleIntent(started, "p0", { type: "host.kick", seatId: 1 });
+		expect(afterStart.ok).toBe(false);
+		if (!afterStart.ok) {
+			expect(afterStart.code).toBe("wrongPhase");
+		}
+	});
+
 	it("sits three players and rejects a fourth as roomFull", () => {
 		const full = sitAll();
 		expect(summary(full)).toEqual({

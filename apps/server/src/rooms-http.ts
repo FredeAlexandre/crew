@@ -49,6 +49,16 @@ export function registerRoomRoutes(app: Hono<{ Bindings: Env }>) {
 		if (live === null) {
 			return c.json(errorPayload("unknownRoom", "room not found"), 404);
 		}
+		const blockedUntil = await c.env.ROOM.getByName(code).reconnectBlockedUntil(player.playerId);
+		if (blockedUntil !== null) {
+			return c.json(
+				errorPayload(
+					"reconnectBlocked",
+					`you were kicked; try again in ${Math.ceil((blockedUntil - Date.now()) / 1000)} seconds`,
+				),
+				409,
+			);
+		}
 		const seated = live.playerIds.includes(player.playerId);
 		if (!seated && live.status !== "lobby") {
 			return c.json(errorPayload("alreadyStarted", "game already started"), 409);
