@@ -91,27 +91,27 @@ export function lobbySlot(region: SeatView["region"], playerCount: number): Lobb
 		return "self";
 	}
 	if (playerCount <= 3) {
-		return region === "seat.1" ? "east" : "west";
+		return region === "seat.1" ? "west" : "east";
 	}
 	if (playerCount === 4) {
 		if (region === "seat.1") {
-			return "east";
+			return "west";
 		}
 		if (region === "seat.2") {
 			return "north";
 		}
-		return "west";
-	}
-	if (region === "seat.1") {
 		return "east";
 	}
-	if (region === "seat.2") {
-		return "northeast";
+	if (region === "seat.1") {
+		return "west";
 	}
-	if (region === "seat.3") {
+	if (region === "seat.2") {
 		return "northwest";
 	}
-	return "west";
+	if (region === "seat.3") {
+		return "northeast";
+	}
+	return "east";
 }
 
 export function sonarPositionCopy(position: "highest" | "only" | "lowest"): string {
@@ -132,22 +132,22 @@ export function trickSlot(
 		return "bottom";
 	}
 	if (playerCount <= 3) {
-		return region === "seat.1" ? "right" : "left";
+		return region === "seat.1" ? "left" : "right";
 	}
 	if (playerCount === 4) {
 		if (region === "seat.1") {
-			return "right";
+			return "left";
 		}
 		if (region === "seat.2") {
 			return "top";
 		}
-		return "left";
-	}
-	if (region === "seat.1") {
 		return "right";
 	}
-	if (region === "seat.4") {
+	if (region === "seat.1") {
 		return "left";
+	}
+	if (region === "seat.4") {
+		return "right";
 	}
 	return "top";
 }

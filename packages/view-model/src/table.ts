@@ -66,6 +66,8 @@ export const seatViewSchema = z.object({
 	region: seatRegionSchema,
 	seatId: seatIdSchema,
 	displayName: z.string().nullable(),
+	/** Public account avatar, when the seated player has chosen one. */
+	image: z.string().nullable().optional(),
 	connected: z.boolean(),
 	ready: z.boolean(),
 	isCaptain: z.boolean(),

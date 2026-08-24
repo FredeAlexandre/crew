@@ -2,11 +2,12 @@ import { createAuth } from "@crew/auth";
 import { createDb, players } from "@crew/db";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
-import { DISPLAY_NAME_HEADER, PLAYER_ID_HEADER } from "./player-headers.ts";
+import { DISPLAY_NAME_HEADER, PLAYER_ID_HEADER, PLAYER_IMAGE_HEADER } from "./player-headers.ts";
 
 type SessionPlayer = {
 	playerId: string;
 	displayName: string;
+	image?: string;
 };
 
 export function errorPayload(code: string, message: string) {
@@ -37,12 +38,17 @@ export async function requirePlayer(
 		await db.update(players).set({ displayName }).where(eq(players.id, row.id));
 	}
 
-	return { playerId: userId, displayName };
+	return session.user.image
+		? { playerId: userId, displayName, image: session.user.image }
+		: { playerId: userId, displayName };
 }
 
 export function withPlayerHeaders(request: Request, player: SessionPlayer): Request {
 	const headers = new Headers(request.headers);
 	headers.set(PLAYER_ID_HEADER, player.playerId);
 	headers.set(DISPLAY_NAME_HEADER, encodeURIComponent(player.displayName));
+	if (player.image) {
+		headers.set(PLAYER_IMAGE_HEADER, encodeURIComponent(player.image));
+	}
 	return new Request(request, { headers });
 }

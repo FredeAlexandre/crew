@@ -6,6 +6,7 @@ import { useIdentitySheet } from "../components/identity-sheet.tsx";
 import { useDisplayName } from "../hooks/use-display-name.ts";
 import { useIdentity } from "../hooks/use-identity.ts";
 import { DISPLAY_NAME_MAX } from "../lib/display-name.ts";
+import { useI18n } from "../lib/i18n.tsx";
 import { extractLobbyCode } from "../lib/lobby-code.ts";
 import { createRoom, joinRoom, roomErrorCopy } from "../lib/rooms.ts";
 import styles from "../styles/boot.module.css";
@@ -23,6 +24,7 @@ function BootRoute() {
 	const displayName = useDisplayName();
 	const identity = useIdentity();
 	const sheet = useIdentitySheet();
+	const { t } = useI18n();
 
 	async function openTable() {
 		setBusy("create");
@@ -62,7 +64,7 @@ function BootRoute() {
 		<section className={styles.table}>
 			<header className={styles.masthead}>
 				<h1 className={styles.title}>Crew</h1>
-				<p className={styles.lede}>Sit at a table. Three to five players.</p>
+				<p className={styles.lede}>{t("openTable")}</p>
 				<nav className={styles.links}>
 					<Link className={styles.catalogLink} to="/assets">
 						Browse assets
@@ -81,10 +83,10 @@ function BootRoute() {
 					onChange={displayName.onChange}
 					isDisabled={blocked || !displayName.ready}
 				>
-					<Label className={styles.fieldLabel}>Name</Label>
+					<Label className={styles.fieldLabel}>{t("name")}</Label>
 					<Input
 						className={styles.nameInput}
-						placeholder="Your name"
+						placeholder={t("yourName")}
 						autoComplete="nickname"
 						maxLength={DISPLAY_NAME_MAX}
 						spellCheck="false"
@@ -98,8 +100,8 @@ function BootRoute() {
 							void openTable();
 						}}
 					>
-						<h2 className={styles.choiceTitle}>Create a lobby</h2>
-						<p className={styles.choiceCopy}>Open a table and share the link.</p>
+						<h2 className={styles.choiceTitle}>{t("createLobby")}</h2>
+						<p className={styles.choiceCopy}>{t("openTable")}</p>
 						<RadioGroup
 							className={styles.counts}
 							value={String(playerCount)}
@@ -112,7 +114,7 @@ function BootRoute() {
 							}}
 							isDisabled={blocked}
 						>
-							<Label className={styles.fieldLabel}>Players</Label>
+							<Label className={styles.fieldLabel}>{t("players")}</Label>
 							{PLAYER_COUNTS.map((count) => (
 								<Radio key={count} className={styles.count} value={String(count)}>
 									{count}
@@ -120,7 +122,7 @@ function BootRoute() {
 							))}
 						</RadioGroup>
 						<Button className={styles.action} type="submit" isDisabled={blocked}>
-							{busy === "create" ? "Opening…" : "Create lobby"}
+							{busy === "create" ? "…" : t("create")}
 						</Button>
 					</form>
 					<form
@@ -130,8 +132,8 @@ function BootRoute() {
 							void sitDown();
 						}}
 					>
-						<h2 className={styles.choiceTitle}>Join a lobby</h2>
-						<p className={styles.choiceCopy}>Paste the code or the lobby link.</p>
+						<h2 className={styles.choiceTitle}>{t("joinLobby")}</h2>
+						<p className={styles.choiceCopy}>{t("pasteCode")}</p>
 						<TextField
 							aria-label="Lobby code"
 							value={code}
@@ -151,7 +153,7 @@ function BootRoute() {
 							type="submit"
 							isDisabled={blocked || !isRoomCode(code)}
 						>
-							{busy === "join" ? "Joining…" : "Join lobby"}
+							{busy === "join" ? "…" : t("join")}
 						</Button>
 					</form>
 				</div>

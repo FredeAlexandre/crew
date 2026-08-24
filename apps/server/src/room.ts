@@ -57,7 +57,7 @@ export default class Room extends DurableObject<RoomBindings> {
 			return jsonError("unknownRoom", "room not found", 404);
 		}
 
-		const result = connect(loaded, player.playerId, player.displayName);
+		const result = connect(loaded, player.playerId, player.displayName, player.image);
 		if (!result.ok) {
 			return jsonError(result.code, result.message, statusFor(result.code));
 		}

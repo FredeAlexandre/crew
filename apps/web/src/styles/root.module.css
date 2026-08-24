@@ -29,6 +29,28 @@
 	margin-bottom: 0.35rem;
 }
 
+.accountControls {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+}
+
+.localeLabel select {
+	min-height: 2rem;
+	border: 1px solid var(--muted);
+	border-radius: 0.35rem;
+	background: transparent;
+	color: var(--ink);
+}
+
+.srOnly {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+}
+
 .home {
 	color: var(--muted);
 	text-decoration: none;

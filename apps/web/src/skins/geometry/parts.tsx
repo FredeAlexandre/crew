@@ -70,7 +70,11 @@ function SeatAvatar({
 				data-self={self ? "true" : "false"}
 				aria-hidden="true"
 			>
-				{seatInitial(seat)}
+				{seat.image ? (
+					<img className={styles.avatarPhoto} src={seat.image} alt="" />
+				) : (
+					seatInitial(seat)
+				)}
 			</span>
 			<span className={styles.pipName}>{empty ? "Empty" : seatName(seat)}</span>
 		</div>
