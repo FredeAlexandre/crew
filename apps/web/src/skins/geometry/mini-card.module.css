@@ -1,0 +1,96 @@
+.mini {
+	--face: #f3eee4;
+	--ink-face: #1c1914;
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	justify-items: start;
+	align-content: stretch;
+	gap: 0.05rem;
+	padding: 0.14rem 0.12rem;
+	border: 1.5px solid var(--suit, var(--muted));
+	border-radius: 0.28rem;
+	background-color: var(--face);
+	background-image: linear-gradient(
+		168deg,
+		color-mix(in srgb, var(--face) 88%, #fff) 0%,
+		var(--face) 42%,
+		color-mix(in srgb, var(--face) 92%, #000) 100%
+	);
+	color: var(--ink-face);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--muted)) 28%, #fff),
+		0 1px 2px rgb(0 0 0 / 0.16);
+}
+
+.sm {
+	width: 1.55rem;
+	aspect-ratio: 2.5 / 3.6;
+}
+
+.md {
+	width: 2.05rem;
+	aspect-ratio: 2.5 / 3.6;
+}
+
+.lg {
+	width: 2.55rem;
+	aspect-ratio: 2.5 / 3.6;
+}
+
+.mini[data-suit="pink"] {
+	--suit: var(--suit-pink);
+	--face: color-mix(in srgb, #f3ece1 86%, var(--suit-pink) 14%);
+}
+
+.mini[data-suit="yellow"] {
+	--suit: var(--suit-yellow);
+	--face: color-mix(in srgb, #f3ece1 86%, var(--suit-yellow) 14%);
+}
+
+.mini[data-suit="green"] {
+	--suit: var(--suit-green);
+	--face: color-mix(in srgb, #f3ece1 86%, var(--suit-green) 14%);
+}
+
+.mini[data-suit="blue"] {
+	--suit: var(--suit-blue);
+	--face: color-mix(in srgb, #f3ece1 86%, var(--suit-blue) 14%);
+}
+
+.mini[data-suit="submarine"] {
+	--suit: var(--suit-submarine);
+	--face: color-mix(in srgb, #ece8e0 82%, var(--suit-submarine) 18%);
+	border-radius: 0.24rem 0.24rem 0.5rem 0.5rem;
+}
+
+.value {
+	font-size: 0.72rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+}
+
+.md .value {
+	font-size: 0.82rem;
+}
+
+.lg .value {
+	font-size: 0.95rem;
+}
+
+.center {
+	justify-self: center;
+	align-self: center;
+}
+
+.corner {
+	display: flex;
+	align-items: center;
+	gap: 0.06rem;
+	line-height: 1;
+}
+
+.cornerTail {
+	justify-self: end;
+	transform: rotate(180deg);
+}
