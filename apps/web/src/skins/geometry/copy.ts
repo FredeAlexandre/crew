@@ -75,7 +75,10 @@ export function illegalCopy(reason: IllegalReason | null): string | null {
 
 export function resultCopy(reason: string | null): string | null {
 	if (reason === "taskImpossible") {
-		return "A task became impossible.";
+		return "A task became impossible to complete.";
+	}
+	if (reason === "cardsExhausted") {
+		return "The crew ran out of cards before every task was complete.";
 	}
 	return reason;
 }

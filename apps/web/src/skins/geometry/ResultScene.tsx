@@ -1,13 +1,17 @@
 import type { TableView } from "@crew/view-model/fixtures";
 import { Button } from "react-aria-components";
-import { resultCopy, selfSeat } from "./copy.ts";
+import { resultCopy, seatName } from "./copy.ts";
 import { SeatPip, TaskMark } from "./parts.tsx";
 import styles from "./scenes.module.css";
 
 export function ResultScene({ view, onRetry }: { view: TableView; onRetry?: () => void }) {
 	const outcome = view.result?.outcome ?? "failed";
-	const self = selfSeat(view);
-	const failed = self?.tasks.filter((task) => task.status === "failed") ?? [];
+	const tasks = view.seats.flatMap((seat) =>
+		seat.tasks.map((task) => ({ task, owner: seatName(seat) })),
+	);
+	const failed = tasks.filter(({ task }) => task.status === "failed");
+	const incomplete = tasks.filter(({ task }) => task.status !== "completed");
+	const completed = tasks.length - incomplete.length;
 	const reason = resultCopy(view.result?.reason ?? null);
 	const mission = view.chrome.missionId
 		? `Mission ${view.chrome.missionId.replace(/^m/i, "")}`
@@ -18,14 +22,41 @@ export function ResultScene({ view, onRetry }: { view: TableView; onRetry?: () =
 			<h1 className={styles.outcome} data-outcome={outcome}>
 				{outcome === "won" ? "Won" : "Failed"}
 			</h1>
-			{reason ? <p className={styles.lede}>{reason}</p> : null}
-			{failed.length > 0 ? (
-				<div className={styles.failedTasks}>
-					{failed.map((task) => (
-						<TaskMark key={task.instanceId} task={task} />
-					))}
-				</div>
-			) : null}
+			<section className={styles.review} aria-labelledby="mission-review">
+				<h2 id="mission-review">Mission review</h2>
+				{outcome === "failed" ? (
+					<>
+						<p className={styles.lede}>
+							{reason ?? "The crew did not complete every assigned task."} A mission fails as soon
+							as a task can no longer be completed.
+						</p>
+						{failed.length > 0 ? (
+							<ul className={styles.reviewList} aria-label="Tasks that caused the failure">
+								{failed.map(({ task, owner }) => (
+									<li key={task.instanceId}>
+										<TaskMark task={task} />
+										<span>{owner}'s task could no longer be completed.</span>
+									</li>
+								))}
+							</ul>
+						) : null}
+					</>
+				) : (
+					<p className={styles.lede}>
+						Every assigned task was completed. The mission is a success.
+					</p>
+				)}
+				<p className={styles.reviewSummary}>
+					{completed} of {tasks.length} tasks completed
+				</p>
+				{outcome === "failed" && incomplete.length > failed.length ? (
+					<p className={styles.reviewRemaining}>
+						{incomplete.length - failed.length} other task
+						{incomplete.length - failed.length === 1 ? " was" : "s were"} still unfinished when the
+						mission ended.
+					</p>
+				) : null}
+			</section>
 			<div className={styles.crewLineWrap}>
 				{view.seats.map((seat) => (
 					<SeatPip key={seat.region} seat={seat} compact />
