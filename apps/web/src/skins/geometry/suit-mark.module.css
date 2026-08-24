@@ -1,0 +1,52 @@
+.mark {
+	display: block;
+	flex-shrink: 0;
+	color: var(--suit, var(--muted));
+}
+
+.sm {
+	width: 0.55rem;
+	height: 0.55rem;
+}
+
+.md {
+	width: 0.85rem;
+	height: 0.85rem;
+}
+
+.lg {
+	width: 1.15rem;
+	height: 1.15rem;
+}
+
+.xl {
+	width: 1.55rem;
+	height: 1.55rem;
+}
+
+.glyph {
+	display: block;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+.mark[data-suit="pink"] {
+	--suit: var(--suit-pink);
+}
+
+.mark[data-suit="yellow"] {
+	--suit: var(--suit-yellow);
+}
+
+.mark[data-suit="green"] {
+	--suit: var(--suit-green);
+}
+
+.mark[data-suit="blue"] {
+	--suit: var(--suit-blue);
+}
+
+.mark[data-suit="submarine"] {
+	--suit: var(--suit-submarine);
+}

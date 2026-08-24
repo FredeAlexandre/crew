@@ -8,9 +8,23 @@ import type Room from "../../apps/server/src/room.ts";
 
 const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), "../db/src/migrations");
 
+function previewPrNumber(stage: string): string | undefined {
+	return /^pr-(\d+)$/.exec(stage)?.[1];
+}
+
+function websiteDomain(stage: string): string | undefined {
+	if (stage === "prod") {
+		return "crew.aleno.casa";
+	}
+	const pr = previewPrNumber(stage);
+	return pr === undefined ? undefined : `crew-pr-${pr}.aleno.casa`;
+}
+
 export const db = Cloudflare.D1.Database("database", {
 	migrationsDir,
 });
+
+export const photos = Cloudflare.R2.Bucket("photos");
 
 export const server = Cloudflare.Worker("server", {
 	main: "../../apps/server/src/index.ts",
@@ -19,6 +33,7 @@ export const server = Cloudflare.Worker("server", {
 	},
 	env: {
 		DB: db,
+		PHOTOS: photos,
 		CORS_ORIGIN: Config.string("CORS_ORIGIN"),
 		BETTER_AUTH_SECRET: Config.redacted("BETTER_AUTH_SECRET"),
 		BETTER_AUTH_URL: Cloudflare.Worker.URL,
@@ -38,11 +53,14 @@ export default Alchemy.Stack(
 		state: Cloudflare.state(),
 	},
 	Effect.gen(function* () {
+		const stack = yield* Alchemy.Stack;
+		const domain = websiteDomain(stack.stage);
 		yield* db;
+		yield* photos;
 		const serverWorker = yield* server;
 		const webWorker = yield* Cloudflare.Website.Vite("web", {
 			rootDir: "../../apps/web",
-			domain: "crew.aleno.casa",
+			...(domain === undefined ? {} : { domain }),
 			assets: {
 				htmlHandling: "auto-trailing-slash",
 				notFoundHandling: "single-page-application",

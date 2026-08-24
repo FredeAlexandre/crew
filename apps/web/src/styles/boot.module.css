@@ -1,21 +1,32 @@
 .table {
 	display: grid;
-	gap: 1.5rem;
+	gap: 1.25rem;
 	justify-items: center;
-	padding-block: 1.5rem;
+	align-content: start;
+	width: 100%;
+	padding-block: 0.75rem 1.5rem;
 	container-type: inline-size;
+}
+
+@media (min-width: 40rem) {
+	.table {
+		gap: 1.75rem;
+		align-content: safe center;
+		min-height: 100%;
+		padding-block: 1.5rem 2rem;
+	}
 }
 
 .masthead {
 	display: grid;
-	gap: 0.5rem;
+	gap: 0.35rem;
 	justify-items: center;
 	text-align: center;
 }
 
 .title {
 	margin: 0;
-	font-size: 1.75rem;
+	font-size: clamp(1.75rem, 4vw, 2.5rem);
 	font-weight: 600;
 }
 
@@ -24,29 +35,56 @@
 	color: var(--muted);
 }
 
+.links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.15rem 1.5rem;
+	align-items: center;
+	justify-content: center;
+}
+
+.catalogLink {
+	color: var(--muted);
+	text-decoration: none;
+	min-height: 44px;
+	display: inline-flex;
+	align-items: center;
+}
+
+.catalogLink:hover,
+.catalogLink:focus-visible {
+	color: var(--accent);
+}
+
+.signIn {
+	border-color: transparent;
+	color: var(--muted);
+	min-height: 44px;
+}
+
+.signIn:hover,
+.signIn:focus-visible {
+	color: var(--accent);
+}
+
+.board {
+	display: grid;
+	gap: 1.25rem;
+	width: min(52rem, 100%);
+}
+
 .identity {
 	display: grid;
 	gap: 0.35rem;
-	width: min(40rem, 100%);
+	width: min(24rem, 100%);
+	justify-self: center;
 }
 
 .choices {
 	display: grid;
 	gap: 1rem;
-	width: min(40rem, 100%);
+	width: 100%;
 	grid-template-columns: 1fr;
-}
-
-@container (min-width: 36rem) {
-	.choices {
-		grid-template-columns: 1fr 1fr;
-		align-items: stretch;
-	}
-
-	.choice + .choice {
-		padding-left: 1.5rem;
-		box-shadow: inset 1px 0 0 color-mix(in srgb, var(--muted) 30%, transparent);
-	}
 }
 
 .choice {
@@ -113,6 +151,7 @@
 .codeInput {
 	width: 100%;
 	min-height: 44px;
+	height: 44px;
 	padding: 0.5rem 0.75rem;
 	border: 1px solid var(--muted);
 	background: transparent;
@@ -149,4 +188,20 @@
 .error {
 	margin: 0;
 	text-align: center;
+}
+
+@container (min-width: 36rem) {
+	.choices {
+		grid-template-columns: 1fr 1fr;
+		align-items: stretch;
+		gap: 0;
+	}
+
+	.choice {
+		padding: 1.5rem 1.75rem;
+	}
+
+	.choice + .choice {
+		box-shadow: inset 1px 0 0 color-mix(in srgb, var(--muted) 30%, transparent);
+	}
 }

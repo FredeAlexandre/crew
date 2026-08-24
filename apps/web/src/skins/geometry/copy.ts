@@ -87,35 +87,44 @@ export function selfSeat(view: TableView): SeatView | undefined {
 	return view.seats.find((seat) => seat.region === "seat.self");
 }
 
-export function opponentSeats(view: TableView): SeatView[] {
-	return view.seats.filter((seat) => seat.region !== "seat.self");
+export type LobbySlot = "self" | "west" | "east" | "north" | "northwest" | "northeast";
+
+export function lobbySlot(region: SeatView["region"], playerCount: number): LobbySlot {
+	if (region === "seat.self") {
+		return "self";
+	}
+	if (playerCount <= 3) {
+		return region === "seat.1" ? "west" : "east";
+	}
+	if (playerCount === 4) {
+		if (region === "seat.1") {
+			return "west";
+		}
+		if (region === "seat.2") {
+			return "north";
+		}
+		return "east";
+	}
+	if (region === "seat.1") {
+		return "west";
+	}
+	if (region === "seat.2") {
+		return "northwest";
+	}
+	if (region === "seat.3") {
+		return "northeast";
+	}
+	return "east";
 }
 
-export function tablePlacement(view: TableView): {
-	north: SeatView[];
-	east: SeatView[];
-	west: SeatView[];
-} {
-	const opponents = opponentSeats(view);
-	if (view.playerCount <= 3) {
-		return {
-			north: [],
-			east: opponents.filter((seat) => seat.region === "seat.1"),
-			west: opponents.filter((seat) => seat.region === "seat.2"),
-		};
+export function sonarPositionCopy(position: "highest" | "only" | "lowest"): string {
+	if (position === "highest") {
+		return "Highest of this color";
 	}
-	if (view.playerCount === 4) {
-		return {
-			north: opponents.filter((seat) => seat.region === "seat.2"),
-			east: opponents.filter((seat) => seat.region === "seat.1"),
-			west: opponents.filter((seat) => seat.region === "seat.3"),
-		};
+	if (position === "only") {
+		return "Only card of this color";
 	}
-	return {
-		north: opponents.filter((seat) => seat.region === "seat.2" || seat.region === "seat.3"),
-		east: opponents.filter((seat) => seat.region === "seat.1"),
-		west: opponents.filter((seat) => seat.region === "seat.4"),
-	};
+	return "Lowest of this color";
 }
 
 export function trickSlot(
@@ -126,22 +135,22 @@ export function trickSlot(
 		return "bottom";
 	}
 	if (playerCount <= 3) {
-		return region === "seat.1" ? "right" : "left";
+		return region === "seat.1" ? "left" : "right";
 	}
 	if (playerCount === 4) {
 		if (region === "seat.1") {
-			return "right";
+			return "left";
 		}
 		if (region === "seat.2") {
 			return "top";
 		}
-		return "left";
-	}
-	if (region === "seat.1") {
 		return "right";
 	}
-	if (region === "seat.4") {
+	if (region === "seat.1") {
 		return "left";
+	}
+	if (region === "seat.4") {
+		return "right";
 	}
 	return "top";
 }

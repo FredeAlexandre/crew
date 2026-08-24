@@ -8,7 +8,9 @@ export type { AttemptId, CardId, Fact, IllegalReason, Intent, SeatId } from "@cr
 export { apply } from "./apply.ts";
 export type { CreateAttemptConfig } from "./attempt.ts";
 export { createAttempt } from "./attempt.ts";
+export { pickSeatIntent } from "./bot.ts";
 export { legalIntents } from "./legality.ts";
+export { sonarCandidates } from "./sonar.ts";
 export type {
 	ApplyErr,
 	ApplyOk,
@@ -19,3 +21,5 @@ export type {
 	Phase,
 	PlayerCount,
 } from "./state.ts";
+export type { TaskSpec } from "./tasks/catalog.ts";
+export { TASK_BY_ID, TASK_CATALOG, taskCost } from "./tasks/catalog.ts";

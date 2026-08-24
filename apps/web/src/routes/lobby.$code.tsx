@@ -1,8 +1,9 @@
 import { isRoomCode, normalizeRoomCode, type PlayerCount, type RoomTicket } from "@crew/protocol";
 import { fixtures, type TableView } from "@crew/view-model/fixtures";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTable } from "../hooks/use-table.ts";
+import { lobbyShareUrl } from "../lib/lobby-code.ts";
 import { joinRoom, roomErrorCopy } from "../lib/rooms.ts";
 import { GeometryTable } from "../skins/geometry/Table.tsx";
 import styles from "../styles/lobby.module.css";
@@ -71,7 +72,7 @@ function LobbyRoute() {
 
 	async function copyCode() {
 		try {
-			await navigator.clipboard.writeText(code);
+			await navigator.clipboard.writeText(lobbyShareUrl(code, window.location.origin));
 			setCopied(true);
 		} catch {
 			setCopied(false);
@@ -87,11 +88,6 @@ function LobbyRoute() {
 
 	return (
 		<section className={styles.page}>
-			<nav className={styles.bar}>
-				<Link className={styles.home} to="/">
-					Table
-				</Link>
-			</nav>
 			<div className={waitingToSit ? `${styles.stage} ${styles.pending}` : styles.stage}>
 				<GeometryTable
 					view={view}
@@ -103,6 +99,12 @@ function LobbyRoute() {
 						alert: error ?? table.error,
 						onCopyCode: isRoomCode(code) ? () => void copyCode() : undefined,
 						onReady: (ready) => table.sendIntent({ type: "player.ready", ready }),
+						onFillBots: view.affordances.canFillBots
+							? () => table.sendIntent({ type: "host.fillBots" })
+							: undefined,
+						onConfigure: view.affordances.canConfigure
+							? (setup) => table.sendIntent({ type: "host.configure", ...setup })
+							: undefined,
 						onStart: view.affordances.canStart
 							? () => table.sendIntent({ type: "host.start" })
 							: undefined,

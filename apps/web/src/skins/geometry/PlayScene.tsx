@@ -1,18 +1,25 @@
 import type { CardId, DistressDirection, SonarPosition } from "@crew/protocol";
-import type { Overlay, TableView } from "@crew/view-model/fixtures";
-import { useEffect, useState } from "react";
+import type { Overlay, TableView, TaskView } from "@crew/view-model/fixtures";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "react-aria-components";
 import type { ClientIntent } from "../../hooks/use-table.ts";
+import { playCue } from "../../lib/sfx.ts";
+import { trickCardKey, trickJuice } from "../../lib/trick-juice.ts";
 import { CardBack, CardFace } from "./Card.tsx";
-import { illegalCopy, opponentSeats, selfSeat, tablePlacement, trickSlot } from "./copy.ts";
-import { ChromeLine, HandStrip, SeatPip, SelfDock } from "./parts.tsx";
+import { illegalCopy, lobbySlot, trickSlot, turnCopy } from "./copy.ts";
+import { sortHand } from "./hand-sort.ts";
+import { ChromeLine, HandStrip, PlaySeat, SonarDetailBody, TaskCard } from "./parts.tsx";
 import styles from "./play.module.css";
+import sceneStyles from "./scenes.module.css";
+import { TaskCatalogCard } from "./TaskCatalogCard.tsx";
 
 const SONAR_POSITION_COPY: Record<SonarPosition, string> = {
 	highest: "Highest",
 	only: "Only",
 	lowest: "Lowest",
 };
+
+type QueuedSonar = { cardId: CardId; position: SonarPosition };
 
 export function PlayScene({
 	view,
@@ -23,8 +30,19 @@ export function PlayScene({
 }) {
 	const [selected, setSelected] = useState<CardId | null>(null);
 	const [sonarOpen, setSonarOpen] = useState(false);
+	const [queuedSonar, setQueuedSonar] = useState<QueuedSonar | null>(null);
 	const [lastTrickOpen, setLastTrickOpen] = useState(false);
-	const self = selfSeat(view);
+	const [sonarDetailRegion, setSonarDetailRegion] = useState<
+		TableView["seats"][number]["region"] | null
+	>(null);
+	const [inspectedTask, setInspectedTask] = useState<TaskView | null>(null);
+	const prevView = useRef<TableView | null>(null);
+	const [landKeys, setLandKeys] = useState<string[]>([]);
+	const [heldCards, setHeldCards] = useState<TableView["trick"]["cards"] | null>(null);
+	const [winnerRegion, setWinnerRegion] = useState<
+		TableView["trick"]["cards"][number]["region"] | null
+	>(null);
+	const [nudged, setNudged] = useState<CardId | null>(null);
 	const overlay: Overlay =
 		view.overlay !== "none"
 			? view.overlay
@@ -32,57 +50,171 @@ export function PlayScene({
 				? "sonar"
 				: lastTrickOpen && view.lastTrick !== null
 					? "lastTrick"
-					: "none";
+					: sonarDetailRegion !== null || inspectedTask !== null
+						? "reminder"
+						: "none";
 	const selectedCard = view.hand.find((card) => card.cardId === selected);
-	const placement = tablePlacement(view);
 	const hint = selectedCard && !selectedCard.legal ? illegalCopy(selectedCard.illegalReason) : null;
 	const canPlaySelected = Boolean(view.affordances.canPlay && selectedCard?.legal && !sonarOpen);
 	const canPassSelected = Boolean(view.affordances.canPassDistressCard && selectedCard?.legal);
+	const confirmRail = Boolean(
+		(view.affordances.canPlay && !sonarOpen) || view.affordances.canPassDistressCard,
+	);
 	const sonarIds = new Set(view.sonarCandidates.map((candidate) => candidate.cardId));
 	const sonarPositions = view.sonarCandidates
 		.filter((candidate) => candidate.cardId === selected)
 		.map((candidate) => candidate.position);
-	const displayHand = sonarOpen
-		? view.hand.map((card) => ({ ...card, legal: sonarIds.has(card.cardId) }))
-		: view.hand;
+	const sonarEnabled =
+		view.scene === "play" &&
+		view.overlay === "none" &&
+		view.chrome.sonarAvailable &&
+		!view.chrome.flags.sonarDisabled;
+	const shownSeats = withQueuedSonar(view.seats, queuedSonar);
+	const shownHand = withQueuedHand(view.hand, queuedSonar);
+	const displayHand = sortHand(
+		sonarOpen
+			? shownHand.map((card) => ({ ...card, legal: sonarIds.has(card.cardId) }))
+			: shownHand,
+	);
+	const sonarDetailSeat =
+		sonarDetailRegion === null
+			? null
+			: (shownSeats.find((seat) => seat.region === sonarDetailRegion) ?? null);
 	const canPeek =
+		view.scene === "play" &&
 		view.affordances.canPeekLastTrick &&
 		view.overlay === "none" &&
 		!sonarOpen &&
 		view.lastTrick !== null;
+	const isDraft = view.scene === "taskDraft";
+	const quietHand = isDraft || view.scene === "deal";
+	const turn = isDraft ? turnCopy(view) : null;
+	const shownTrickCards = heldCards ?? view.trick.cards;
+	const shownLeadRegion =
+		heldCards === null
+			? view.trick.leadRegion
+			: (heldCards.find((card) => card.order === 1)?.region ?? null);
+	const landKeySet = new Set(heldCards === null ? landKeys : []);
 
 	useEffect(() => {
 		if (view.overlay !== "none") {
 			setSonarOpen(false);
 			setLastTrickOpen(false);
+			setSonarDetailRegion(null);
+			setInspectedTask(null);
 		}
 	}, [view.overlay]);
 
 	useEffect(() => {
 		setSonarOpen(false);
 		setLastTrickOpen(false);
+		setSonarDetailRegion(null);
+		setInspectedTask(null);
 		setSelected(null);
+		setQueuedSonar(null);
 	}, [view.attemptId]);
 
+	useLayoutEffect(() => {
+		const prev = prevView.current;
+		prevView.current = view;
+		const juice = trickJuice(prev, view);
+		if (juice.landKeys.length > 0) {
+			setLandKeys(juice.landKeys);
+		}
+		if (juice.playWin) {
+			playCue("win", `win:${view.attemptId ?? "none"}:${view.lastTrick?.trickId ?? "x"}`);
+		}
+		if (juice.holdCards) {
+			setHeldCards(juice.holdCards);
+			setWinnerRegion(juice.winnerRegion);
+		} else if (view.trick.cards.length > 0) {
+			setHeldCards(null);
+			setWinnerRegion(null);
+		}
+	}, [view]);
+
 	useEffect(() => {
-		if (!sonarOpen && !lastTrickOpen) {
+		if (landKeys.length === 0) {
+			return;
+		}
+		const timer = window.setTimeout(() => setLandKeys([]), 220);
+		return () => window.clearTimeout(timer);
+	}, [landKeys]);
+
+	useEffect(() => {
+		if (heldCards === null) {
+			return;
+		}
+		const timer = window.setTimeout(() => {
+			setHeldCards(null);
+			setWinnerRegion(null);
+		}, 180);
+		return () => window.clearTimeout(timer);
+	}, [heldCards]);
+
+	useEffect(() => {
+		if (queuedSonar === null) {
+			return;
+		}
+		const self = view.seats.find((seat) => seat.region === "seat.self");
+		if (self?.sonar.communication !== null && self?.sonar.communication !== undefined) {
+			setQueuedSonar(null);
+			return;
+		}
+		const match = view.sonarCandidates.find((candidate) => candidate.cardId === queuedSonar.cardId);
+		if (match === undefined) {
+			setQueuedSonar(null);
+			return;
+		}
+		if (match.position !== queuedSonar.position) {
+			setQueuedSonar({ cardId: queuedSonar.cardId, position: match.position });
+			return;
+		}
+		if (!view.affordances.canSonar || sendIntent === undefined) {
+			return;
+		}
+		sendIntent({ type: "sonar.use", cardId: match.cardId, position: match.position });
+		setQueuedSonar(null);
+		setSonarOpen(false);
+	}, [queuedSonar, sendIntent, view]);
+
+	useEffect(() => {
+		if (!sonarOpen && !lastTrickOpen && sonarDetailRegion === null && inspectedTask === null) {
 			return;
 		}
 		function onKey(event: KeyboardEvent) {
 			if (event.key === "Escape") {
 				setSonarOpen(false);
 				setLastTrickOpen(false);
+				setSonarDetailRegion(null);
+				setInspectedTask(null);
 			}
 		}
 		window.addEventListener("keydown", onKey);
 		return () => window.removeEventListener("keydown", onKey);
-	}, [sonarOpen, lastTrickOpen]);
+	}, [sonarOpen, lastTrickOpen, sonarDetailRegion, inspectedTask]);
 
 	function peekLastTrick() {
 		if (view.overlay !== "none" || sonarOpen || !view.affordances.canPeekLastTrick) {
 			return;
 		}
+		setSonarDetailRegion(null);
+		setInspectedTask(null);
 		setLastTrickOpen(true);
+	}
+
+	function openSonarDetail(region: TableView["seats"][number]["region"]) {
+		setSonarOpen(false);
+		setLastTrickOpen(false);
+		setInspectedTask(null);
+		setSonarDetailRegion(region);
+	}
+
+	function inspectTask(task: TaskView) {
+		setSonarOpen(false);
+		setLastTrickOpen(false);
+		setSonarDetailRegion(null);
+		setInspectedTask(task);
 	}
 
 	function skipDistress() {
@@ -101,10 +233,42 @@ export function PlayScene({
 		setSelected(null);
 	}
 
+	function passTask() {
+		sendIntent?.({ type: "task.pass" });
+	}
+
+	function nudgeIllegal(cardId: CardId) {
+		setNudged(null);
+		window.requestAnimationFrame(() => {
+			setNudged(cardId);
+			playCue("tick");
+		});
+	}
+
+	function activateCard(cardId: CardId) {
+		if (quietHand || sonarOpen) {
+			return;
+		}
+		const card = displayHand.find((entry) => entry.cardId === cardId);
+		if (card === undefined) {
+			return;
+		}
+		if (!card.legal) {
+			nudgeIllegal(cardId);
+			return;
+		}
+		if (view.affordances.canPlay) {
+			playCue("place");
+			sendIntent?.({ type: "card.play", cardId });
+			setSelected(null);
+		}
+	}
+
 	function playCard() {
 		if (selected === null || !canPlaySelected) {
 			return;
 		}
+		playCue("place");
 		sendIntent?.({ type: "card.play", cardId: selected });
 		setSelected(null);
 	}
@@ -113,58 +277,39 @@ export function PlayScene({
 		if (selected === null) {
 			return;
 		}
-		sendIntent?.({ type: "sonar.use", cardId: selected, position });
+		if (view.affordances.canSonar) {
+			sendIntent?.({ type: "sonar.use", cardId: selected, position });
+			setQueuedSonar(null);
+		} else {
+			setQueuedSonar({ cardId: selected, position });
+		}
 		setSonarOpen(false);
+	}
+
+	function cancelQueuedSonar() {
+		setQueuedSonar(null);
+		setSonarOpen(false);
+	}
+
+	function closeSkinOverlay() {
+		setSonarOpen(false);
+		setLastTrickOpen(false);
+		setSonarDetailRegion(null);
+		setInspectedTask(null);
 	}
 
 	return (
 		<div className={styles.table} data-scene={view.scene} data-overlay={overlay}>
-			<div className={styles.crew}>
-				{opponentSeats(view).map((seat) => (
-					<SeatPip
-						key={seat.region}
-						seat={seat}
-						compact
-						onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
-					/>
-				))}
-			</div>
-			<div className={styles.north}>
-				{placement.north.map((seat) => (
-					<SeatPip
-						key={seat.region}
-						seat={seat}
-						onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
-					/>
-				))}
-			</div>
-			<div className={styles.west}>
-				{placement.west.map((seat) => (
-					<SeatPip
-						key={seat.region}
-						seat={seat}
-						onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
-					/>
-				))}
-			</div>
-			<div className={styles.east}>
-				{placement.east.map((seat) => (
-					<SeatPip
-						key={seat.region}
-						seat={seat}
-						onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
-					/>
-				))}
-			</div>
-			<div className={styles.well}>
-				<ChromeLine view={view} />
-				<Well view={view} />
-				{overlay !== "none" ? (
-					<div className={styles.overlay} data-region="overlay">
+			{overlay !== "none" ? (
+				<div className={styles.overlayLayer} data-region="overlay">
+					<div className={styles.overlay}>
 						<OverlayBody
 							view={view}
 							overlay={overlay}
+							sonarDetailSeat={sonarDetailSeat}
+							inspectedTask={inspectedTask}
 							sonarPositions={sonarPositions}
+							queued={!view.affordances.canSonar}
 							onSkipDistress={
 								view.affordances.canSkipDistress && sendIntent ? skipDistress : undefined
 							}
@@ -172,44 +317,122 @@ export function PlayScene({
 								view.affordances.canActivateDistress && sendIntent ? activateDistress : undefined
 							}
 							onUseSonar={useSonar}
-							onCloseSkin={() => {
-								setSonarOpen(false);
-								setLastTrickOpen(false);
-							}}
+							onCancelQueue={queuedSonar !== null ? cancelQueuedSonar : undefined}
+							onCloseSkin={closeSkinOverlay}
 						/>
 					</div>
-				) : null}
-			</div>
-			{self ? (
-				<div className={styles.self}>
-					<SelfDock
-						seat={self}
-						canSonar={view.affordances.canSonar && !sonarOpen}
-						canPlay={canPlaySelected}
-						canPass={canPassSelected}
-						onSonar={() => {
-							setLastTrickOpen(false);
-							setSonarOpen(true);
-						}}
-						onPlay={playCard}
-						onPass={passDistressCard}
-						onPeekLastTrick={canPeek && self.isLastTrickWinner ? peekLastTrick : undefined}
-					/>
 				</div>
 			) : null}
+			<div
+				className={`${sceneStyles.ring} ${styles.playRing}`}
+				data-count={String(view.playerCount)}
+			>
+				{shownSeats.map((seat) => {
+					const isSelf = seat.region === "seat.self";
+					return (
+						<PlaySeat
+							key={seat.region}
+							seat={seat}
+							slot={lobbySlot(seat.region, view.playerCount)}
+							chairClassName={`${sceneStyles.chair} ${styles.playChair}`}
+							onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
+							onSonarDetail={() => openSonarDetail(seat.region)}
+							onInspectTask={inspectTask}
+							canSonar={isSelf && sonarEnabled && !sonarOpen}
+							canPass={isSelf && isDraft && view.affordances.canPassTask}
+							onSonar={
+								isSelf
+									? () => {
+											setLastTrickOpen(false);
+											setSonarDetailRegion(null);
+											setInspectedTask(null);
+											if (queuedSonar !== null) {
+												setSelected(queuedSonar.cardId);
+											}
+											setSonarOpen(true);
+										}
+									: undefined
+							}
+							onPass={isSelf && isDraft ? passTask : undefined}
+						/>
+					);
+				})}
+				<div className={`${sceneStyles.lobbyWell} ${styles.playWell}`}>
+					<ChromeLine view={view} />
+					<Well
+						view={view}
+						turn={turn}
+						trickCards={shownTrickCards}
+						leadRegion={shownLeadRegion}
+						landKeys={landKeySet}
+						winnerRegion={heldCards === null ? null : winnerRegion}
+						onTake={
+							sendIntent
+								? (task: TaskView) =>
+										sendIntent({ type: "task.take", taskInstanceId: task.instanceId })
+								: undefined
+						}
+					/>
+				</div>
+			</div>
 			<div className={styles.handWrap}>
 				{hint && overlay !== "sonar" ? <p className={styles.hint}>{hint}</p> : null}
 				<HandStrip
 					cards={displayHand}
 					selected={selected}
-					onSelect={(cardId) => setSelected((current) => (current === cardId ? null : cardId))}
+					quiet={quietHand}
+					nudged={nudged}
+					onSelect={setSelected}
+					onActivate={quietHand ? undefined : activateCard}
 				/>
+				{confirmRail ? (
+					<div className={styles.handConfirm}>
+						{canPassSelected ? (
+							<Button className={styles.handAction} onPress={passDistressCard}>
+								Pass
+							</Button>
+						) : null}
+						{canPlaySelected ? (
+							<Button className={styles.handAction} onPress={playCard}>
+								Play
+							</Button>
+						) : null}
+					</div>
+				) : null}
 			</div>
 		</div>
 	);
 }
 
-function Well({ view }: { view: TableView }) {
+function Well({
+	view,
+	turn,
+	trickCards,
+	leadRegion,
+	landKeys,
+	winnerRegion,
+	onTake,
+}: {
+	view: TableView;
+	turn: string | null;
+	trickCards: TableView["trick"]["cards"];
+	leadRegion: TableView["trick"]["leadRegion"];
+	landKeys: ReadonlySet<string>;
+	winnerRegion: TableView["trick"]["cards"][number]["region"] | null;
+	onTake?: (task: TaskView) => void;
+}) {
+	if (view.scene === "taskDraft") {
+		return (
+			<div className={styles.draftWell} data-region="tasks.center">
+				{turn ? <p className={styles.draftPrompt}>{turn}. Take a task.</p> : null}
+				<div className={styles.taskRow}>
+					{view.centerTasks.map((task) => (
+						<TaskCard key={task.instanceId} task={task} onTake={onTake} />
+					))}
+				</div>
+			</div>
+		);
+	}
 	if (view.scene === "deal") {
 		return (
 			<div className={styles.stock} data-region="trick">
@@ -222,7 +445,7 @@ function Well({ view }: { view: TableView }) {
 			</div>
 		);
 	}
-	if (view.undealt.present && view.trick.cards.length === 0) {
+	if (view.undealt.present && trickCards.length === 0) {
 		return (
 			<div className={styles.stock} data-region="undealt">
 				<CardBack size="token" />
@@ -232,18 +455,20 @@ function Well({ view }: { view: TableView }) {
 	return (
 		<div className={styles.trick} data-region="trick">
 			{(["top", "left", "right", "bottom"] as const).map((slot) => {
-				const cards = view.trick.cards.filter(
+				const cards = trickCards.filter(
 					(card) => trickSlot(card.region, view.playerCount) === slot,
 				);
 				return (
 					<div key={slot} className={styles.slot} data-slot={slot}>
 						{cards.map((card) => (
-							<CardFace
+							<div
 								key={`${card.seatId}-${card.order}`}
-								cardId={card.cardId}
-								size="trick"
-								lead={view.trick.leadRegion === card.region}
-							/>
+								className={styles.trickCard}
+								data-land={landKeys.has(trickCardKey(card)) ? "true" : "false"}
+								data-win={winnerRegion === card.region ? "true" : "false"}
+							>
+								<CardFace cardId={card.cardId} size="trick" lead={leadRegion === card.region} />
+							</div>
 						))}
 					</div>
 				);
@@ -255,18 +480,26 @@ function Well({ view }: { view: TableView }) {
 function OverlayBody({
 	view,
 	overlay,
+	sonarDetailSeat,
+	inspectedTask,
 	sonarPositions,
+	queued = false,
 	onSkipDistress,
 	onActivateDistress,
 	onUseSonar,
+	onCancelQueue,
 	onCloseSkin,
 }: {
 	view: TableView;
 	overlay: Overlay;
+	sonarDetailSeat: TableView["seats"][number] | null;
+	inspectedTask: TaskView | null;
 	sonarPositions: SonarPosition[];
+	queued?: boolean;
 	onSkipDistress?: () => void;
 	onActivateDistress?: (direction: DistressDirection) => void;
 	onUseSonar: (position: SonarPosition) => void;
+	onCancelQueue?: () => void;
 	onCloseSkin: () => void;
 }) {
 	if (overlay === "distress") {
@@ -284,13 +517,13 @@ function OverlayBody({
 						{onActivateDistress ? (
 							<>
 								<Button className={styles.overlayAction} onPress={() => onActivateDistress("left")}>
-									Pass left
+									Pass right
 								</Button>
 								<Button
 									className={styles.overlayAction}
 									onPress={() => onActivateDistress("right")}
 								>
-									Pass right
+									Pass left
 								</Button>
 							</>
 						) : null}
@@ -317,7 +550,11 @@ function OverlayBody({
 		return (
 			<>
 				<p className={styles.overlayTitle}>Sonar</p>
-				<p className={styles.overlayCopy}>Pick a color card, then highest, only, or lowest.</p>
+				<p className={styles.overlayCopy}>
+					{queued
+						? "Pick a color card, then highest, only, or lowest. The crew sees it after this trick. You can change it until then."
+						: "Pick a color card, then highest, only, or lowest."}
+				</p>
 				{sonarPositions.length > 0 ? (
 					<div className={styles.overlayActions}>
 						{sonarPositions.map((position) => (
@@ -330,6 +567,11 @@ function OverlayBody({
 							</Button>
 						))}
 					</div>
+				) : null}
+				{onCancelQueue ? (
+					<Button className={styles.overlayAction} onPress={onCancelQueue}>
+						Cancel queue
+					</Button>
 				) : null}
 				<Button className={styles.overlayAction} onPress={onCloseSkin}>
 					Close
@@ -352,10 +594,60 @@ function OverlayBody({
 			</>
 		);
 	}
+	if (inspectedTask) {
+		return (
+			<>
+				<p className={styles.overlayTitle}>Task</p>
+				<div className={styles.inspectCard}>
+					<TaskCatalogCard task={inspectedTask.spec} status={inspectedTask.status} showMeta />
+				</div>
+				<Button className={styles.overlayAction} onPress={onCloseSkin}>
+					Close
+				</Button>
+			</>
+		);
+	}
+	if (sonarDetailSeat) {
+		return (
+			<>
+				<SonarDetailBody seat={sonarDetailSeat} />
+				<Button className={styles.overlayAction} onPress={onCloseSkin}>
+					Close
+				</Button>
+			</>
+		);
+	}
 	return (
 		<>
 			<p className={styles.overlayTitle}>Reminder</p>
 			<p className={styles.overlayCopy}>Follow suit. Submarine is trump. Sonar once.</p>
 		</>
+	);
+}
+
+function withQueuedSonar(
+	seats: TableView["seats"],
+	queued: QueuedSonar | null,
+): TableView["seats"] {
+	if (queued === null) {
+		return seats;
+	}
+	return seats.map((seat) => {
+		if (seat.region !== "seat.self" || seat.sonar.communication !== null) {
+			return seat;
+		}
+		return {
+			...seat,
+			sonar: { state: "communicating", communication: queued },
+		};
+	});
+}
+
+function withQueuedHand(hand: TableView["hand"], queued: QueuedSonar | null): TableView["hand"] {
+	if (queued === null) {
+		return hand;
+	}
+	return hand.map((card) =>
+		card.cardId === queued.cardId ? { ...card, communicated: true } : card,
 	);
 }

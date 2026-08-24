@@ -1,25 +1,46 @@
-import { apply, createAttempt, type EngineState, type PlayerCount } from "@crew/engine";
-import type {
-	Fact,
-	Intent,
-	PlayIntent,
-	RoomErrorCode,
-	SeatId,
-	SnapshotEnvelope,
+import {
+	apply,
+	createAttempt,
+	type EngineState,
+	type PlayerCount,
+	pickSeatIntent,
+} from "@crew/engine";
+import {
+	DEFAULT_MISSION_DIFFICULTY,
+	DEFAULT_MISSION_ID,
+	type Fact,
+	type Intent,
+	type PlayIntent,
+	type RoomErrorCode,
+	type SeatId,
+	type SnapshotEnvelope,
 } from "@crew/protocol";
 import type { TableView } from "@crew/view-model";
 import { type Occupancy, project, projectFacts, projectLobby } from "@crew/view-model/project";
 
-const DEFAULT_MISSION = { id: "1", difficulty: 4 } as const;
+const DEFAULT_SETUP: TableSetup = {
+	difficulty: DEFAULT_MISSION_DIFFICULTY,
+	captainSeat: null,
+	distressDisabled: false,
+};
+const BOT_PLAYER_PREFIX = "bot:";
+const BOT_TURN_CAP = 400;
 
 export type Occupant = {
 	playerId: string;
 	displayName: string;
+	image?: string | null;
 	connected: boolean;
 	ready: boolean;
 };
 
 export type TableStatus = "lobby" | "playing" | "done";
+
+export type TableSetup = {
+	difficulty: number;
+	captainSeat: SeatId | null;
+	distressDisabled: boolean;
+};
 
 export type TableState = {
 	code: string;
@@ -28,6 +49,7 @@ export type TableState = {
 	status: TableStatus;
 	seq: number;
 	seats: Array<Occupant | null>;
+	setup: TableSetup;
 	engine: EngineState | null;
 };
 
@@ -72,6 +94,7 @@ export function createTable(input: {
 		status: "lobby",
 		seq: 0,
 		seats: Array.from({ length: input.playerCount }, () => null),
+		setup: { ...DEFAULT_SETUP },
 		engine: null,
 	};
 }
@@ -91,6 +114,10 @@ export function seatOf(state: TableState, playerId: string): SeatId | null {
 	return index === -1 ? null : (index as SeatId);
 }
 
+export function isBotPlayerId(playerId: string): boolean {
+	return playerId.startsWith(BOT_PLAYER_PREFIX);
+}
+
 function occupancyOf(state: TableState): Occupancy {
 	return state.seats.map((seat) =>
 		seat === null
@@ -98,6 +125,7 @@ function occupancyOf(state: TableState): Occupancy {
 			: {
 					playerId: seat.playerId,
 					displayName: seat.displayName,
+					...(seat.image ? { image: seat.image } : {}),
 					connected: seat.connected,
 					ready: seat.ready,
 				},
@@ -111,6 +139,7 @@ export function viewForSeat(state: TableState, viewerSeat: SeatId): TableView {
 			viewerSeat,
 			state.seq,
 			seatOf(state, state.hostPlayerId),
+			setupOf(state),
 		);
 	}
 	return {
@@ -132,7 +161,12 @@ export function factsForSeat(facts: readonly Fact[], viewerSeat: SeatId): Fact[]
 	return projectFacts(facts, viewerSeat);
 }
 
-export function connect(state: TableState, playerId: string, displayName: string): TableResult {
+export function connect(
+	state: TableState,
+	playerId: string,
+	displayName: string,
+	image?: string | null,
+): TableResult {
 	const existing = seatOf(state, playerId);
 	if (existing !== null) {
 		const seats = cloneSeats(state);
@@ -142,6 +176,9 @@ export function connect(state: TableState, playerId: string, displayName: string
 		}
 		const wasDisconnected = !occupant.connected;
 		occupant.displayName = displayName;
+		if (image !== undefined) {
+			occupant.image = image;
+		}
 		occupant.connected = true;
 		const next = { ...state, seats };
 		if (!wasDisconnected) {
@@ -160,13 +197,23 @@ export function connect(state: TableState, playerId: string, displayName: string
 		return fail(state, "alreadyStarted", "game already started");
 	}
 
+	if (isBotPlayerId(playerId)) {
+		return fail(state, "illegalIntent", "reserved seat");
+	}
+
 	const empty = state.seats.indexOf(null);
 	if (empty === -1) {
 		return fail(state, "roomFull", "no empty seat");
 	}
 
 	const seats = cloneSeats(state);
-	seats[empty] = { playerId, displayName, connected: true, ready: false };
+	seats[empty] = {
+		playerId,
+		displayName,
+		...(image === undefined ? {} : { image }),
+		connected: true,
+		ready: false,
+	};
 	const pushed = pushFact(
 		{ ...state, seats },
 		{
@@ -224,8 +271,20 @@ export function handleIntent(
 	if (intent.type === "host.start") {
 		return start(state, playerId, options);
 	}
+	if (intent.type === "host.configure") {
+		return configure(
+			state,
+			playerId,
+			intent.difficulty,
+			intent.captainSeat,
+			intent.distressDisabled,
+		);
+	}
 	if (intent.type === "host.retry") {
 		return retry(state, playerId, options);
+	}
+	if (intent.type === "host.fillBots") {
+		return fillBots(state, playerId);
 	}
 	return play(state, seatId, intent);
 }
@@ -247,6 +306,45 @@ function setReady(state: TableState, seatId: SeatId, ready: boolean): TableResul
 			attemptId: null,
 			seatId,
 			ready,
+		},
+	);
+	return succeed(pushed.state, [pushed.fact], false);
+}
+
+function configure(
+	state: TableState,
+	playerId: string,
+	difficulty: number,
+	captainSeat: SeatId | null,
+	distressDisabled: boolean,
+): TableResult {
+	if (playerId !== state.hostPlayerId) {
+		return fail(state, "notHost", "only the host can configure the table");
+	}
+	if (state.status !== "lobby") {
+		return fail(state, "alreadyStarted", "game already started");
+	}
+	if (captainSeat !== null && captainSeat >= state.playerCount) {
+		return fail(state, "illegalSeat", "captain seat is not at this table");
+	}
+
+	const setup = setupOf(state);
+	if (
+		setup.difficulty === difficulty &&
+		setup.captainSeat === captainSeat &&
+		setup.distressDisabled === distressDisabled
+	) {
+		return succeed(state, [], false);
+	}
+
+	const pushed = pushFact(
+		{ ...state, setup: { difficulty, captainSeat, distressDisabled } },
+		{
+			type: "host.configured",
+			attemptId: null,
+			difficulty,
+			captainSeat,
+			distressDisabled,
 		},
 	);
 	return succeed(pushed.state, [pushed.fact], false);
@@ -283,22 +381,29 @@ function retry(state: TableState, playerId: string, options?: StartOptions): Tab
 function beginAttempt(state: TableState, options?: StartOptions): TableResult {
 	const attemptId = options?.attemptId ?? crypto.randomUUID();
 	const seed = options?.seed ?? randomSeed();
+	const setup = setupOf(state);
 	const created = createAttempt({
 		attemptId,
-		mission: { id: DEFAULT_MISSION.id, difficulty: DEFAULT_MISSION.difficulty },
+		mission: {
+			id: DEFAULT_MISSION_ID,
+			difficulty: setup.difficulty,
+			flags: setup.distressDisabled ? { distressDisabled: true } : undefined,
+		},
 		playerCount: state.playerCount,
 		seed,
+		captainSeat: setup.captainSeat,
 	});
 	const started = pushFact(
 		{ ...state, status: "playing", engine: created.state },
 		{
 			type: "host.started",
 			attemptId,
-			missionId: DEFAULT_MISSION.id,
+			missionId: DEFAULT_MISSION_ID,
 		},
 	);
 	const stamped = stampFacts(started.state, created.facts);
-	return succeed(stamped.state, [started.fact, ...stamped.facts], false);
+	const drained = drainBots(stamped.state);
+	return succeed(drained.state, [started.fact, ...stamped.facts, ...drained.facts], false);
 }
 
 function play(state: TableState, seatId: SeatId, intent: PlayIntent): TableResult {
@@ -315,7 +420,98 @@ function play(state: TableState, seatId: SeatId, intent: PlayIntent): TableResul
 		return fail(state, result.error, result.error);
 	}
 	const stamped = stampFacts({ ...state, engine: result.state }, result.facts);
-	return succeed(stamped.state, stamped.facts, false);
+	const drained = drainBots(stamped.state);
+	return succeed(drained.state, [...stamped.facts, ...drained.facts], false);
+}
+
+function fillBots(state: TableState, playerId: string): TableResult {
+	if (playerId !== state.hostPlayerId) {
+		return fail(state, "notHost", "only the host can fill bots");
+	}
+	if (state.status !== "lobby") {
+		return fail(state, "alreadyStarted", "game already started");
+	}
+	if (seatOf(state, playerId) === null) {
+		return fail(state, "notSeated", "sit before filling seats");
+	}
+
+	let next = state;
+	const facts: Fact[] = [];
+	let botNumber = 1;
+	for (let index = 0; index < next.seats.length; index += 1) {
+		if (next.seats[index] !== null) {
+			continue;
+		}
+		const seatId = index as SeatId;
+		const botId = `${BOT_PLAYER_PREFIX}${seatId}`;
+		const displayName = `Bot ${botNumber}`;
+		botNumber += 1;
+		const seats = cloneSeats(next);
+		seats[index] = {
+			playerId: botId,
+			displayName,
+			connected: true,
+			ready: true,
+		};
+		const sat = pushFact(
+			{ ...next, seats },
+			{
+				type: "player.sat",
+				attemptId: null,
+				seatId,
+				playerId: botId,
+				displayName,
+			},
+		);
+		const readied = pushFact(sat.state, {
+			type: "player.ready",
+			attemptId: null,
+			seatId,
+			ready: true,
+		});
+		facts.push(sat.fact, readied.fact);
+		next = readied.state;
+	}
+
+	return succeed(next, facts, false);
+}
+
+function drainBots(state: TableState): { state: TableState; facts: Fact[] } {
+	if (state.engine === null) {
+		return { state, facts: [] };
+	}
+	const facts: Fact[] = [];
+	let current = state;
+	for (let step = 0; step < BOT_TURN_CAP; step += 1) {
+		const engine = current.engine;
+		if (engine === null || engine.phase === "result") {
+			break;
+		}
+		const seat = engine.currentSeat;
+		if (seat === null) {
+			break;
+		}
+		const occupant = current.seats[seat];
+		if (occupant === null || occupant === undefined || !isBotPlayerId(occupant.playerId)) {
+			break;
+		}
+		const intent = pickSeatIntent(engine, seat);
+		if (intent === null) {
+			break;
+		}
+		const result = apply(engine, {
+			...intent,
+			seatId: seat,
+			attemptId: engine.attemptId,
+		});
+		if (!result.ok) {
+			break;
+		}
+		const stamped = stampFacts({ ...current, engine: result.state }, result.facts);
+		facts.push(...stamped.facts);
+		current = stamped.state;
+	}
+	return { state: current, facts };
 }
 
 function randomSeed(): number {
@@ -326,6 +522,15 @@ function randomSeed(): number {
 
 function attemptIdOf(state: TableState): string | null {
 	return state.engine?.attemptId ?? null;
+}
+
+function setupOf(state: TableState): TableSetup {
+	const setup = state.setup ?? DEFAULT_SETUP;
+	return {
+		difficulty: setup.difficulty,
+		captainSeat: setup.captainSeat,
+		distressDisabled: setup.distressDisabled === true,
+	};
 }
 
 function cloneSeats(state: TableState): Array<Occupant | null> {

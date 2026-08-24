@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
 	createDebouncedAction,
+	displayInitials,
 	isGeneratedGuestName,
 	normalizeDisplayName,
 	visibleDisplayName,
@@ -23,6 +24,15 @@ describe("guest names", () => {
 		expect(visibleDisplayName("Guest a1b2c3d4")).toBe("");
 		expect(visibleDisplayName("Alex")).toBe("Alex");
 		expect(isGeneratedGuestName("Guest")).toBe(false);
+	});
+});
+
+describe("displayInitials", () => {
+	it("uses one or two letters from the visible name", () => {
+		expect(displayInitials("Guest a1b2c3d4")).toBe("");
+		expect(displayInitials("Alex")).toBe("AL");
+		expect(displayInitials("Ann Marie")).toBe("AM");
+		expect(displayInitials("  jo  ")).toBe("JO");
 	});
 });
 

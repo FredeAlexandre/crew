@@ -17,7 +17,8 @@
 		"sonarAvailable": true,
 		"flags": {
 			"sonarDisabled": false,
-			"discussionAllowed": false
+			"discussionAllowed": false,
+			"distressDisabled": false
 		}
 	},
 	"seats": [
@@ -195,6 +196,8 @@
 		"canPassDistressCard": false,
 		"canPeekLastTrick": false,
 		"canStart": false,
+		"canFillBots": false,
+		"canConfigure": false,
 		"canRetry": false
 	},
 	"result": null

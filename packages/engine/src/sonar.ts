@@ -27,11 +27,11 @@ export function sonarPositionFor(hand: readonly CardId[], cardId: CardId): Sonar
 	return null;
 }
 
-export function legalSonarUses(
+export function sonarCandidates(
 	state: EngineState,
 	seat: SeatId,
 ): { cardId: CardId; position: SonarPosition }[] {
-	if (state.phase !== "play") {
+	if (state.phase !== "play" && state.phase !== "trick") {
 		return [];
 	}
 	if (state.mission?.flags?.sonarDisabled === true) {
@@ -50,6 +50,16 @@ export function legalSonarUses(
 		}
 	}
 	return uses;
+}
+
+export function legalSonarUses(
+	state: EngineState,
+	seat: SeatId,
+): { cardId: CardId; position: SonarPosition }[] {
+	if (state.phase !== "play") {
+		return [];
+	}
+	return sonarCandidates(state, seat);
 }
 
 export function useSonar(

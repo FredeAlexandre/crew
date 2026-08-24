@@ -1,10 +1,21 @@
 import type { TableView } from "@crew/view-model/fixtures";
+import { useEffect, useState } from "react";
 import { Button } from "react-aria-components";
+import { playCue } from "../../lib/sfx.ts";
 import { resultCopy, seatName } from "./copy.ts";
 import { SeatPip, TaskMark } from "./parts.tsx";
 import styles from "./scenes.module.css";
 
-export function ResultScene({ view, onRetry }: { view: TableView; onRetry?: () => void }) {
+export function ResultScene({
+	view,
+	onRetry,
+	enter = false,
+}: {
+	view: TableView;
+	onRetry?: () => void;
+	enter?: boolean;
+}) {
+	const [fresh] = useState(enter);
 	const outcome = view.result?.outcome ?? "failed";
 	const tasks = view.seats.flatMap((seat) =>
 		seat.tasks.map((task) => ({ task, owner: seatName(seat) })),
@@ -16,10 +27,20 @@ export function ResultScene({ view, onRetry }: { view: TableView; onRetry?: () =
 	const mission = view.chrome.missionId
 		? `Mission ${view.chrome.missionId.replace(/^m/i, "")}`
 		: "Mission";
+
+	useEffect(() => {
+		if (!fresh) {
+			return;
+		}
+		playCue(
+			outcome === "won" ? "stingerWin" : "stingerFail",
+			`result:${view.attemptId ?? "none"}:${outcome}`,
+		);
+	}, [fresh, outcome, view.attemptId]);
 	return (
 		<div className={styles.verdict} data-scene="result">
 			<p className={styles.kicker}>{mission}</p>
-			<h1 className={styles.outcome} data-outcome={outcome}>
+			<h1 className={styles.outcome} data-outcome={outcome} data-enter={fresh ? "true" : undefined}>
 				{outcome === "won" ? "Won" : "Failed"}
 			</h1>
 			<section className={styles.review} aria-labelledby="mission-review">
@@ -34,7 +55,7 @@ export function ResultScene({ view, onRetry }: { view: TableView; onRetry?: () =
 							<ul className={styles.reviewList} aria-label="Tasks that caused the failure">
 								{failed.map(({ task, owner }) => (
 									<li key={task.instanceId}>
-										<TaskMark task={task} />
+										<TaskMark task={task} size="table" />
 										<span>{owner}'s task could no longer be completed.</span>
 									</li>
 								))}

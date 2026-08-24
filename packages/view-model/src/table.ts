@@ -66,6 +66,8 @@ export const seatViewSchema = z.object({
 	region: seatRegionSchema,
 	seatId: seatIdSchema,
 	displayName: z.string().nullable(),
+	/** Public account avatar, when the seated player has chosen one. */
+	image: z.string().nullable().optional(),
 	connected: z.boolean(),
 	ready: z.boolean(),
 	isCaptain: z.boolean(),
@@ -124,6 +126,8 @@ export const affordancesSchema = z.object({
 	canPassDistressCard: z.boolean(),
 	canPeekLastTrick: z.boolean(),
 	canStart: z.boolean(),
+	canFillBots: z.boolean(),
+	canConfigure: z.boolean(),
 	canRetry: z.boolean(),
 });
 export type Affordances = z.infer<typeof affordancesSchema>;
@@ -141,6 +145,7 @@ export const chromeSchema = z.object({
 	flags: z.object({
 		sonarDisabled: z.boolean(),
 		discussionAllowed: z.boolean(),
+		distressDisabled: z.boolean(),
 	}),
 });
 export type Chrome = z.infer<typeof chromeSchema>;

@@ -168,6 +168,16 @@ describe("project", () => {
 		expect(view.hand.find((card) => card.cardId === use.cardId)?.communicated).toBe(true);
 	});
 
+	it("lists sonar candidates during a trick even though canSonar is false", () => {
+		const playing = skipDistressToPlay(startAttempt(4, 11));
+		const mid = playFirstLegal(playing);
+		const viewer = mid.currentSeat ?? 0;
+		const view = project(mid, viewer);
+		expect(view.affordances.canSonar).toBe(false);
+		expect(view.chrome.sonarAvailable).toBe(true);
+		expect(view.sonarCandidates.length).toBeGreaterThan(0);
+	});
+
 	it("keeps last-trick contents public and peeks for every viewer", () => {
 		const playing = skipDistressToPlay(startAttempt(4, 11));
 		const afterTrick = playCards(playing, 4);
@@ -319,6 +329,45 @@ describe("occupancy", () => {
 		expect(projectLobby([occupancy[0], occupancy[1], null], 0, 5, 0).affordances.canStart).toBe(
 			false,
 		);
+	});
+
+	it("lets only the seated host fill empty chairs", () => {
+		const hostOnly = [
+			{ playerId: "p0", displayName: "Alex", connected: true, ready: false },
+			null,
+			null,
+		] as const;
+		expect(projectLobby(hostOnly, 0, 1, 0).affordances.canFillBots).toBe(true);
+		expect(projectLobby(hostOnly, 1, 1, 0).affordances.canFillBots).toBe(false);
+		expect(projectLobby([null, null, null], 0, 0, 0).affordances.canFillBots).toBe(false);
+		const full = [
+			{ playerId: "p0", displayName: "Alex", connected: true, ready: true },
+			{ playerId: "p1", displayName: "Bea", connected: true, ready: true },
+			{ playerId: "p2", displayName: "Cam", connected: true, ready: true },
+		] as const;
+		expect(projectLobby(full, 0, 5, 0).affordances.canFillBots).toBe(false);
+	});
+
+	it("lets only the seated host configure difficulty and captain", () => {
+		const hostOnly = [
+			{ playerId: "p0", displayName: "Alex", connected: true, ready: false },
+			null,
+			null,
+		] as const;
+		const host = projectLobby(hostOnly, 0, 1, 0, {
+			difficulty: 6,
+			captainSeat: 0,
+			distressDisabled: true,
+		});
+		expect(host.affordances.canConfigure).toBe(true);
+		expect(host.chrome.difficulty).toBe(6);
+		expect(host.chrome.flags.distressDisabled).toBe(true);
+		expect(host.seats.find((seat) => seat.seatId === 0)?.isCaptain).toBe(true);
+		expect(host.seats.find((seat) => seat.seatId === 1)?.isCaptain).toBe(false);
+		expect(projectLobby(hostOnly, 1, 1, 0).affordances.canConfigure).toBe(false);
+		expect(projectLobby([null, null, null], 0, 0, 0).affordances.canConfigure).toBe(false);
+		expect(projectLobby(hostOnly, 0, 1, 0).chrome.difficulty).toBe(4);
+		expect(projectLobby(hostOnly, 0, 1, 0).chrome.flags.distressDisabled).toBe(false);
 	});
 
 	it("keeps occupancy names after a deal", () => {

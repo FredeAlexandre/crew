@@ -1,6 +1,7 @@
 import { type CardId, splitCardId } from "@crew/protocol";
 import { Button } from "react-aria-components";
 import styles from "./card.module.css";
+import { SuitMark } from "./SuitMark.tsx";
 
 type CardSize = "hand" | "trick" | "token";
 
@@ -12,6 +13,7 @@ type CardFaceProps = {
 	muted?: boolean;
 	size?: CardSize;
 	lead?: boolean;
+	revealed?: boolean;
 	onPress?: () => void;
 };
 
@@ -23,6 +25,7 @@ export function CardFace({
 	muted = false,
 	size = "hand",
 	lead = false,
+	revealed = true,
 	onPress,
 }: CardFaceProps) {
 	const { suit, value } = splitCardId(cardId);
@@ -34,16 +37,31 @@ export function CardFace({
 		communicated ? styles.communicated : "",
 		muted ? styles.muted : "",
 		lead ? styles.lead : "",
+		revealed ? "" : styles.stowed,
 	]
 		.filter(Boolean)
 		.join(" ");
 
-	const body = (
-		<>
+	const index = (
+		<span className={styles.index}>
 			<span className={styles.value}>{value}</span>
-			<span className={styles.mark} data-suit={suit} />
-		</>
+			<SuitMark suit={suit} size="sm" className={styles.mark} />
+		</span>
 	);
+
+	const body =
+		size === "token" ? (
+			index
+		) : (
+			<>
+				{index}
+				<SuitMark suit={suit} size="xl" className={styles.pip} />
+				<span className={`${styles.index} ${styles.indexTail}`} aria-hidden="true">
+					<span className={styles.value}>{value}</span>
+					<SuitMark suit={suit} size="sm" className={styles.mark} />
+				</span>
+			</>
+		);
 
 	if (onPress) {
 		return (

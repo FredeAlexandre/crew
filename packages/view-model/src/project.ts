@@ -1,12 +1,16 @@
-import { type EngineState, legalIntents } from "@crew/engine";
-import type {
-	CardId,
-	Fact,
-	IllegalReason,
-	SeatId,
-	SonarPosition,
-	Suit,
-	TaskInstanceId,
+import {
+	type EngineState,
+	legalIntents,
+	sonarCandidates as listSonarCandidates,
+} from "@crew/engine";
+import {
+	type CardId,
+	DEFAULT_MISSION_DIFFICULTY,
+	type Fact,
+	type IllegalReason,
+	type SeatId,
+	type Suit,
+	type TaskInstanceId,
 } from "@crew/protocol";
 import {
 	regionForSeat,
@@ -21,11 +25,24 @@ import {
 type OccupancySeat = {
 	playerId: string;
 	displayName: string | null;
+	image?: string | null;
 	connected: boolean;
 	ready: boolean;
 } | null;
 
 export type Occupancy = readonly OccupancySeat[];
+
+export type LobbySetup = {
+	difficulty: number;
+	captainSeat: SeatId | null;
+	distressDisabled: boolean;
+};
+
+const DEFAULT_LOBBY_SETUP: LobbySetup = {
+	difficulty: DEFAULT_MISSION_DIFFICULTY,
+	captainSeat: null,
+	distressDisabled: false,
+};
 
 /**
  * Per-seat projection. Server-only — `apps/web` must not import this file.
@@ -43,7 +60,6 @@ export function project(
 	const takeable = new Set<TaskInstanceId>();
 	const legalPlay = new Set<CardId>();
 	const legalPass = new Set<CardId>();
-	const sonarCandidates: { cardId: CardId; position: SonarPosition }[] = [];
 	let canPlay = false;
 	let canSonar = false;
 	let canTakeTask = false;
@@ -60,7 +76,6 @@ export function project(
 				break;
 			case "sonar.use":
 				canSonar = true;
-				sonarCandidates.push({ cardId: intent.cardId, position: intent.position });
 				break;
 			case "task.take":
 				canTakeTask = true;
@@ -84,6 +99,7 @@ export function project(
 		}
 	}
 
+	const sonarCandidates = listSonarCandidates(state, viewerSeat);
 	const lastTrickWinner = state.lastTrick?.winnerSeat ?? null;
 	const seats: TableView["seats"] = [];
 	for (let relative = 0; relative < playerCount; relative += 1) {
@@ -174,6 +190,7 @@ export function project(
 			flags: {
 				sonarDisabled: state.mission?.flags?.sonarDisabled === true,
 				discussionAllowed: state.mission?.flags?.discussionAllowed === true,
+				distressDisabled: state.mission?.flags?.distressDisabled === true,
 			},
 		},
 		seats,
@@ -200,6 +217,8 @@ export function project(
 			canPassDistressCard,
 			canPeekLastTrick: lastTrick !== null,
 			canStart: false,
+			canFillBots: false,
+			canConfigure: false,
 			canRetry: state.phase === "result" && hostSeatId === viewerSeat,
 		},
 		result: state.result === null ? null : { outcome: state.result, reason: state.failReason },
@@ -215,6 +234,7 @@ export function projectLobby(
 	viewerSeat: SeatId,
 	seq: number,
 	hostSeatId: SeatId | null,
+	setup: LobbySetup = DEFAULT_LOBBY_SETUP,
 ): TableView {
 	const playerCount = occupancy.length;
 	const seats: TableView["seats"] = [];
@@ -224,7 +244,7 @@ export function projectLobby(
 			region: regionForSeat(seatId, viewerSeat, playerCount),
 			seatId,
 			...occupancyFields(occupancy, seatId),
-			isCaptain: false,
+			isCaptain: setup.captainSeat === seatId,
 			sonar: { state: "available", communication: null },
 			handCount: 0,
 			wonTrickCount: 0,
@@ -242,12 +262,16 @@ export function projectLobby(
 		overlay: "none",
 		chrome: {
 			missionId: null,
-			difficulty: null,
+			difficulty: setup.difficulty,
 			trickId: null,
 			turnRegion: null,
 			distress: { active: false, direction: null },
 			sonarAvailable: false,
-			flags: { sonarDisabled: false, discussionAllowed: false },
+			flags: {
+				sonarDisabled: false,
+				discussionAllowed: false,
+				distressDisabled: setup.distressDisabled,
+			},
 		},
 		seats,
 		hand: [],
@@ -266,6 +290,8 @@ export function projectLobby(
 			canPassDistressCard: false,
 			canPeekLastTrick: false,
 			canStart: lobbyCanStart(occupancy, viewerSeat, hostSeatId),
+			canFillBots: lobbyCanFillBots(occupancy, viewerSeat, hostSeatId),
+			canConfigure: lobbyCanConfigure(occupancy, viewerSeat, hostSeatId),
 			canRetry: false,
 		},
 		result: null,
@@ -283,10 +309,37 @@ function lobbyCanStart(
 	return occupancy.every((seat) => seat?.ready);
 }
 
+function lobbyCanFillBots(
+	occupancy: Occupancy,
+	viewerSeat: SeatId,
+	hostSeatId: SeatId | null,
+): boolean {
+	if (hostSeatId === null || viewerSeat !== hostSeatId) {
+		return false;
+	}
+	const host = occupancy[hostSeatId];
+	if (host === null || host === undefined) {
+		return false;
+	}
+	return occupancy.some((seat) => seat === null);
+}
+
+function lobbyCanConfigure(
+	occupancy: Occupancy,
+	viewerSeat: SeatId,
+	hostSeatId: SeatId | null,
+): boolean {
+	if (hostSeatId === null || viewerSeat !== hostSeatId) {
+		return false;
+	}
+	const host = occupancy[hostSeatId];
+	return host !== null && host !== undefined;
+}
+
 function occupancyFields(
 	occupancy: Occupancy | undefined,
 	seatId: SeatId,
-): Pick<TableView["seats"][number], "displayName" | "connected" | "ready"> {
+): Pick<TableView["seats"][number], "displayName" | "image" | "connected" | "ready"> {
 	if (occupancy === undefined) {
 		return { displayName: null, connected: true, ready: true };
 	}
@@ -296,6 +349,7 @@ function occupancyFields(
 	}
 	return {
 		displayName: slot.displayName,
+		...(slot.image ? { image: slot.image } : {}),
 		connected: slot.connected,
 		ready: slot.ready,
 	};

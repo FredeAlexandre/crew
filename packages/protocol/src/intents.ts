@@ -3,6 +3,7 @@ import { cardIdSchema } from "./cards.ts";
 import {
 	attemptIdSchema,
 	distressDirectionSchema,
+	missionDifficultySchema,
 	seatIdSchema,
 	seqSchema,
 	sonarPositionSchema,
@@ -30,8 +31,19 @@ export const hostStartIntentSchema = z.object({
 	type: z.literal("host.start"),
 });
 
+export const hostConfigureIntentSchema = z.object({
+	type: z.literal("host.configure"),
+	difficulty: missionDifficultySchema,
+	captainSeat: seatIdSchema.nullable(),
+	distressDisabled: z.boolean().default(false),
+});
+
 export const hostRetryIntentSchema = z.object({
 	type: z.literal("host.retry"),
+});
+
+export const hostFillBotsIntentSchema = z.object({
+	type: z.literal("host.fillBots"),
 });
 
 export const taskTakeIntentSchema = z.object({
@@ -79,7 +91,9 @@ export const intentSchema = z.discriminatedUnion("type", [
 	echoIntentSchema,
 	playerReadyIntentSchema,
 	hostStartIntentSchema,
+	hostConfigureIntentSchema,
 	hostRetryIntentSchema,
+	hostFillBotsIntentSchema,
 	taskTakeIntentSchema,
 	taskPassIntentSchema,
 	distressSkipIntentSchema,
@@ -92,7 +106,9 @@ export const intentSchema = z.discriminatedUnion("type", [
 export type EchoIntent = z.infer<typeof echoIntentSchema>;
 export type PlayerReadyIntent = z.infer<typeof playerReadyIntentSchema>;
 export type HostStartIntent = z.infer<typeof hostStartIntentSchema>;
+export type HostConfigureIntent = z.infer<typeof hostConfigureIntentSchema>;
 export type HostRetryIntent = z.infer<typeof hostRetryIntentSchema>;
+export type HostFillBotsIntent = z.infer<typeof hostFillBotsIntentSchema>;
 export type TaskTakeIntent = z.infer<typeof taskTakeIntentSchema>;
 export type TaskPassIntent = z.infer<typeof taskPassIntentSchema>;
 export type DistressSkipIntent = z.infer<typeof distressSkipIntentSchema>;
@@ -101,5 +117,10 @@ export type DistressPassCardIntent = z.infer<typeof distressPassCardIntentSchema
 export type CardPlayIntent = z.infer<typeof cardPlayIntentSchema>;
 export type SonarUseIntent = z.infer<typeof sonarUseIntentSchema>;
 export type Intent = z.infer<typeof intentSchema>;
-export type LobbyIntent = PlayerReadyIntent | HostStartIntent | HostRetryIntent;
+export type LobbyIntent =
+	| PlayerReadyIntent
+	| HostStartIntent
+	| HostConfigureIntent
+	| HostRetryIntent
+	| HostFillBotsIntent;
 export type PlayIntent = Exclude<Intent, EchoIntent | LobbyIntent>;
