@@ -4,7 +4,7 @@ import { ensureGuestSession } from "./rooms.ts";
 
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 128;
-const PHOTO_MAX_BYTES = 1024 * 1024;
+const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 
 class AccountError extends Error {
 	readonly code: string;
@@ -86,7 +86,7 @@ export async function changeAccountPassword(
 
 export async function uploadAccountPhoto(file: File): Promise<void> {
 	if (file.size > PHOTO_MAX_BYTES) {
-		throw new AccountError("tooLarge", "Photo must be 1 MB or smaller.");
+		throw new AccountError("tooLarge", "Photo must be 5 MB or smaller.");
 	}
 	const body = new FormData();
 	body.append("photo", file);

@@ -215,40 +215,42 @@ export function ProfileControl() {
 												<p className={styles.hint}>{t("changeEmailLater")}</p>
 											</>
 										)}
-										<div className={styles.photoRow}>
-											<span className={styles.label}>{t("photo")}</span>
-											<div className={styles.photoActions}>
-												<FileTrigger
-													acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}
-													onSelect={(files: FileList | null) => {
-														const file = files?.item(0);
-														if (file === null || file === undefined) {
-															return;
-														}
-														void run(async () => {
-															await uploadAccountPhoto(file);
-														});
-													}}
-												>
-													<Button className={styles.ghost} isDisabled={busy || !identity.ready}>
-														{user?.image ? t("replace") : t("choose")}
-													</Button>
-												</FileTrigger>
-												{user?.image ? (
-													<Button
-														className={styles.ghost}
-														isDisabled={busy}
-														onPress={() => {
+										{!isAnonymous ? (
+											<div className={styles.photoRow}>
+												<span className={styles.label}>{t("photo")}</span>
+												<div className={styles.photoActions}>
+													<FileTrigger
+														acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}
+														onSelect={(files: FileList | null) => {
+															const file = files?.item(0);
+															if (file === null || file === undefined) {
+																return;
+															}
 															void run(async () => {
-																await removeAccountPhoto();
+																await uploadAccountPhoto(file);
 															});
 														}}
 													>
-														{t("remove")}
-													</Button>
-												) : null}
+														<Button className={styles.ghost} isDisabled={busy || !identity.ready}>
+															{user?.image ? t("replace") : t("choose")}
+														</Button>
+													</FileTrigger>
+													{user?.image ? (
+														<Button
+															className={styles.ghost}
+															isDisabled={busy}
+															onPress={() => {
+																void run(async () => {
+																	await removeAccountPhoto();
+																});
+															}}
+														>
+															{t("remove")}
+														</Button>
+													) : null}
+												</div>
 											</div>
-										</div>
+										) : null}
 										<fieldset className={styles.stubs} disabled>
 											<legend className={styles.legend}>{t("tableFeel")}</legend>
 											<p className={styles.hint}>{t("comingLater")}</p>

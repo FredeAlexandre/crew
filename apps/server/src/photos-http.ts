@@ -8,11 +8,11 @@ import {
 	photoObjectKey,
 	photoPublicUrl,
 } from "./photos.ts";
-import { errorPayload, requirePlayer } from "./session.ts";
+import { errorPayload, requireAuthenticatedPlayer, requirePlayer } from "./session.ts";
 
 export function registerPhotoRoutes(app: Hono<{ Bindings: Env }>) {
 	app.post("/photos", async (c) => {
-		const player = await requirePlayer(c);
+		const player = await requireAuthenticatedPlayer(c);
 		if (player instanceof Response) {
 			return player;
 		}
@@ -27,7 +27,7 @@ export function registerPhotoRoutes(app: Hono<{ Bindings: Env }>) {
 		const inspected = inspectPhoto(bytes);
 		if (!inspected.ok) {
 			if (inspected.code === "tooLarge") {
-				return c.json(errorPayload("tooLarge", "Photo must be 1 MB or smaller."), 400);
+				return c.json(errorPayload("tooLarge", "Photo must be 5 MB or smaller."), 400);
 			}
 			return c.json(errorPayload("unsupportedType", "Use a JPEG, PNG, or WebP photo."), 400);
 		}

@@ -7,6 +7,7 @@ import { DISPLAY_NAME_HEADER, PLAYER_ID_HEADER, PLAYER_IMAGE_HEADER } from "./pl
 type SessionPlayer = {
 	playerId: string;
 	displayName: string;
+	isAnonymous: boolean;
 	image?: string;
 };
 
@@ -39,8 +40,29 @@ export async function requirePlayer(
 	}
 
 	return session.user.image
-		? { playerId: userId, displayName, image: session.user.image }
-		: { playerId: userId, displayName };
+		? {
+				playerId: userId,
+				displayName,
+				isAnonymous: session.user.isAnonymous === true,
+				image: session.user.image,
+			}
+		: { playerId: userId, displayName, isAnonymous: session.user.isAnonymous === true };
+}
+
+export async function requireAuthenticatedPlayer(
+	c: Context<{ Bindings: Env }>,
+): Promise<SessionPlayer | Response> {
+	const player = await requirePlayer(c);
+	if (player instanceof Response) {
+		return player;
+	}
+	if (player.isAnonymous) {
+		return c.json(
+			errorPayload("accountRequired", "Create an account or sign in to upload a photo."),
+			403,
+		);
+	}
+	return player;
 }
 
 export function withPlayerHeaders(request: Request, player: SessionPlayer): Request {

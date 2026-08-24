@@ -49,6 +49,13 @@ describe("inspectPhoto", () => {
 		});
 	});
 
+	it("accepts photos up to 5 MB", () => {
+		expect(inspectPhoto(jpegBytes(PHOTO_MAX_BYTES))).toEqual({
+			ok: true,
+			contentType: "image/jpeg",
+		});
+	});
+
 	it("rejects empty or unknown bytes", () => {
 		expect(inspectPhoto(new Uint8Array())).toEqual({ ok: false, code: "unsupportedType" });
 		expect(inspectPhoto(new TextEncoder().encode("<html></html>"))).toEqual({
