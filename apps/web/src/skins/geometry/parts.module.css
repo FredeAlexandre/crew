@@ -285,14 +285,16 @@
 	--card-h: 6.12rem;
 	--lift: 2.75rem;
 	position: relative;
-	width: min(calc(100% - 0.2rem), 28rem);
+	width: 100%;
 	max-width: 100%;
 	min-width: 0;
-	height: calc(var(--card-h) + var(--lift) + 1.25rem);
+	height: calc(var(--card-h) + var(--lift));
 	justify-self: center;
 	touch-action: none;
 	user-select: none;
 	cursor: pointer;
+	overflow: visible;
+	isolation: isolate;
 }
 
 @container (min-width: 40rem) {
@@ -311,20 +313,22 @@
 
 .fanSlot {
 	position: absolute;
-	left: 50%;
-	bottom: 0.2rem;
+	left: calc(var(--i, 0) * (100% - var(--card-w)) / max(1, calc(var(--n, 1) - 1)));
+	bottom: 0;
 	width: var(--card-w);
-	margin-left: calc(var(--card-w) / -2);
-	transform-origin: 50% 100%;
-	transform: translateX(var(--x, 0px)) translateY(var(--y, 0px)) rotate(var(--angle, 0deg));
 	transition: transform var(--motion-travel) ease-out;
 	z-index: var(--z, 1);
 	pointer-events: none;
 }
 
+.fan[data-count="0"] .fanSlot,
+.fan[data-count="1"] .fanSlot {
+	left: 50%;
+	margin-left: calc(var(--card-w) / -2);
+}
+
 .fanSlot[data-raised="true"] {
-	transform: translateX(var(--x, 0px)) translateY(calc(var(--y, 0px) + var(--lift) * -1))
-		rotate(var(--angle, 0deg));
+	transform: translateY(calc(var(--lift) * -1));
 }
 
 .fanSlot > * {
@@ -546,6 +550,8 @@ button.wonPile {
 
 .seatActions {
 	gap: 0.35rem;
+	position: relative;
+	z-index: 4;
 }
 
 @container (max-width: 40rem) {
