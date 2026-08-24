@@ -9,6 +9,7 @@ import {
 } from "@crew/protocol";
 import { authClient } from "./auth-client.ts";
 import { normalizeDisplayName } from "./display-name.ts";
+import type { Translate } from "./i18n.tsx";
 
 class RoomHttpError extends Error {
 	readonly code: RoomErrorCode | "unexpected";
@@ -91,21 +92,21 @@ export async function joinRoom(code: string): Promise<RoomTicket> {
 	return readTicket(response);
 }
 
-export function roomErrorCopy(error: unknown): string {
+export function roomErrorCopy(error: unknown, t: Translate): string {
 	if (!(error instanceof RoomHttpError)) {
-		return "Could not reach the table. Try again.";
+		return t("roomNetwork");
 	}
 	switch (error.code) {
 		case "unauthenticated":
-			return "Could not start a guest session. Try again.";
+			return t("guestSession");
 		case "unknownRoom":
-			return "No lobby with that code.";
+			return t("unknownRoom");
 		case "roomFull":
-			return "That table is full.";
+			return t("roomFull");
 		case "alreadyStarted":
-			return "That game has already started.";
+			return t("alreadyStarted");
 		case "illegalIntent":
-			return "Could not open a table.";
+			return t("openRoomFailed");
 		default:
 			return error.message;
 	}

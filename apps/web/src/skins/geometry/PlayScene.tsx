@@ -3,6 +3,7 @@ import type { Overlay, TableView, TaskView } from "@crew/view-model/fixtures";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "react-aria-components";
 import type { ClientIntent } from "../../hooks/use-table.ts";
+import { useI18n } from "../../lib/i18n.tsx";
 import { playCue } from "../../lib/sfx.ts";
 import { trickCardKey, trickJuice } from "../../lib/trick-juice.ts";
 import { CardBack, CardFace } from "./Card.tsx";
@@ -12,12 +13,6 @@ import { ChromeLine, HandStrip, PlaySeat, SonarDetailBody, TaskCard } from "./pa
 import styles from "./play.module.css";
 import sceneStyles from "./scenes.module.css";
 import { TaskCatalogCard } from "./TaskCatalogCard.tsx";
-
-const SONAR_POSITION_COPY: Record<SonarPosition, string> = {
-	highest: "Highest",
-	only: "Only",
-	lowest: "Lowest",
-};
 
 type QueuedSonar = { cardId: CardId; position: SonarPosition };
 
@@ -502,28 +497,29 @@ function OverlayBody({
 	onCancelQueue?: () => void;
 	onCloseSkin: () => void;
 }) {
+	const { t } = useI18n();
 	if (overlay === "distress") {
 		if (view.affordances.canActivateDistress || view.affordances.canSkipDistress) {
 			return (
 				<>
-					<p className={styles.overlayTitle}>Distress signal</p>
-					<p className={styles.overlayCopy}>Pass one color card left or right. Or skip.</p>
+					<p className={styles.overlayTitle}>{t("distressSignal")}</p>
+					<p className={styles.overlayCopy}>{t("passColorCard")}</p>
 					<div className={styles.overlayActions}>
 						{onSkipDistress ? (
 							<Button className={styles.overlayAction} onPress={onSkipDistress}>
-								Skip
+								{t("skip")}
 							</Button>
 						) : null}
 						{onActivateDistress ? (
 							<>
 								<Button className={styles.overlayAction} onPress={() => onActivateDistress("left")}>
-									Pass right
+									{t("passRight")}
 								</Button>
 								<Button
 									className={styles.overlayAction}
 									onPress={() => onActivateDistress("right")}
 								>
-									Pass left
+									{t("passLeft")}
 								</Button>
 							</>
 						) : null}
@@ -534,27 +530,23 @@ function OverlayBody({
 		if (view.affordances.canPassDistressCard) {
 			return (
 				<>
-					<p className={styles.overlayTitle}>Distress signal</p>
-					<p className={styles.overlayCopy}>Pick a color card, then Pass.</p>
+					<p className={styles.overlayTitle}>{t("distressSignal")}</p>
+					<p className={styles.overlayCopy}>{t("pickColorPass")}</p>
 				</>
 			);
 		}
 		return (
 			<>
-				<p className={styles.overlayTitle}>Distress signal</p>
-				<p className={styles.overlayCopy}>Waiting for a color card.</p>
+				<p className={styles.overlayTitle}>{t("distressSignal")}</p>
+				<p className={styles.overlayCopy}>{t("waitingColorCard")}</p>
 			</>
 		);
 	}
 	if (overlay === "sonar") {
 		return (
 			<>
-				<p className={styles.overlayTitle}>Sonar</p>
-				<p className={styles.overlayCopy}>
-					{queued
-						? "Pick a color card, then highest, only, or lowest. The crew sees it after this trick. You can change it until then."
-						: "Pick a color card, then highest, only, or lowest."}
-				</p>
+				<p className={styles.overlayTitle}>{t("sonar")}</p>
+				<p className={styles.overlayCopy}>{queued ? t("sonarQueued") : t("sonarPick")}</p>
 				{sonarPositions.length > 0 ? (
 					<div className={styles.overlayActions}>
 						{sonarPositions.map((position) => (
@@ -563,18 +555,18 @@ function OverlayBody({
 								className={styles.overlayAction}
 								onPress={() => onUseSonar(position)}
 							>
-								{SONAR_POSITION_COPY[position]}
+								{t(position)}
 							</Button>
 						))}
 					</div>
 				) : null}
 				{onCancelQueue ? (
 					<Button className={styles.overlayAction} onPress={onCancelQueue}>
-						Cancel queue
+						{t("cancelQueue")}
 					</Button>
 				) : null}
 				<Button className={styles.overlayAction} onPress={onCloseSkin}>
-					Close
+					{t("close")}
 				</Button>
 			</>
 		);
@@ -582,14 +574,14 @@ function OverlayBody({
 	if (overlay === "lastTrick" && view.lastTrick) {
 		return (
 			<>
-				<p className={styles.overlayTitle}>Last trick</p>
+				<p className={styles.overlayTitle}>{t("lastTrick")}</p>
 				<div className={styles.lastTrick}>
 					{view.lastTrick.cards.map((card) => (
 						<CardFace key={`${card.seatId}-${card.order}`} cardId={card.cardId} size="token" />
 					))}
 				</div>
 				<Button className={styles.overlayAction} onPress={onCloseSkin}>
-					Close
+					{t("close")}
 				</Button>
 			</>
 		);
@@ -597,12 +589,12 @@ function OverlayBody({
 	if (inspectedTask) {
 		return (
 			<>
-				<p className={styles.overlayTitle}>Task</p>
+				<p className={styles.overlayTitle}>{t("task")}</p>
 				<div className={styles.inspectCard}>
 					<TaskCatalogCard task={inspectedTask.spec} status={inspectedTask.status} showMeta />
 				</div>
 				<Button className={styles.overlayAction} onPress={onCloseSkin}>
-					Close
+					{t("close")}
 				</Button>
 			</>
 		);
@@ -612,15 +604,15 @@ function OverlayBody({
 			<>
 				<SonarDetailBody seat={sonarDetailSeat} />
 				<Button className={styles.overlayAction} onPress={onCloseSkin}>
-					Close
+					{t("close")}
 				</Button>
 			</>
 		);
 	}
 	return (
 		<>
-			<p className={styles.overlayTitle}>Reminder</p>
-			<p className={styles.overlayCopy}>Follow suit. Submarine is trump. Sonar once.</p>
+			<p className={styles.overlayTitle}>{t("reminder")}</p>
+			<p className={styles.overlayCopy}>{t("reminderCopy")}</p>
 		</>
 	);
 }
