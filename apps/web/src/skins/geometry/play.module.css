@@ -137,6 +137,48 @@
 	max-height: 100%;
 }
 
+.trickStage {
+	display: grid;
+	justify-items: center;
+	gap: 0.45rem;
+	min-width: 0;
+	max-width: 100%;
+}
+
+.trickTransition {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	width: min(100%, 16rem);
+}
+
+.trickProgress {
+	position: relative;
+	flex: 1;
+	height: 0.3rem;
+	overflow: hidden;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--muted) 30%, transparent);
+}
+
+.trickProgress > span {
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: var(--accent);
+	transform-origin: left center;
+}
+
+.trickTransitionAction {
+	min-height: 36px;
+	padding-inline: 0.7rem;
+	border-color: var(--accent);
+	color: var(--accent);
+	font-size: 0.78rem;
+	white-space: nowrap;
+}
+
 .slot[data-slot="top"] {
 	grid-column: 2;
 	grid-row: 1;
