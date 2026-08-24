@@ -52,7 +52,7 @@ Actions needs these repository secrets/variables:
 
 | Name | Kind | Purpose |
 | --- | --- | --- |
-| `CLOUDFLARE_API_TOKEN` | secret | Deploy Workers/D1 and read the Alchemy state-store token. Must include **Secrets Store Write** (not just Read), plus Workers Scripts Write, D1 Write, Account Settings Write, Workers Routes Write, DNS Write, Workers Tail Read. |
+| `CLOUDFLARE_API_TOKEN` | secret | Deploy Workers/D1/R2 and read the Alchemy state-store token. Must include **Secrets Store Write** (not just Read), plus Workers Scripts Write, D1 Write, Workers R2 Storage Write, Account Settings Write, Workers Routes Write, DNS Write, Workers Tail Read. |
 | `CLOUDFLARE_ACCOUNT_ID` | secret | Cloudflare account |
 | `BETTER_AUTH_SECRET` | secret | Production cookie signing (not the local `.env` value) |
 | `PREVIEW_BETTER_AUTH_SECRET` | secret | Cookie signing for PR preview stages (not the prod secret) |
