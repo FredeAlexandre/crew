@@ -72,7 +72,7 @@
 }
 
 .trick {
-	--trick-w: min(3.7rem, 18cqi);
+	--trick-w: min(4.15rem, 22cqi);
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 	grid-template-rows: auto auto auto;
@@ -116,7 +116,7 @@
 
 .stockPile {
 	position: relative;
-	width: var(--trick-w, 3.7rem);
+	width: var(--trick-w, 4.15rem);
 	aspect-ratio: 3.7 / 5.2;
 	height: auto;
 }
@@ -227,13 +227,13 @@
 	}
 
 	.trick {
-		--trick-w: 3.7rem;
+		--trick-w: 4.15rem;
 	}
 }
 
-@container (max-height: 36rem) {
+@container (max-height: 28rem) {
 	.trick {
-		--trick-w: min(2.85rem, 16cqi);
+		--trick-w: min(3.35rem, 18cqi);
 	}
 
 	.table {

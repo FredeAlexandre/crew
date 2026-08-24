@@ -183,6 +183,7 @@ export function HandStrip({
 	const peekedId = useRef<CardId | null>(null);
 	const [peeked, setPeeked] = useState<CardId | null>(null);
 	const [fanWidth, setFanWidth] = useState(320);
+	const [cardWidth, setCardWidth] = useState(56);
 	const spread = fanSpread(cards.length);
 
 	useEffect(() => {
@@ -190,12 +191,21 @@ export function HandStrip({
 		if (!el) {
 			return;
 		}
-		const measure = () => setFanWidth(el.getBoundingClientRect().width);
+		const measure = () => {
+			setFanWidth(el.getBoundingClientRect().width);
+			const slot = el.firstElementChild;
+			if (slot instanceof HTMLElement) {
+				const width = slot.getBoundingClientRect().width;
+				if (width > 0) {
+					setCardWidth(width);
+				}
+			}
+		};
 		measure();
 		const observer = new ResizeObserver(measure);
 		observer.observe(el);
 		return () => observer.disconnect();
-	}, []);
+	}, [cards.length]);
 
 	function cardAtPointer(
 		event: ReactPointerEvent<HTMLDivElement>,
@@ -269,8 +279,8 @@ export function HandStrip({
 		>
 			{cards.map((card, index) => {
 				const raised = peeked !== null ? peeked === card.cardId : selected === card.cardId;
-				const shift = fanShift(index, cards.length, fanWidth, 38);
-				const rise = fanRise(index, cards.length);
+				const shift = fanShift(index, cards.length, fanWidth, cardWidth);
+				const rise = fanRise(index, cards.length, 20);
 				return (
 					<div
 						key={card.cardId}
@@ -291,6 +301,7 @@ export function HandStrip({
 							communicated={card.communicated}
 							selected={selected === card.cardId}
 							muted={quiet}
+							revealed={raised}
 						/>
 					</div>
 				);

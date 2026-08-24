@@ -30,7 +30,7 @@ export function fanShift(index: number, count: number, width: number, cardWidth:
 	if (count <= 1) {
 		return 0;
 	}
-	const usable = Math.max(0, width - cardWidth) * 0.84;
+	const usable = Math.max(0, width - cardWidth) * 0.7;
 	return (index / (count - 1) - 0.5) * usable;
 }
 
