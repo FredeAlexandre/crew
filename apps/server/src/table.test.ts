@@ -7,6 +7,7 @@ import {
 	factsForSeat,
 	handleIntent,
 	isBotPlayerId,
+	playBotTurn,
 	seatOf,
 	snapshotMessage,
 	summary,
@@ -401,7 +402,7 @@ describe("table bots", () => {
 		expect(oneBot.seats.map((seat) => seat?.displayName)).toEqual(["Alex", "Bea", "Bot 1"]);
 	});
 
-	it("plays bot turns until a human must act, and pauses on distress", () => {
+	it("plays one bot turn at a time and pauses on distress", () => {
 		const lobby = mustOk(
 			handleIntent(sit(fresh(), "p0", "Alex"), "p0", { type: "host.fillBots" }),
 		).state;
@@ -411,12 +412,21 @@ describe("table bots", () => {
 		).state;
 		expect(started.status).toBe("playing");
 		expect(started.engine).not.toBeNull();
+		expect(isBotPlayerId(started.seats[started.engine?.currentSeat ?? 0]?.playerId ?? "")).toBe(
+			true,
+		);
 
 		let current = started;
 		while (current.engine?.phase === "taskDraft") {
 			const seat = current.engine.currentSeat;
-			expect(seat).toBe(0);
-			const intent = pickSeatIntent(current.engine, 0);
+			if (seat === null) {
+				throw new Error("expected draft seat");
+			}
+			if (isBotPlayerId(current.seats[seat]?.playerId ?? "")) {
+				current = mustOk(playBotTurn(current)).state;
+				continue;
+			}
+			const intent = pickSeatIntent(current.engine, seat);
 			if (intent === null) {
 				throw new Error("host had no draft intent");
 			}
@@ -437,7 +447,10 @@ describe("table bots", () => {
 		if (turn === undefined || turn === null) {
 			throw new Error("expected a leader");
 		}
-		expect(isBotPlayerId(playing.seats[turn]?.playerId ?? "")).toBe(false);
+		if (isBotPlayerId(playing.seats[turn]?.playerId ?? "")) {
+			const afterOneBot = mustOk(playBotTurn(playing)).state;
+			expect(afterOneBot.seq).toBeGreaterThan(playing.seq);
+		}
 	});
 });
 
