@@ -8,6 +8,7 @@ import { illegalCopy, lobbySlot, trickSlot, turnCopy } from "./copy.ts";
 import { ChromeLine, HandStrip, PlaySeat, SonarDetailBody, TaskCard } from "./parts.tsx";
 import styles from "./play.module.css";
 import sceneStyles from "./scenes.module.css";
+import { TaskCatalogCard } from "./TaskCatalogCard.tsx";
 
 const SONAR_POSITION_COPY: Record<SonarPosition, string> = {
 	highest: "Highest",
@@ -31,6 +32,7 @@ export function PlayScene({
 	const [sonarDetailRegion, setSonarDetailRegion] = useState<
 		TableView["seats"][number]["region"] | null
 	>(null);
+	const [inspectedTask, setInspectedTask] = useState<TaskView | null>(null);
 	const overlay: Overlay =
 		view.overlay !== "none"
 			? view.overlay
@@ -38,7 +40,7 @@ export function PlayScene({
 				? "sonar"
 				: lastTrickOpen && view.lastTrick !== null
 					? "lastTrick"
-					: sonarDetailRegion !== null
+					: sonarDetailRegion !== null || inspectedTask !== null
 						? "reminder"
 						: "none";
 	const selectedCard = view.hand.find((card) => card.cardId === selected);
@@ -81,6 +83,7 @@ export function PlayScene({
 			setSonarOpen(false);
 			setLastTrickOpen(false);
 			setSonarDetailRegion(null);
+			setInspectedTask(null);
 		}
 	}, [view.overlay]);
 
@@ -88,6 +91,7 @@ export function PlayScene({
 		setSonarOpen(false);
 		setLastTrickOpen(false);
 		setSonarDetailRegion(null);
+		setInspectedTask(null);
 		setSelected(null);
 		setQueuedSonar(null);
 	}, [view.attemptId]);
@@ -119,7 +123,7 @@ export function PlayScene({
 	}, [queuedSonar, sendIntent, view]);
 
 	useEffect(() => {
-		if (!sonarOpen && !lastTrickOpen && sonarDetailRegion === null) {
+		if (!sonarOpen && !lastTrickOpen && sonarDetailRegion === null && inspectedTask === null) {
 			return;
 		}
 		function onKey(event: KeyboardEvent) {
@@ -127,24 +131,34 @@ export function PlayScene({
 				setSonarOpen(false);
 				setLastTrickOpen(false);
 				setSonarDetailRegion(null);
+				setInspectedTask(null);
 			}
 		}
 		window.addEventListener("keydown", onKey);
 		return () => window.removeEventListener("keydown", onKey);
-	}, [sonarOpen, lastTrickOpen, sonarDetailRegion]);
+	}, [sonarOpen, lastTrickOpen, sonarDetailRegion, inspectedTask]);
 
 	function peekLastTrick() {
 		if (view.overlay !== "none" || sonarOpen || !view.affordances.canPeekLastTrick) {
 			return;
 		}
 		setSonarDetailRegion(null);
+		setInspectedTask(null);
 		setLastTrickOpen(true);
 	}
 
 	function openSonarDetail(region: TableView["seats"][number]["region"]) {
 		setSonarOpen(false);
 		setLastTrickOpen(false);
+		setInspectedTask(null);
 		setSonarDetailRegion(region);
+	}
+
+	function inspectTask(task: TaskView) {
+		setSonarOpen(false);
+		setLastTrickOpen(false);
+		setSonarDetailRegion(null);
+		setInspectedTask(task);
 	}
 
 	function skipDistress() {
@@ -197,6 +211,7 @@ export function PlayScene({
 		setSonarOpen(false);
 		setLastTrickOpen(false);
 		setSonarDetailRegion(null);
+		setInspectedTask(null);
 	}
 
 	return (
@@ -208,6 +223,7 @@ export function PlayScene({
 							view={view}
 							overlay={overlay}
 							sonarDetailSeat={sonarDetailSeat}
+							inspectedTask={inspectedTask}
 							sonarPositions={sonarPositions}
 							queued={!view.affordances.canSonar}
 							onSkipDistress={
@@ -237,6 +253,7 @@ export function PlayScene({
 							chairClassName={`${sceneStyles.chair} ${styles.playChair}`}
 							onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
 							onSonarDetail={() => openSonarDetail(seat.region)}
+							onInspectTask={inspectTask}
 							canSonar={isSelf && sonarEnabled && !sonarOpen}
 							canPass={isSelf && isDraft && view.affordances.canPassTask}
 							onSonar={
@@ -244,6 +261,7 @@ export function PlayScene({
 									? () => {
 											setLastTrickOpen(false);
 											setSonarDetailRegion(null);
+											setInspectedTask(null);
 											if (queuedSonar !== null) {
 												setSelected(queuedSonar.cardId);
 											}
@@ -363,6 +381,7 @@ function OverlayBody({
 	view,
 	overlay,
 	sonarDetailSeat,
+	inspectedTask,
 	sonarPositions,
 	queued = false,
 	onSkipDistress,
@@ -374,6 +393,7 @@ function OverlayBody({
 	view: TableView;
 	overlay: Overlay;
 	sonarDetailSeat: TableView["seats"][number] | null;
+	inspectedTask: TaskView | null;
 	sonarPositions: SonarPosition[];
 	queued?: boolean;
 	onSkipDistress?: () => void;
@@ -467,6 +487,19 @@ function OverlayBody({
 					{view.lastTrick.cards.map((card) => (
 						<CardFace key={`${card.seatId}-${card.order}`} cardId={card.cardId} size="token" />
 					))}
+				</div>
+				<Button className={styles.overlayAction} onPress={onCloseSkin}>
+					Close
+				</Button>
+			</>
+		);
+	}
+	if (inspectedTask) {
+		return (
+			<>
+				<p className={styles.overlayTitle}>Task</p>
+				<div className={styles.inspectCard}>
+					<TaskCatalogCard task={inspectedTask.spec} status={inspectedTask.status} showMeta />
 				</div>
 				<Button className={styles.overlayAction} onPress={onCloseSkin}>
 					Close

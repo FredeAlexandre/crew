@@ -7,7 +7,7 @@ import { CardBack, CardFace } from "./Card.tsx";
 import { type LobbySlot, seatIsEmpty, seatName, sonarPositionCopy, turnCopy } from "./copy.ts";
 import { cardIndexFromRects } from "./hand-layout.ts";
 import styles from "./parts.module.css";
-import { taskLabel } from "./task-label.ts";
+import { type TaskCardSize, TaskCatalogCard } from "./TaskCatalogCard.tsx";
 
 function SonarIcon() {
 	return (
@@ -161,6 +161,7 @@ export function PlaySeat({
 	slot,
 	onPeekLastTrick,
 	onSonarDetail,
+	onInspectTask,
 	canSonar,
 	canPass,
 	onSonar,
@@ -171,6 +172,7 @@ export function PlaySeat({
 	slot: LobbySlot;
 	onPeekLastTrick?: () => void;
 	onSonarDetail?: () => void;
+	onInspectTask?: (task: TaskView) => void;
 	canSonar?: boolean;
 	canPass?: boolean;
 	onSonar?: () => void;
@@ -197,7 +199,14 @@ export function PlaySeat({
 					<WonTrickPile count={seat.wonTrickCount} onPeek={onPeekLastTrick} />
 					<div className={styles.seatTasks} data-region={self ? "tasks.self" : undefined}>
 						{seat.tasks.length > 0 ? (
-							seat.tasks.map((task) => <TaskMark key={task.instanceId} task={task} />)
+							seat.tasks.map((task) => (
+								<TaskMark
+									key={task.instanceId}
+									task={task}
+									size={self ? "self" : "compact"}
+									onInspect={onInspectTask}
+								/>
+							))
 						) : (
 							<span className={styles.taskHole} aria-hidden="true" />
 						)}
@@ -316,38 +325,37 @@ export function SeatPip({
 	);
 }
 
-export function TaskMark({ task }: { task: TaskView }) {
+export function TaskMark({
+	task,
+	size = "compact",
+	onInspect,
+}: {
+	task: TaskView;
+	size?: Exclude<TaskCardSize, "catalog">;
+	onInspect?: (task: TaskView) => void;
+}) {
 	return (
-		<span
-			className={styles.task}
-			data-status={task.status}
-			data-takeable={task.takeable ? "true" : "false"}
-			data-region={task.region}
-		>
-			{taskLabel(task.spec)}
-		</span>
+		<TaskCatalogCard
+			task={task.spec}
+			size={size}
+			status={task.status}
+			region={task.region}
+			onPress={onInspect ? () => onInspect(task) : undefined}
+		/>
 	);
 }
 
 export function TaskCard({ task, onTake }: { task: TaskView; onTake?: (task: TaskView) => void }) {
-	const body = <span className={styles.taskFace}>{taskLabel(task.spec)}</span>;
-	if (task.takeable && onTake) {
-		return (
-			<Button
-				className={styles.taskCard}
-				data-status={task.status}
-				data-takeable="true"
-				data-region={task.region}
-				onPress={() => onTake(task)}
-			>
-				{body}
-			</Button>
-		);
-	}
 	return (
-		<div className={styles.taskCard} data-status={task.status} data-region={task.region}>
-			{body}
-		</div>
+		<TaskCatalogCard
+			task={task.spec}
+			size="table"
+			status={task.status}
+			takeable={task.takeable}
+			showMeta
+			region={task.region}
+			onPress={task.takeable && onTake ? () => onTake(task) : undefined}
+		/>
 	);
 }
 

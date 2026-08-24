@@ -283,6 +283,11 @@
 	max-width: 100%;
 }
 
+.inspectCard {
+	width: min(8.75rem, 100%);
+	justify-self: center;
+}
+
 /* Play keeps the lobby ring on phones; lobby flex-collapse hides seat panels. */
 @container (max-width: 40rem) {
 	.table {
