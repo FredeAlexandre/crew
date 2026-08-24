@@ -5,6 +5,7 @@
 	width: 100%;
 	min-height: 0;
 	flex: 1;
+	--suit-submarine: #2e2a24;
 }
 
 .row,

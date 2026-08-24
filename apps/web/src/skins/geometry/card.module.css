@@ -100,9 +100,27 @@ button.card {
 }
 
 .card[data-suit="submarine"] {
-	--suit: var(--suit-submarine);
-	--face: color-mix(in srgb, #ece8e0 82%, var(--suit-submarine) 18%);
-	border-radius: 0.5rem 0.5rem 0.95rem 0.95rem;
+	--suit: color-mix(in srgb, var(--suit-submarine) 72%, var(--accent) 28%);
+	--face: #1b1915;
+	--ink-face: #ebe4d6;
+	border-radius: 0.42rem 0.42rem 1.05rem 1.05rem;
+	background-image:
+		radial-gradient(
+			ellipse 70% 48% at 50% 46%,
+			color-mix(in srgb, var(--suit-submarine) 18%, transparent) 0%,
+			transparent 72%
+		),
+		linear-gradient(
+			168deg,
+			color-mix(in srgb, var(--face) 70%, #4a4538) 0%,
+			var(--face) 46%,
+			#100e0c 100%
+		);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--suit) 42%, transparent),
+		inset 0 0 0 3px color-mix(in srgb, #000 40%, transparent),
+		0 2px 4px rgb(0 0 0 / 0.3),
+		0 8px 16px rgb(0 0 0 / 0.24);
 }
 
 .index {
@@ -135,56 +153,43 @@ button.card {
 
 .mark,
 .pip {
-	background: var(--suit, var(--muted));
 	flex-shrink: 0;
 }
 
 .mark {
-	width: 0.68rem;
-	height: 0.68rem;
+	--mark-size: 0.68rem;
 }
 
 .hand .mark,
 .trick .mark {
-	width: 0.76rem;
-	height: 0.76rem;
+	--mark-size: 0.76rem;
 }
 
 .pip {
-	width: 1.35rem;
-	height: 1.35rem;
+	--mark-size: 1.35rem;
 	justify-self: center;
 	align-self: center;
 }
 
 .trick .pip {
-	width: 1.6rem;
+	--mark-size: 1.6rem;
+}
+
+.card[data-suit="submarine"] .value {
+	font-weight: 700;
+}
+
+.card[data-suit="submarine"] .pip {
+	--mark-size: 1.55rem;
+	width: 3.7rem;
 	height: 1.6rem;
+	color: var(--suit-submarine);
 }
 
-.mark[data-suit="pink"],
-.pip[data-suit="pink"] {
-	border-radius: 50%;
-}
-
-.mark[data-suit="yellow"],
-.pip[data-suit="yellow"] {
-	clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-
-.mark[data-suit="green"],
-.pip[data-suit="green"] {
-	border-radius: 0.08rem;
-}
-
-.mark[data-suit="blue"],
-.pip[data-suit="blue"] {
-	clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-}
-
-.mark[data-suit="submarine"],
-.pip[data-suit="submarine"] {
-	clip-path: polygon(0 40%, 70% 40%, 70% 15%, 100% 50%, 70% 85%, 70% 60%, 0 60%);
+.trick[data-suit="submarine"] .pip {
+	--mark-size: 1.72rem;
+	width: 4.05rem;
+	height: 1.78rem;
 }
 
 .stowed .pip,
@@ -201,6 +206,11 @@ button.card {
 .illegal {
 	--face: #d8d2c6;
 	border-color: color-mix(in srgb, var(--suit, var(--muted)) 55%, var(--muted));
+}
+
+.illegal[data-suit="submarine"] {
+	--face: #2a2722;
+	--ink-face: color-mix(in srgb, #ebe4d6 62%, var(--muted));
 }
 
 .selected {

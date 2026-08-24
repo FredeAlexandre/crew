@@ -1,6 +1,7 @@
 import { type CardId, splitCardId } from "@crew/protocol";
 import { Button } from "react-aria-components";
 import styles from "./card.module.css";
+import { SuitMark } from "./SuitMark.tsx";
 
 type CardSize = "hand" | "trick" | "token";
 
@@ -44,7 +45,7 @@ export function CardFace({
 	const index = (
 		<span className={styles.index}>
 			<span className={styles.value}>{value}</span>
-			<span className={styles.mark} data-suit={suit} />
+			<SuitMark suit={suit} className={styles.mark} />
 		</span>
 	);
 
@@ -54,10 +55,10 @@ export function CardFace({
 		) : (
 			<>
 				{index}
-				<span className={styles.pip} data-suit={suit} aria-hidden="true" />
+				<SuitMark suit={suit} className={styles.pip} detailed />
 				<span className={`${styles.index} ${styles.indexTail}`} aria-hidden="true">
 					<span className={styles.value}>{value}</span>
-					<span className={styles.mark} data-suit={suit} />
+					<SuitMark suit={suit} className={styles.mark} />
 				</span>
 			</>
 		);
