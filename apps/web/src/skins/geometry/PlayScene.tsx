@@ -15,6 +15,8 @@ const SONAR_POSITION_COPY: Record<SonarPosition, string> = {
 	lowest: "Lowest",
 };
 
+type QueuedSonar = { cardId: CardId; position: SonarPosition };
+
 export function PlayScene({
 	view,
 	sendIntent,
@@ -24,6 +26,7 @@ export function PlayScene({
 }) {
 	const [selected, setSelected] = useState<CardId | null>(null);
 	const [sonarOpen, setSonarOpen] = useState(false);
+	const [queuedSonar, setQueuedSonar] = useState<QueuedSonar | null>(null);
 	const [lastTrickOpen, setLastTrickOpen] = useState(false);
 	const [sonarDetailRegion, setSonarDetailRegion] = useState<
 		TableView["seats"][number]["region"] | null
@@ -42,13 +45,27 @@ export function PlayScene({
 	const hint = selectedCard && !selectedCard.legal ? illegalCopy(selectedCard.illegalReason) : null;
 	const canPlaySelected = Boolean(view.affordances.canPlay && selectedCard?.legal && !sonarOpen);
 	const canPassSelected = Boolean(view.affordances.canPassDistressCard && selectedCard?.legal);
+	const confirmRail = Boolean(
+		(view.affordances.canPlay && !sonarOpen) || view.affordances.canPassDistressCard,
+	);
 	const sonarIds = new Set(view.sonarCandidates.map((candidate) => candidate.cardId));
 	const sonarPositions = view.sonarCandidates
 		.filter((candidate) => candidate.cardId === selected)
 		.map((candidate) => candidate.position);
+	const sonarEnabled =
+		view.scene === "play" &&
+		view.overlay === "none" &&
+		view.chrome.sonarAvailable &&
+		!view.chrome.flags.sonarDisabled;
+	const shownSeats = withQueuedSonar(view.seats, queuedSonar);
+	const shownHand = withQueuedHand(view.hand, queuedSonar);
 	const displayHand = sonarOpen
-		? view.hand.map((card) => ({ ...card, legal: sonarIds.has(card.cardId) }))
-		: view.hand;
+		? shownHand.map((card) => ({ ...card, legal: sonarIds.has(card.cardId) }))
+		: shownHand;
+	const sonarDetailSeat =
+		sonarDetailRegion === null
+			? null
+			: (shownSeats.find((seat) => seat.region === sonarDetailRegion) ?? null);
 	const canPeek =
 		view.scene === "play" &&
 		view.affordances.canPeekLastTrick &&
@@ -58,10 +75,6 @@ export function PlayScene({
 	const isDraft = view.scene === "taskDraft";
 	const quietHand = isDraft || view.scene === "deal";
 	const turn = isDraft ? turnCopy(view) : null;
-	const sonarDetailSeat =
-		sonarDetailRegion === null
-			? null
-			: (view.seats.find((seat) => seat.region === sonarDetailRegion) ?? null);
 
 	useEffect(() => {
 		if (view.overlay !== "none") {
@@ -76,7 +89,34 @@ export function PlayScene({
 		setLastTrickOpen(false);
 		setSonarDetailRegion(null);
 		setSelected(null);
+		setQueuedSonar(null);
 	}, [view.attemptId]);
+
+	useEffect(() => {
+		if (queuedSonar === null) {
+			return;
+		}
+		const self = view.seats.find((seat) => seat.region === "seat.self");
+		if (self?.sonar.communication !== null && self?.sonar.communication !== undefined) {
+			setQueuedSonar(null);
+			return;
+		}
+		const match = view.sonarCandidates.find((candidate) => candidate.cardId === queuedSonar.cardId);
+		if (match === undefined) {
+			setQueuedSonar(null);
+			return;
+		}
+		if (match.position !== queuedSonar.position) {
+			setQueuedSonar({ cardId: queuedSonar.cardId, position: match.position });
+			return;
+		}
+		if (!view.affordances.canSonar || sendIntent === undefined) {
+			return;
+		}
+		sendIntent({ type: "sonar.use", cardId: match.cardId, position: match.position });
+		setQueuedSonar(null);
+		setSonarOpen(false);
+	}, [queuedSonar, sendIntent, view]);
 
 	useEffect(() => {
 		if (!sonarOpen && !lastTrickOpen && sonarDetailRegion === null) {
@@ -139,7 +179,17 @@ export function PlayScene({
 		if (selected === null) {
 			return;
 		}
-		sendIntent?.({ type: "sonar.use", cardId: selected, position });
+		if (view.affordances.canSonar) {
+			sendIntent?.({ type: "sonar.use", cardId: selected, position });
+			setQueuedSonar(null);
+		} else {
+			setQueuedSonar({ cardId: selected, position });
+		}
+		setSonarOpen(false);
+	}
+
+	function cancelQueuedSonar() {
+		setQueuedSonar(null);
 		setSonarOpen(false);
 	}
 
@@ -159,6 +209,7 @@ export function PlayScene({
 							overlay={overlay}
 							sonarDetailSeat={sonarDetailSeat}
 							sonarPositions={sonarPositions}
+							queued={!view.affordances.canSonar}
 							onSkipDistress={
 								view.affordances.canSkipDistress && sendIntent ? skipDistress : undefined
 							}
@@ -166,6 +217,7 @@ export function PlayScene({
 								view.affordances.canActivateDistress && sendIntent ? activateDistress : undefined
 							}
 							onUseSonar={useSonar}
+							onCancelQueue={queuedSonar !== null ? cancelQueuedSonar : undefined}
 							onCloseSkin={closeSkinOverlay}
 						/>
 					</div>
@@ -175,7 +227,7 @@ export function PlayScene({
 				className={`${sceneStyles.ring} ${styles.playRing}`}
 				data-count={String(view.playerCount)}
 			>
-				{view.seats.map((seat) => {
+				{shownSeats.map((seat) => {
 					const isSelf = seat.region === "seat.self";
 					return (
 						<PlaySeat
@@ -185,20 +237,21 @@ export function PlayScene({
 							chairClassName={`${sceneStyles.chair} ${styles.playChair}`}
 							onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
 							onSonarDetail={() => openSonarDetail(seat.region)}
-							canSonar={isSelf && view.affordances.canSonar && !sonarOpen}
-							canPlay={isSelf && canPlaySelected}
-							canPass={isSelf && (isDraft ? view.affordances.canPassTask : canPassSelected)}
+							canSonar={isSelf && sonarEnabled && !sonarOpen}
+							canPass={isSelf && isDraft && view.affordances.canPassTask}
 							onSonar={
 								isSelf
 									? () => {
 											setLastTrickOpen(false);
 											setSonarDetailRegion(null);
+											if (queuedSonar !== null) {
+												setSelected(queuedSonar.cardId);
+											}
 											setSonarOpen(true);
 										}
 									: undefined
 							}
-							onPlay={isSelf ? playCard : undefined}
-							onPass={isSelf ? (isDraft ? passTask : passDistressCard) : undefined}
+							onPass={isSelf && isDraft ? passTask : undefined}
 						/>
 					);
 				})}
@@ -224,6 +277,20 @@ export function PlayScene({
 					quiet={quietHand}
 					onSelect={setSelected}
 				/>
+				{confirmRail ? (
+					<div className={styles.handConfirm}>
+						{canPassSelected ? (
+							<Button className={styles.handAction} onPress={passDistressCard}>
+								Pass
+							</Button>
+						) : null}
+						{canPlaySelected ? (
+							<Button className={styles.handAction} onPress={playCard}>
+								Play
+							</Button>
+						) : null}
+					</div>
+				) : null}
 			</div>
 		</div>
 	);
@@ -297,18 +364,22 @@ function OverlayBody({
 	overlay,
 	sonarDetailSeat,
 	sonarPositions,
+	queued = false,
 	onSkipDistress,
 	onActivateDistress,
 	onUseSonar,
+	onCancelQueue,
 	onCloseSkin,
 }: {
 	view: TableView;
 	overlay: Overlay;
 	sonarDetailSeat: TableView["seats"][number] | null;
 	sonarPositions: SonarPosition[];
+	queued?: boolean;
 	onSkipDistress?: () => void;
 	onActivateDistress?: (direction: DistressDirection) => void;
 	onUseSonar: (position: SonarPosition) => void;
+	onCancelQueue?: () => void;
 	onCloseSkin: () => void;
 }) {
 	if (overlay === "distress") {
@@ -359,7 +430,11 @@ function OverlayBody({
 		return (
 			<>
 				<p className={styles.overlayTitle}>Sonar</p>
-				<p className={styles.overlayCopy}>Pick a color card, then highest, only, or lowest.</p>
+				<p className={styles.overlayCopy}>
+					{queued
+						? "Pick a color card, then highest, only, or lowest. The crew sees it after this trick. You can change it until then."
+						: "Pick a color card, then highest, only, or lowest."}
+				</p>
 				{sonarPositions.length > 0 ? (
 					<div className={styles.overlayActions}>
 						{sonarPositions.map((position) => (
@@ -372,6 +447,11 @@ function OverlayBody({
 							</Button>
 						))}
 					</div>
+				) : null}
+				{onCancelQueue ? (
+					<Button className={styles.overlayAction} onPress={onCancelQueue}>
+						Cancel queue
+					</Button>
 				) : null}
 				<Button className={styles.overlayAction} onPress={onCloseSkin}>
 					Close
@@ -409,5 +489,32 @@ function OverlayBody({
 			<p className={styles.overlayTitle}>Reminder</p>
 			<p className={styles.overlayCopy}>Follow suit. Submarine is trump. Sonar once.</p>
 		</>
+	);
+}
+
+function withQueuedSonar(
+	seats: TableView["seats"],
+	queued: QueuedSonar | null,
+): TableView["seats"] {
+	if (queued === null) {
+		return seats;
+	}
+	return seats.map((seat) => {
+		if (seat.region !== "seat.self" || seat.sonar.communication !== null) {
+			return seat;
+		}
+		return {
+			...seat,
+			sonar: { state: "communicating", communication: queued },
+		};
+	});
+}
+
+function withQueuedHand(hand: TableView["hand"], queued: QueuedSonar | null): TableView["hand"] {
+	if (queued === null) {
+		return hand;
+	}
+	return hand.map((card) =>
+		card.cardId === queued.cardId ? { ...card, communicated: true } : card,
 	);
 }

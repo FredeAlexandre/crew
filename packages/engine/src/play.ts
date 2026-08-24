@@ -40,7 +40,6 @@ export function playCard(
 	}
 
 	removeCard(hand, cardId);
-	clearSonarIfPlayed(state, seat, cardId, facts);
 
 	if (state.phase === "play") {
 		state.phase = "trick";
@@ -100,6 +99,9 @@ function resolveTrick(state: EngineState, facts: Fact[]): IllegalReason | null {
 		cardIds: trick.map((play) => play.cardId),
 		ledSuit,
 	});
+	for (const play of trick) {
+		clearSonarIfPlayed(state, play.seatId, play.cardId, facts);
+	}
 
 	const ctx = contextAfterTrick(state, trick, winner, ledSuit);
 	const { failed, events } = evaluateOpenTasks(state, ctx);

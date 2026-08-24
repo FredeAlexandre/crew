@@ -162,10 +162,8 @@ export function PlaySeat({
 	onPeekLastTrick,
 	onSonarDetail,
 	canSonar,
-	canPlay,
 	canPass,
 	onSonar,
-	onPlay,
 	onPass,
 	chairClassName,
 }: {
@@ -174,10 +172,8 @@ export function PlaySeat({
 	onPeekLastTrick?: () => void;
 	onSonarDetail?: () => void;
 	canSonar?: boolean;
-	canPlay?: boolean;
 	canPass?: boolean;
 	onSonar?: () => void;
-	onPlay?: () => void;
 	onPass?: () => void;
 	chairClassName?: string;
 }) {
@@ -228,11 +224,6 @@ export function PlaySeat({
 						{canPass && onPass ? (
 							<Button className={styles.textAction} onPress={onPass}>
 								Pass
-							</Button>
-						) : null}
-						{canPlay && onPlay ? (
-							<Button className={styles.textAction} onPress={onPlay}>
-								Play
 							</Button>
 						) : null}
 					</div>
