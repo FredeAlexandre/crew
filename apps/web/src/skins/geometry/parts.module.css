@@ -218,61 +218,6 @@
 	gap: 0.4rem;
 }
 
-.task {
-	font-size: 0.78rem;
-	color: var(--ink);
-}
-
-.task[data-status="completed"] {
-	opacity: 0.4;
-	text-decoration: line-through;
-}
-
-.task[data-status="failed"] {
-	color: var(--muted);
-	text-decoration: line-through;
-}
-
-.task[data-takeable="true"] {
-	color: var(--accent);
-}
-
-.taskCard {
-	display: grid;
-	place-items: center;
-	width: min(7.5rem, 42cqi, 100%);
-	min-height: 5.5rem;
-	padding: 0.55rem 0.45rem;
-	border-radius: 0.45rem;
-	background: color-mix(in srgb, var(--table) 70%, var(--ink) 12%);
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--muted) 45%, transparent);
-	color: inherit;
-	font: inherit;
-	text-align: center;
-}
-
-@container (min-width: 40rem) {
-	.taskCard {
-		width: 7.5rem;
-		min-height: 9.5rem;
-		padding: 0.75rem;
-	}
-}
-
-.taskCard[data-takeable="true"] {
-	box-shadow: inset 0 0 0 2px var(--accent);
-	cursor: pointer;
-}
-
-.taskCard[data-status="completed"],
-.taskCard[data-status="failed"] {
-	opacity: 0.45;
-}
-
-.taskFace {
-	font-size: 1.05rem;
-}
-
 .textAction {
 	min-height: 44px;
 	padding-inline: 0.85rem;
@@ -436,11 +381,16 @@
 
 .seatTasks {
 	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 0.2rem;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: center;
+	gap: 0.28rem;
 	min-width: 2.4rem;
 	min-height: 2.4rem;
+}
+
+.playSeat[data-slot="self"] .seatTasks {
+	max-width: 100%;
 }
 
 .seatSonar {
@@ -622,8 +572,13 @@ button.wonPile {
 		gap: 0.5rem 0.65rem;
 	}
 
+	.playSeat[data-slot="self"] .seatTasks {
+		width: 100%;
+		max-width: 22rem;
+	}
+
 	.playSeat:not([data-slot="self"]) {
-		max-width: 4.75rem;
+		max-width: 5.15rem;
 	}
 
 	.playSeat:not([data-slot="self"]) .seatHead {
@@ -679,18 +634,10 @@ button.wonPile {
 
 	.playSeat:not([data-slot="self"]) .seatTasks,
 	.playSeat:not([data-slot="self"]) .taskHole {
-		min-width: 2rem;
-		min-height: 2rem;
-		width: 2rem;
-		height: 2rem;
-	}
-
-	.playSeat:not([data-slot="self"]) .task {
-		font-size: 0.62rem;
-		text-align: center;
-		line-height: 1.15;
-		max-width: 4.5rem;
-		word-break: break-word;
+		min-width: 3.2rem;
+		min-height: 3.2rem;
+		width: auto;
+		height: auto;
 	}
 
 	.playSeat:not([data-slot="self"]) .seatSonar {

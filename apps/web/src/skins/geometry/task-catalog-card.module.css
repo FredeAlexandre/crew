@@ -1,7 +1,7 @@
 .card {
 	--face: #f3eee4;
 	display: grid;
-	grid-template-rows: auto minmax(0, 1fr) auto auto;
+	grid-template-rows: minmax(0, 1fr) auto;
 	gap: 0.25rem;
 	width: 100%;
 	min-height: 8.5rem;
@@ -20,9 +20,51 @@
 			var(--face) 100%
 		);
 	color: #1c1914;
+	font: inherit;
+	text-align: inherit;
 	box-shadow:
 		inset 0 0 0 1px color-mix(in srgb, #fff 70%, transparent),
 		0 2px 8px rgb(0 0 0 / 0.18);
+}
+
+button.card {
+	min-height: 8.5rem;
+	min-width: 44px;
+	padding: 0.4rem 0.35rem 0.45rem;
+	border: 2px solid color-mix(in srgb, var(--kind-accent, var(--muted)) 45%, #8a8276);
+	background:
+		radial-gradient(
+			circle at 50% 0%,
+			color-mix(in srgb, var(--kind-accent, var(--muted)) 12%, #fff) 0%,
+			transparent 55%
+		),
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--face) 94%, var(--kind-accent, var(--muted)) 6%) 0%,
+			var(--face) 100%
+		);
+	color: #1c1914;
+	cursor: pointer;
+}
+
+.card[data-chrome="true"] {
+	grid-template-rows: auto minmax(0, 1fr) auto auto;
+}
+
+.card[data-takeable="true"] {
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, #fff 70%, transparent),
+		0 0 0 2px var(--accent),
+		0 2px 8px rgb(0 0 0 / 0.18);
+}
+
+.card[data-status="completed"],
+.card[data-status="failed"] {
+	opacity: 0.48;
+}
+
+.card[data-status="failed"] {
+	--kind-accent: #c44b4b;
 }
 
 .card[data-kind="winCards"],
@@ -130,4 +172,117 @@
 	font-size: 0.52rem;
 	font-weight: 700;
 	letter-spacing: 0.04em;
+}
+
+.card[data-size="table"] {
+	width: min(7.35rem, 100%);
+	min-height: 8.25rem;
+	flex-shrink: 0;
+}
+
+button.card[data-size="table"] {
+	min-height: 8.25rem;
+}
+
+.card[data-size="self"] {
+	width: 5.5rem;
+	min-height: 6.55rem;
+	padding: 0.32rem 0.26rem 0.34rem;
+	flex-shrink: 0;
+}
+
+button.card[data-size="self"] {
+	min-height: 6.55rem;
+	min-width: 44px;
+	padding: 0.32rem 0.26rem 0.34rem;
+}
+
+.card[data-size="self"] .artSlot {
+	min-height: 3.35rem;
+	zoom: 0.78;
+}
+
+.card[data-size="self"] .caption {
+	font-size: 0.62rem;
+	line-height: 1.22;
+}
+
+.card[data-size="compact"] {
+	width: 4.35rem;
+	min-height: 5.5rem;
+	padding: 0.28rem 0.2rem 0.3rem;
+	gap: 0.16rem;
+	flex-shrink: 0;
+}
+
+button.card[data-size="compact"] {
+	min-height: 5.5rem;
+	min-width: 44px;
+	padding: 0.28rem 0.2rem 0.3rem;
+}
+
+.card[data-size="compact"] .artSlot {
+	min-height: 2.85rem;
+	zoom: 0.62;
+}
+
+.card[data-size="compact"] .caption {
+	font-size: 0.55rem;
+	line-height: 1.2;
+}
+
+@container (max-width: 40rem) {
+	.card[data-size="table"] {
+		width: min(6.5rem, 100%);
+		min-height: 7.5rem;
+	}
+
+	button.card[data-size="table"] {
+		min-height: 7.5rem;
+	}
+
+	.card[data-size="table"] .artSlot {
+		min-height: 3.6rem;
+		zoom: 0.86;
+	}
+
+	.card[data-size="table"] .caption {
+		font-size: 0.62rem;
+	}
+
+	.card[data-size="self"] {
+		width: 5.05rem;
+		min-height: 6.15rem;
+	}
+
+	button.card[data-size="self"] {
+		min-height: 6.15rem;
+	}
+
+	.card[data-size="compact"] {
+		width: 3.2rem;
+		min-height: 3.55rem;
+		position: relative;
+	}
+
+	button.card[data-size="compact"] {
+		min-height: 3.55rem;
+	}
+
+	.card[data-size="compact"] .artSlot {
+		min-height: 3.1rem;
+		zoom: 0.54;
+	}
+
+	.card[data-size="compact"] .caption {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
 }

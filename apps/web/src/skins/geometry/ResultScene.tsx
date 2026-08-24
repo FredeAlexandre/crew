@@ -43,7 +43,7 @@ export function ResultScene({
 			{failed.length > 0 ? (
 				<div className={styles.failedTasks}>
 					{failed.map((task) => (
-						<TaskMark key={task.instanceId} task={task} />
+						<TaskMark key={task.instanceId} task={task} size="table" />
 					))}
 				</div>
 			) : null}
