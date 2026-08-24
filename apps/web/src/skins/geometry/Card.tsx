@@ -12,6 +12,7 @@ type CardFaceProps = {
 	muted?: boolean;
 	size?: CardSize;
 	lead?: boolean;
+	revealed?: boolean;
 	onPress?: () => void;
 };
 
@@ -23,6 +24,7 @@ export function CardFace({
 	muted = false,
 	size = "hand",
 	lead = false,
+	revealed = true,
 	onPress,
 }: CardFaceProps) {
 	const { suit, value } = splitCardId(cardId);
@@ -34,16 +36,31 @@ export function CardFace({
 		communicated ? styles.communicated : "",
 		muted ? styles.muted : "",
 		lead ? styles.lead : "",
+		revealed ? "" : styles.stowed,
 	]
 		.filter(Boolean)
 		.join(" ");
 
-	const body = (
-		<>
+	const index = (
+		<span className={styles.index}>
 			<span className={styles.value}>{value}</span>
 			<span className={styles.mark} data-suit={suit} />
-		</>
+		</span>
 	);
+
+	const body =
+		size === "token" ? (
+			index
+		) : (
+			<>
+				{index}
+				<span className={styles.pip} data-suit={suit} aria-hidden="true" />
+				<span className={`${styles.index} ${styles.indexTail}`} aria-hidden="true">
+					<span className={styles.value}>{value}</span>
+					<span className={styles.mark} data-suit={suit} />
+				</span>
+			</>
+		);
 
 	if (onPress) {
 		return (
