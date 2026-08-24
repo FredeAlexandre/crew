@@ -6,6 +6,9 @@ import styles from "../styles/assets.module.css";
 
 export const Route = createFileRoute("/assets/")({
 	component: AssetsIndexRoute,
+	head: () => ({
+		meta: [{ title: "Assets · Crew" }],
+	}),
 });
 
 function AssetsIndexRoute() {
@@ -20,7 +23,7 @@ function AssetsIndexRoute() {
 			<div className={styles.tiles}>
 				<Link className={styles.tile} to="/assets/missions">
 					<h2 className={styles.tileTitle}>Mission tasks</h2>
-					<p className={styles.tileCopy}>The 96-card task set, grouped by objective.</p>
+					<p className={styles.tileCopy}>Task cards grouped by objective.</p>
 					<p className={styles.tileMeta}>{TASK_CATALOG_PUBLIC.length} tasks</p>
 				</Link>
 				<Link className={styles.tile} to="/assets/playing-cards">

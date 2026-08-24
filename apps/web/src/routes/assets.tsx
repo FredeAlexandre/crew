@@ -3,9 +3,6 @@ import styles from "../styles/assets.module.css";
 
 export const Route = createFileRoute("/assets")({
 	component: AssetsLayout,
-	head: () => ({
-		meta: [{ title: "Assets · Crew" }],
-	}),
 });
 
 function AssetsLayout() {
