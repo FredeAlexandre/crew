@@ -1,26 +1,51 @@
 .card {
 	--face: #f3eee4;
 	--ink-face: #1c1914;
+	--card-shadow: 0 1px 2px rgb(0 0 0 / 0.18), 0 4px 10px rgb(0 0 0 / 0.14);
 	display: grid;
 	justify-items: center;
 	align-content: center;
 	gap: 0.15rem;
-	padding: 0.28rem 0.22rem;
+	padding: 0.32rem 0.26rem;
 	border: 2.5px solid var(--suit, var(--muted));
-	border-radius: 0.5rem;
-	background: var(--face);
+	border-radius: 0.55rem;
+	background-color: var(--face);
+	background-image: linear-gradient(
+		168deg,
+		color-mix(in srgb, var(--face) 88%, #fff) 0%,
+		var(--face) 42%,
+		color-mix(in srgb, var(--face) 92%, #000) 100%
+	);
 	color: var(--ink-face);
 	font: inherit;
 	cursor: default;
 	position: relative;
 	z-index: 0;
+	isolation: isolate;
 	flex-shrink: 0;
 	max-width: 100%;
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--muted)) 28%, #fff);
+	box-shadow:
+		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--muted)) 28%, #fff),
+		var(--card-shadow);
+}
+
+button.card {
+	background-color: var(--face);
+	background-image: linear-gradient(
+		168deg,
+		color-mix(in srgb, var(--face) 88%, #fff) 0%,
+		var(--face) 42%,
+		color-mix(in srgb, var(--face) 92%, #000) 100%
+	);
+	border: 2.5px solid var(--suit, var(--muted));
+	color: var(--ink-face);
+	min-height: 0;
+	min-width: 0;
+	padding: 0.32rem 0.26rem;
 }
 
 .hand {
-	width: var(--card-w, 3.75rem);
+	width: var(--card-w, 4.25rem);
 	aspect-ratio: 2.5 / 3.6;
 	height: auto;
 	min-width: 0;
@@ -29,11 +54,11 @@
 	grid-template-rows: auto minmax(0, 1fr) auto;
 	justify-items: start;
 	align-content: stretch;
-	padding: 0.22rem 0.2rem 0.18rem;
+	padding: 0.26rem 0.22rem 0.22rem;
 }
 
 .trick {
-	width: var(--trick-w, 4.1rem);
+	width: var(--trick-w, 4.65rem);
 	aspect-ratio: 2.5 / 3.6;
 	height: auto;
 	min-width: 0;
@@ -42,11 +67,11 @@
 	grid-template-rows: auto minmax(0, 1fr) auto;
 	justify-items: start;
 	align-content: stretch;
-	padding: 0.28rem 0.24rem 0.22rem;
+	padding: 0.32rem 0.28rem 0.26rem;
 }
 
 .token {
-	width: var(--token-w, 2.55rem);
+	width: var(--token-w, 2.85rem);
 	min-width: 0;
 	aspect-ratio: 2.5 / 3.5;
 	height: auto;
@@ -93,7 +118,7 @@
 }
 
 .value {
-	font-size: 1.2rem;
+	font-size: 1.28rem;
 	font-variant-numeric: tabular-nums;
 	line-height: 1;
 	font-weight: 600;
@@ -101,11 +126,11 @@
 
 .hand .value,
 .trick .value {
-	font-size: 1.15rem;
+	font-size: 1.22rem;
 }
 
 .token .value {
-	font-size: 1.05rem;
+	font-size: 1.08rem;
 }
 
 .mark,
@@ -115,26 +140,26 @@
 }
 
 .mark {
-	width: 0.62rem;
-	height: 0.62rem;
+	width: 0.68rem;
+	height: 0.68rem;
 }
 
 .hand .mark,
 .trick .mark {
-	width: 0.7rem;
-	height: 0.7rem;
+	width: 0.76rem;
+	height: 0.76rem;
 }
 
 .pip {
-	width: 1.2rem;
-	height: 1.2rem;
+	width: 1.35rem;
+	height: 1.35rem;
 	justify-self: center;
 	align-self: center;
 }
 
 .trick .pip {
-	width: 1.45rem;
-	height: 1.45rem;
+	width: 1.6rem;
+	height: 1.6rem;
 }
 
 .mark[data-suit="pink"],
@@ -174,7 +199,7 @@
 }
 
 .illegal {
-	--face: color-mix(in srgb, #d8d2c6 88%, var(--table) 12%);
+	--face: #d8d2c6;
 	border-color: color-mix(in srgb, var(--suit, var(--muted)) 55%, var(--muted));
 }
 
@@ -187,7 +212,8 @@
 .communicated {
 	box-shadow:
 		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--muted)) 28%, #fff),
-		inset 0 0 0 2px var(--accent);
+		inset 0 0 0 2px var(--accent),
+		var(--card-shadow);
 }
 
 .muted .value,
@@ -199,12 +225,15 @@
 .lead {
 	box-shadow:
 		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--muted)) 28%, #fff),
-		0 0 0 1px var(--accent);
+		0 0 0 1px var(--accent),
+		var(--card-shadow);
 }
 
 .back {
-	border-color: color-mix(in srgb, var(--muted) 55%, var(--table));
-	background: repeating-linear-gradient(-18deg, #cfc6b4 0 7px, #b9b09e 7px 14px);
+	border-color: color-mix(in srgb, var(--muted) 55%, #6b655c);
+	background-color: #cfc6b4;
+	background-image: repeating-linear-gradient(-18deg, #cfc6b4 0 7px, #b9b09e 7px 14px);
+	box-shadow: var(--card-shadow);
 }
 
 .back .value,

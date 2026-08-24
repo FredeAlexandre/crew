@@ -184,14 +184,14 @@
 }
 
 .fan {
-	--card-w: 3.75rem;
-	--card-h: 5.4rem;
-	--lift: 2.35rem;
+	--card-w: 4.25rem;
+	--card-h: 6.12rem;
+	--lift: 2.75rem;
 	position: relative;
-	width: min(calc(100% - 0.2rem), 26rem);
+	width: min(calc(100% - 0.2rem), 28rem);
 	max-width: 100%;
 	min-width: 0;
-	height: calc(var(--card-h) + var(--lift) + 1.15rem);
+	height: calc(var(--card-h) + var(--lift) + 1.25rem);
 	justify-self: center;
 	touch-action: none;
 	user-select: none;
@@ -200,16 +200,16 @@
 
 @container (min-width: 40rem) {
 	.fan {
-		--card-w: 3.9rem;
-		--card-h: 5.6rem;
-		--lift: 2.5rem;
+		--card-w: 4.5rem;
+		--card-h: 6.48rem;
+		--lift: 2.95rem;
 	}
 }
 
 .fanQuiet {
-	--card-w: 3.05rem;
-	--card-h: 4.4rem;
-	--lift: 1.6rem;
+	--card-w: 3.45rem;
+	--card-h: 4.97rem;
+	--lift: 1.85rem;
 }
 
 .fanSlot {
