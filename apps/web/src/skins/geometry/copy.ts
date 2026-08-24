@@ -84,10 +84,6 @@ export function selfSeat(view: TableView): SeatView | undefined {
 	return view.seats.find((seat) => seat.region === "seat.self");
 }
 
-export function opponentSeats(view: TableView): SeatView[] {
-	return view.seats.filter((seat) => seat.region !== "seat.self");
-}
-
 export type LobbySlot = "self" | "west" | "east" | "north" | "northwest" | "northeast";
 
 export function lobbySlot(region: SeatView["region"], playerCount: number): LobbySlot {
@@ -118,31 +114,14 @@ export function lobbySlot(region: SeatView["region"], playerCount: number): Lobb
 	return "west";
 }
 
-export function tablePlacement(view: TableView): {
-	north: SeatView[];
-	east: SeatView[];
-	west: SeatView[];
-} {
-	const opponents = opponentSeats(view);
-	if (view.playerCount <= 3) {
-		return {
-			north: [],
-			east: opponents.filter((seat) => seat.region === "seat.1"),
-			west: opponents.filter((seat) => seat.region === "seat.2"),
-		};
+export function sonarPositionCopy(position: "highest" | "only" | "lowest"): string {
+	if (position === "highest") {
+		return "Highest of this color";
 	}
-	if (view.playerCount === 4) {
-		return {
-			north: opponents.filter((seat) => seat.region === "seat.2"),
-			east: opponents.filter((seat) => seat.region === "seat.1"),
-			west: opponents.filter((seat) => seat.region === "seat.3"),
-		};
+	if (position === "only") {
+		return "Only card of this color";
 	}
-	return {
-		north: opponents.filter((seat) => seat.region === "seat.2" || seat.region === "seat.3"),
-		east: opponents.filter((seat) => seat.region === "seat.1"),
-		west: opponents.filter((seat) => seat.region === "seat.4"),
-	};
+	return "Lowest of this color";
 }
 
 export function trickSlot(

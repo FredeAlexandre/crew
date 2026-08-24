@@ -1,12 +1,13 @@
 import type { CardId, DistressDirection, SonarPosition } from "@crew/protocol";
-import type { Overlay, TableView } from "@crew/view-model/fixtures";
+import type { Overlay, TableView, TaskView } from "@crew/view-model/fixtures";
 import { useEffect, useState } from "react";
 import { Button } from "react-aria-components";
 import type { ClientIntent } from "../../hooks/use-table.ts";
 import { CardBack, CardFace } from "./Card.tsx";
-import { illegalCopy, opponentSeats, selfSeat, tablePlacement, trickSlot } from "./copy.ts";
-import { ChromeLine, HandStrip, SeatPip, SelfDock } from "./parts.tsx";
+import { illegalCopy, lobbySlot, trickSlot, turnCopy } from "./copy.ts";
+import { ChromeLine, HandStrip, PlaySeat, SonarDetailBody, TaskCard } from "./parts.tsx";
 import styles from "./play.module.css";
+import sceneStyles from "./scenes.module.css";
 
 const SONAR_POSITION_COPY: Record<SonarPosition, string> = {
 	highest: "Highest",
@@ -24,7 +25,9 @@ export function PlayScene({
 	const [selected, setSelected] = useState<CardId | null>(null);
 	const [sonarOpen, setSonarOpen] = useState(false);
 	const [lastTrickOpen, setLastTrickOpen] = useState(false);
-	const self = selfSeat(view);
+	const [sonarDetailRegion, setSonarDetailRegion] = useState<
+		TableView["seats"][number]["region"] | null
+	>(null);
 	const overlay: Overlay =
 		view.overlay !== "none"
 			? view.overlay
@@ -32,9 +35,10 @@ export function PlayScene({
 				? "sonar"
 				: lastTrickOpen && view.lastTrick !== null
 					? "lastTrick"
-					: "none";
+					: sonarDetailRegion !== null
+						? "reminder"
+						: "none";
 	const selectedCard = view.hand.find((card) => card.cardId === selected);
-	const placement = tablePlacement(view);
 	const hint = selectedCard && !selectedCard.legal ? illegalCopy(selectedCard.illegalReason) : null;
 	const canPlaySelected = Boolean(view.affordances.canPlay && selectedCard?.legal && !sonarOpen);
 	const canPassSelected = Boolean(view.affordances.canPassDistressCard && selectedCard?.legal);
@@ -46,43 +50,61 @@ export function PlayScene({
 		? view.hand.map((card) => ({ ...card, legal: sonarIds.has(card.cardId) }))
 		: view.hand;
 	const canPeek =
+		view.scene === "play" &&
 		view.affordances.canPeekLastTrick &&
 		view.overlay === "none" &&
 		!sonarOpen &&
 		view.lastTrick !== null;
+	const isDraft = view.scene === "taskDraft";
+	const quietHand = isDraft || view.scene === "deal";
+	const turn = isDraft ? turnCopy(view) : null;
+	const sonarDetailSeat =
+		sonarDetailRegion === null
+			? null
+			: (view.seats.find((seat) => seat.region === sonarDetailRegion) ?? null);
 
 	useEffect(() => {
 		if (view.overlay !== "none") {
 			setSonarOpen(false);
 			setLastTrickOpen(false);
+			setSonarDetailRegion(null);
 		}
 	}, [view.overlay]);
 
 	useEffect(() => {
 		setSonarOpen(false);
 		setLastTrickOpen(false);
+		setSonarDetailRegion(null);
 		setSelected(null);
 	}, [view.attemptId]);
 
 	useEffect(() => {
-		if (!sonarOpen && !lastTrickOpen) {
+		if (!sonarOpen && !lastTrickOpen && sonarDetailRegion === null) {
 			return;
 		}
 		function onKey(event: KeyboardEvent) {
 			if (event.key === "Escape") {
 				setSonarOpen(false);
 				setLastTrickOpen(false);
+				setSonarDetailRegion(null);
 			}
 		}
 		window.addEventListener("keydown", onKey);
 		return () => window.removeEventListener("keydown", onKey);
-	}, [sonarOpen, lastTrickOpen]);
+	}, [sonarOpen, lastTrickOpen, sonarDetailRegion]);
 
 	function peekLastTrick() {
 		if (view.overlay !== "none" || sonarOpen || !view.affordances.canPeekLastTrick) {
 			return;
 		}
+		setSonarDetailRegion(null);
 		setLastTrickOpen(true);
+	}
+
+	function openSonarDetail(region: TableView["seats"][number]["region"]) {
+		setSonarOpen(false);
+		setLastTrickOpen(false);
+		setSonarDetailRegion(region);
 	}
 
 	function skipDistress() {
@@ -101,6 +123,10 @@ export function PlayScene({
 		setSelected(null);
 	}
 
+	function passTask() {
+		sendIntent?.({ type: "task.pass" });
+	}
+
 	function playCard() {
 		if (selected === null || !canPlaySelected) {
 			return;
@@ -117,53 +143,21 @@ export function PlayScene({
 		setSonarOpen(false);
 	}
 
+	function closeSkinOverlay() {
+		setSonarOpen(false);
+		setLastTrickOpen(false);
+		setSonarDetailRegion(null);
+	}
+
 	return (
 		<div className={styles.table} data-scene={view.scene} data-overlay={overlay}>
-			<div className={styles.crew}>
-				{opponentSeats(view).map((seat) => (
-					<SeatPip
-						key={seat.region}
-						seat={seat}
-						compact
-						onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
-					/>
-				))}
-			</div>
-			<div className={styles.north}>
-				{placement.north.map((seat) => (
-					<SeatPip
-						key={seat.region}
-						seat={seat}
-						onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
-					/>
-				))}
-			</div>
-			<div className={styles.west}>
-				{placement.west.map((seat) => (
-					<SeatPip
-						key={seat.region}
-						seat={seat}
-						onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
-					/>
-				))}
-			</div>
-			<div className={styles.east}>
-				{placement.east.map((seat) => (
-					<SeatPip
-						key={seat.region}
-						seat={seat}
-						onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
-					/>
-				))}
-			</div>
-			<div className={styles.well}>
-				<ChromeLine view={view} />
-				<Well view={view} />
-				{overlay !== "none" ? (
-					<div className={styles.overlay} data-region="overlay">
+			{overlay !== "none" ? (
+				<div className={styles.overlayLayer} data-region="overlay">
+					<div className={styles.overlay}>
 						<OverlayBody
 							view={view}
 							overlay={overlay}
+							sonarDetailSeat={sonarDetailSeat}
 							sonarPositions={sonarPositions}
 							onSkipDistress={
 								view.affordances.canSkipDistress && sendIntent ? skipDistress : undefined
@@ -172,40 +166,90 @@ export function PlayScene({
 								view.affordances.canActivateDistress && sendIntent ? activateDistress : undefined
 							}
 							onUseSonar={useSonar}
-							onCloseSkin={() => {
-								setSonarOpen(false);
-								setLastTrickOpen(false);
-							}}
+							onCloseSkin={closeSkinOverlay}
 						/>
 					</div>
-				) : null}
-			</div>
-			{self ? (
-				<div className={styles.self}>
-					<SelfDock
-						seat={self}
-						canSonar={view.affordances.canSonar && !sonarOpen}
-						canPlay={canPlaySelected}
-						canPass={canPassSelected}
-						onSonar={() => {
-							setLastTrickOpen(false);
-							setSonarOpen(true);
-						}}
-						onPlay={playCard}
-						onPass={passDistressCard}
-						onPeekLastTrick={canPeek && self.isLastTrickWinner ? peekLastTrick : undefined}
-					/>
 				</div>
 			) : null}
+			<div
+				className={`${sceneStyles.ring} ${styles.playRing}`}
+				data-count={String(view.playerCount)}
+			>
+				{view.seats.map((seat) => {
+					const isSelf = seat.region === "seat.self";
+					return (
+						<PlaySeat
+							key={seat.region}
+							seat={seat}
+							slot={lobbySlot(seat.region, view.playerCount)}
+							chairClassName={`${sceneStyles.chair} ${styles.playChair}`}
+							onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
+							onSonarDetail={() => openSonarDetail(seat.region)}
+							canSonar={isSelf && view.affordances.canSonar && !sonarOpen}
+							canPlay={isSelf && canPlaySelected}
+							canPass={isSelf && (isDraft ? view.affordances.canPassTask : canPassSelected)}
+							onSonar={
+								isSelf
+									? () => {
+											setLastTrickOpen(false);
+											setSonarDetailRegion(null);
+											setSonarOpen(true);
+										}
+									: undefined
+							}
+							onPlay={isSelf ? playCard : undefined}
+							onPass={isSelf ? (isDraft ? passTask : passDistressCard) : undefined}
+						/>
+					);
+				})}
+				<div className={`${sceneStyles.lobbyWell} ${styles.playWell}`}>
+					<ChromeLine view={view} />
+					<Well
+						view={view}
+						turn={turn}
+						onTake={
+							sendIntent
+								? (task: TaskView) =>
+										sendIntent({ type: "task.take", taskInstanceId: task.instanceId })
+								: undefined
+						}
+					/>
+				</div>
+			</div>
 			<div className={styles.handWrap}>
 				{hint && overlay !== "sonar" ? <p className={styles.hint}>{hint}</p> : null}
-				<HandStrip cards={displayHand} selected={selected} onSelect={setSelected} />
+				<HandStrip
+					cards={displayHand}
+					selected={selected}
+					quiet={quietHand}
+					onSelect={setSelected}
+				/>
 			</div>
 		</div>
 	);
 }
 
-function Well({ view }: { view: TableView }) {
+function Well({
+	view,
+	turn,
+	onTake,
+}: {
+	view: TableView;
+	turn: string | null;
+	onTake?: (task: TaskView) => void;
+}) {
+	if (view.scene === "taskDraft") {
+		return (
+			<div className={styles.draftWell} data-region="tasks.center">
+				{turn ? <p className={styles.draftPrompt}>{turn}. Take a task.</p> : null}
+				<div className={styles.taskRow}>
+					{view.centerTasks.map((task) => (
+						<TaskCard key={task.instanceId} task={task} onTake={onTake} />
+					))}
+				</div>
+			</div>
+		);
+	}
 	if (view.scene === "deal") {
 		return (
 			<div className={styles.stock} data-region="trick">
@@ -251,6 +295,7 @@ function Well({ view }: { view: TableView }) {
 function OverlayBody({
 	view,
 	overlay,
+	sonarDetailSeat,
 	sonarPositions,
 	onSkipDistress,
 	onActivateDistress,
@@ -259,6 +304,7 @@ function OverlayBody({
 }: {
 	view: TableView;
 	overlay: Overlay;
+	sonarDetailSeat: TableView["seats"][number] | null;
 	sonarPositions: SonarPosition[];
 	onSkipDistress?: () => void;
 	onActivateDistress?: (direction: DistressDirection) => void;
@@ -342,6 +388,16 @@ function OverlayBody({
 						<CardFace key={`${card.seatId}-${card.order}`} cardId={card.cardId} size="token" />
 					))}
 				</div>
+				<Button className={styles.overlayAction} onPress={onCloseSkin}>
+					Close
+				</Button>
+			</>
+		);
+	}
+	if (sonarDetailSeat) {
+		return (
+			<>
+				<SonarDetailBody seat={sonarDetailSeat} />
 				<Button className={styles.overlayAction} onPress={onCloseSkin}>
 					Close
 				</Button>
