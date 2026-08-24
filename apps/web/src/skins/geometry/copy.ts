@@ -75,13 +75,12 @@ export function illegalCopy(reason: IllegalReason | null): string | null {
 
 export function resultCopy(reason: string | null): string | null {
 	if (reason === "taskImpossible") {
-		return "A task became impossible.";
+		return "A task became impossible to complete.";
+	}
+	if (reason === "cardsExhausted") {
+		return "The crew ran out of cards before every task was complete.";
 	}
 	return reason;
-}
-
-export function selfSeat(view: TableView): SeatView | undefined {
-	return view.seats.find((seat) => seat.region === "seat.self");
 }
 
 export type LobbySlot = "self" | "west" | "east" | "north" | "northwest" | "northeast";
