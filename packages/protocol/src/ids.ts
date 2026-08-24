@@ -10,6 +10,16 @@ export const taskInstanceIdSchema = z.string().min(1);
 export const missionIdSchema = z.string().min(1);
 export const trickIdSchema = z.number().int().positive();
 
+export const MISSION_DIFFICULTY_MIN = 1;
+export const MISSION_DIFFICULTY_MAX = 16;
+export const DEFAULT_MISSION_DIFFICULTY = 4;
+export const DEFAULT_MISSION_ID = "1";
+export const missionDifficultySchema = z
+	.number()
+	.int()
+	.min(MISSION_DIFFICULTY_MIN)
+	.max(MISSION_DIFFICULTY_MAX);
+
 export type PlayerId = z.infer<typeof playerIdSchema>;
 export type AttemptId = z.infer<typeof attemptIdSchema>;
 export type RoomId = z.infer<typeof roomIdSchema>;

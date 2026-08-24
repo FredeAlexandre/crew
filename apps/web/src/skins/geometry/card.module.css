@@ -102,7 +102,6 @@ button.card {
 .card[data-suit="submarine"] {
 	--suit: var(--suit-submarine);
 	--face: color-mix(in srgb, #ece8e0 82%, var(--suit-submarine) 18%);
-	border-radius: 0.5rem 0.5rem 0.95rem 0.95rem;
 }
 
 .index {
@@ -133,13 +132,13 @@ button.card {
 	font-size: 1.08rem;
 }
 
-.mark,
-.pip {
-	background: var(--suit, var(--muted));
+.card .mark,
+.card .pip {
 	flex-shrink: 0;
+	color: var(--suit, var(--muted));
 }
 
-.mark {
+.card .mark {
 	width: 0.68rem;
 	height: 0.68rem;
 }
@@ -150,7 +149,7 @@ button.card {
 	height: 0.76rem;
 }
 
-.pip {
+.card .pip {
 	width: 1.35rem;
 	height: 1.35rem;
 	justify-self: center;
@@ -160,31 +159,6 @@ button.card {
 .trick .pip {
 	width: 1.6rem;
 	height: 1.6rem;
-}
-
-.mark[data-suit="pink"],
-.pip[data-suit="pink"] {
-	border-radius: 50%;
-}
-
-.mark[data-suit="yellow"],
-.pip[data-suit="yellow"] {
-	clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-
-.mark[data-suit="green"],
-.pip[data-suit="green"] {
-	border-radius: 0.08rem;
-}
-
-.mark[data-suit="blue"],
-.pip[data-suit="blue"] {
-	clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-}
-
-.mark[data-suit="submarine"],
-.pip[data-suit="submarine"] {
-	clip-path: polygon(0 40%, 70% 40%, 70% 15%, 100% 50%, 70% 85%, 70% 60%, 0 60%);
 }
 
 .stowed .pip,

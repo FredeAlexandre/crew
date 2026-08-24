@@ -102,6 +102,9 @@ function LobbyRoute() {
 						onFillBots: view.affordances.canFillBots
 							? () => table.sendIntent({ type: "host.fillBots" })
 							: undefined,
+						onConfigure: view.affordances.canConfigure
+							? (setup) => table.sendIntent({ type: "host.configure", ...setup })
+							: undefined,
 						onStart: view.affordances.canStart
 							? () => table.sendIntent({ type: "host.start" })
 							: undefined,

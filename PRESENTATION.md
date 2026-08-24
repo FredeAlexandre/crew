@@ -58,9 +58,9 @@ Responsibilities:
 - mark which of *my* cards are legal right now
 - rotate seats so the viewer is always in region `seat.self`
 - expose public table information (trick, tasks, sonar faces, last trick)
-- expose action affordances (`canPlay`, `canSonar`, `canTakeTask`, `canPassTask`, `canRetry`, `canFillBots`, …)
+- expose action affordances (`canPlay`, `canSonar`, `canTakeTask`, `canPassTask`, `canRetry`, `canFillBots`, `canConfigure`, …)
 - result actions: `canRetry` is true only for the host; Retry sends `host.retry` (same mission, new deal). Same-tasks and next-mission are later.
-- lobby: `canFillBots` is true only for the seated host while empty chairs remain. Fill sends `host.fillBots` (ready dummy seats for solo testing).
+- lobby: `canFillBots` is true only for the seated host while empty chairs remain. Fill sends `host.fillBots` (ready dummy seats for solo testing). `canConfigure` is true only for the seated host. Configure sends `host.configure` with the mission difficulty (task-point total, 1–16), a designated captain seat or `null` for a random deal, and `distressDisabled` (default false: distress is offered after task draft). The lobby view shows the current difficulty on `chrome.difficulty`, previews a designated captain with `isCaptain`, and shows the distress toggle on `chrome.flags.distressDisabled`. Start still sends `host.start`; the room applies the stored setup. The physical rule is unchanged: the captain is the holder of submarine 4. A designated seat is dealt that card. If distress is disabled, draft completion goes straight to play.
 
 The view model is the API the skin binds to. If the skin needs a new piece of information, add it here, not by peeking into the engine.
 
@@ -240,7 +240,7 @@ Optional later: “tap-to-play” for experts. Not the default.
 - **Sonar:** a control on `seat.self` while the token is still unused during `play` (including mid-trick). Opens overlay; pick card from hand (communicate-candidates highlighted), then pick `highest | only | lowest`. Invalid combinations cannot be confirmed. If a trick is in progress, the choice is queued on this client and revealed when the trick ends. It can be changed until then.
 - **Distress:** offered as overlay after draft; skip is as obvious as activate.
 - **Last trick:** tap the relevant won-trick pile.
-- **Ready / start:** lobby controls, large enough for thumbs.
+- **Ready / start:** lobby controls, large enough for thumbs. Host-only difficulty stepper, captain picks, and distress on/off live in the lobby well, not a settings page.
 
 ### 8.3 Keyboard map (`desktop`)
 
@@ -305,6 +305,7 @@ Group by phase. All events include `attemptId` and a monotonic `seq` so the skin
 | `player.stood` | `seatId` | seat empties |
 | `player.ready` | `seatId`, ready | token/check |
 | `player.connection` | `seatId`, `connected` | dim seat, do not remove |
+| `host.configured` | `difficulty`, `captainSeat`, `distressDisabled` | lobby setup updates |
 | `host.started` | `missionId` | leave lobby |
 
 ### 10.2 Mission setup
@@ -496,7 +497,7 @@ The engine team owns fixture *validity* (a snapshot must be a possible view mode
 - Voice/video (out of product taste: this game wants table silence)
 - Pixel-perfect clone of KOSMOS art (legal and aesthetic trap)
 
-Mission-specific logbook modifiers land as **flags on the view model** (`sonarDisabled`, `discussionAllowed`, `taskDraftVariant`, …) rendered with the same scenes. New flags are small contract additions; new scenes are large ones.
+Mission-specific logbook modifiers land as **flags on the view model** (`sonarDisabled`, `discussionAllowed`, `distressDisabled`, `taskDraftVariant`, …) rendered with the same scenes. New flags are small contract additions; new scenes are large ones.
 
 ---
 

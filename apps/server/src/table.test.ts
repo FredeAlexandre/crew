@@ -109,6 +109,93 @@ describe("table lobby", () => {
 		expect(viewForSeat(started.state, 0).affordances.canStart).toBe(false);
 	});
 
+	it("lets the host set difficulty and captain before start", () => {
+		const seated = sitAll();
+		expect(viewForSeat(seated, 0).affordances.canConfigure).toBe(true);
+		expect(viewForSeat(seated, 1).affordances.canConfigure).toBe(false);
+		expect(viewForSeat(seated, 0).chrome.difficulty).toBe(4);
+		expect(viewForSeat(seated, 0).seats.every((seat) => !seat.isCaptain)).toBe(true);
+
+		const guest = handleIntent(seated, "p1", {
+			type: "host.configure",
+			difficulty: 8,
+			captainSeat: 1,
+			distressDisabled: false,
+		});
+		expect(guest.ok).toBe(false);
+		if (!guest.ok) {
+			expect(guest.code).toBe("notHost");
+		}
+
+		const configured = mustOk(
+			handleIntent(seated, "p0", {
+				type: "host.configure",
+				difficulty: 8,
+				captainSeat: 1,
+				distressDisabled: false,
+			}),
+		);
+		expect(configured.facts[0]?.type).toBe("host.configured");
+		expect(viewForSeat(configured.state, 1).chrome.difficulty).toBe(8);
+		expect(
+			viewForSeat(configured.state, 1).seats.find((seat) => seat.seatId === 1)?.isCaptain,
+		).toBe(true);
+
+		const oob = handleIntent(configured.state, "p0", {
+			type: "host.configure",
+			difficulty: 8,
+			captainSeat: 4,
+			distressDisabled: false,
+		});
+		expect(oob.ok).toBe(false);
+		if (!oob.ok) {
+			expect(oob.code).toBe("illegalSeat");
+		}
+
+		const started = startGame(readyAll(configured.state));
+		expect(started.state.engine?.mission?.difficulty).toBe(8);
+		expect(started.state.engine?.captainSeat).toBe(1);
+		expect(started.state.engine?.hands[1]).toContain("submarine-4");
+	});
+
+	it("lets the host disable distress before start", () => {
+		const seated = sitAll();
+		expect(viewForSeat(seated, 0).chrome.flags.distressDisabled).toBe(false);
+		const configured = mustOk(
+			handleIntent(seated, "p0", {
+				type: "host.configure",
+				difficulty: 4,
+				captainSeat: null,
+				distressDisabled: true,
+			}),
+		);
+		expect(viewForSeat(configured.state, 1).chrome.flags.distressDisabled).toBe(true);
+		const started = startGame(readyAll(configured.state));
+		expect(started.state.engine?.mission?.flags?.distressDisabled).toBe(true);
+
+		let current = started.state;
+		let offeredDistress = started.facts.some((fact) => fact.type === "distress.offered");
+		while (current.engine?.phase === "taskDraft") {
+			const seat = current.engine.currentSeat;
+			if (seat === null) {
+				throw new Error("draft with no current seat");
+			}
+			const occupant = current.seats[seat];
+			if (occupant === null || occupant === undefined) {
+				throw new Error("empty draft seat");
+			}
+			const intent = pickSeatIntent(current.engine, seat);
+			if (intent === null) {
+				throw new Error("no draft intent");
+			}
+			const next = mustOk(handleIntent(current, occupant.playerId, intent));
+			offeredDistress ||= next.facts.some((fact) => fact.type === "distress.offered");
+			current = next.state;
+		}
+		expect(offeredDistress).toBe(false);
+		expect(current.engine?.phase).toBe("play");
+	});
+
 	it("dims a disconnected seat without clearing it", () => {
 		const seated = sitAll();
 		const left = mustOk(disconnect(seated, "p1"));

@@ -5,18 +5,24 @@ import {
 	type PlayerCount,
 	pickSeatIntent,
 } from "@crew/engine";
-import type {
-	Fact,
-	Intent,
-	PlayIntent,
-	RoomErrorCode,
-	SeatId,
-	SnapshotEnvelope,
+import {
+	DEFAULT_MISSION_DIFFICULTY,
+	DEFAULT_MISSION_ID,
+	type Fact,
+	type Intent,
+	type PlayIntent,
+	type RoomErrorCode,
+	type SeatId,
+	type SnapshotEnvelope,
 } from "@crew/protocol";
 import type { TableView } from "@crew/view-model";
 import { type Occupancy, project, projectFacts, projectLobby } from "@crew/view-model/project";
 
-const DEFAULT_MISSION = { id: "1", difficulty: 4 } as const;
+const DEFAULT_SETUP: TableSetup = {
+	difficulty: DEFAULT_MISSION_DIFFICULTY,
+	captainSeat: null,
+	distressDisabled: false,
+};
 const BOT_PLAYER_PREFIX = "bot:";
 const BOT_TURN_CAP = 400;
 
@@ -29,6 +35,12 @@ export type Occupant = {
 
 export type TableStatus = "lobby" | "playing" | "done";
 
+export type TableSetup = {
+	difficulty: number;
+	captainSeat: SeatId | null;
+	distressDisabled: boolean;
+};
+
 export type TableState = {
 	code: string;
 	hostPlayerId: string;
@@ -36,6 +48,7 @@ export type TableState = {
 	status: TableStatus;
 	seq: number;
 	seats: Array<Occupant | null>;
+	setup: TableSetup;
 	engine: EngineState | null;
 };
 
@@ -80,6 +93,7 @@ export function createTable(input: {
 		status: "lobby",
 		seq: 0,
 		seats: Array.from({ length: input.playerCount }, () => null),
+		setup: { ...DEFAULT_SETUP },
 		engine: null,
 	};
 }
@@ -123,6 +137,7 @@ export function viewForSeat(state: TableState, viewerSeat: SeatId): TableView {
 			viewerSeat,
 			state.seq,
 			seatOf(state, state.hostPlayerId),
+			setupOf(state),
 		);
 	}
 	return {
@@ -240,6 +255,15 @@ export function handleIntent(
 	if (intent.type === "host.start") {
 		return start(state, playerId, options);
 	}
+	if (intent.type === "host.configure") {
+		return configure(
+			state,
+			playerId,
+			intent.difficulty,
+			intent.captainSeat,
+			intent.distressDisabled,
+		);
+	}
 	if (intent.type === "host.retry") {
 		return retry(state, playerId, options);
 	}
@@ -266,6 +290,45 @@ function setReady(state: TableState, seatId: SeatId, ready: boolean): TableResul
 			attemptId: null,
 			seatId,
 			ready,
+		},
+	);
+	return succeed(pushed.state, [pushed.fact], false);
+}
+
+function configure(
+	state: TableState,
+	playerId: string,
+	difficulty: number,
+	captainSeat: SeatId | null,
+	distressDisabled: boolean,
+): TableResult {
+	if (playerId !== state.hostPlayerId) {
+		return fail(state, "notHost", "only the host can configure the table");
+	}
+	if (state.status !== "lobby") {
+		return fail(state, "alreadyStarted", "game already started");
+	}
+	if (captainSeat !== null && captainSeat >= state.playerCount) {
+		return fail(state, "illegalSeat", "captain seat is not at this table");
+	}
+
+	const setup = setupOf(state);
+	if (
+		setup.difficulty === difficulty &&
+		setup.captainSeat === captainSeat &&
+		setup.distressDisabled === distressDisabled
+	) {
+		return succeed(state, [], false);
+	}
+
+	const pushed = pushFact(
+		{ ...state, setup: { difficulty, captainSeat, distressDisabled } },
+		{
+			type: "host.configured",
+			attemptId: null,
+			difficulty,
+			captainSeat,
+			distressDisabled,
 		},
 	);
 	return succeed(pushed.state, [pushed.fact], false);
@@ -302,18 +365,24 @@ function retry(state: TableState, playerId: string, options?: StartOptions): Tab
 function beginAttempt(state: TableState, options?: StartOptions): TableResult {
 	const attemptId = options?.attemptId ?? crypto.randomUUID();
 	const seed = options?.seed ?? randomSeed();
+	const setup = setupOf(state);
 	const created = createAttempt({
 		attemptId,
-		mission: { id: DEFAULT_MISSION.id, difficulty: DEFAULT_MISSION.difficulty },
+		mission: {
+			id: DEFAULT_MISSION_ID,
+			difficulty: setup.difficulty,
+			flags: setup.distressDisabled ? { distressDisabled: true } : undefined,
+		},
 		playerCount: state.playerCount,
 		seed,
+		captainSeat: setup.captainSeat,
 	});
 	const started = pushFact(
 		{ ...state, status: "playing", engine: created.state },
 		{
 			type: "host.started",
 			attemptId,
-			missionId: DEFAULT_MISSION.id,
+			missionId: DEFAULT_MISSION_ID,
 		},
 	);
 	const stamped = stampFacts(started.state, created.facts);
@@ -437,6 +506,15 @@ function randomSeed(): number {
 
 function attemptIdOf(state: TableState): string | null {
 	return state.engine?.attemptId ?? null;
+}
+
+function setupOf(state: TableState): TableSetup {
+	const setup = state.setup ?? DEFAULT_SETUP;
+	return {
+		difficulty: setup.difficulty,
+		captainSeat: setup.captainSeat,
+		distressDisabled: setup.distressDisabled === true,
+	};
 }
 
 function cloneSeats(state: TableState): Array<Occupant | null> {
