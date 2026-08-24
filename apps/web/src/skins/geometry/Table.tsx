@@ -1,8 +1,7 @@
-import type { TableView, TaskView } from "@crew/view-model/fixtures";
+import type { TableView } from "@crew/view-model/fixtures";
 import type { ReactNode } from "react";
 import type { ClientIntent } from "../../hooks/use-table.ts";
 import { BriefingScene, CampaignScene } from "./BriefingScene.tsx";
-import { DraftScene } from "./DraftScene.tsx";
 import { type LobbyActions, LobbyScene } from "./LobbyScene.tsx";
 import { PlayScene } from "./PlayScene.tsx";
 import { ResultScene } from "./ResultScene.tsx";
@@ -28,19 +27,6 @@ export function GeometryTable({ view, lobby, sendIntent }: GeometryTableProps) {
 			scene = <CampaignScene />;
 			break;
 		case "taskDraft":
-			scene = (
-				<DraftScene
-					view={view}
-					onTake={
-						sendIntent
-							? (task: TaskView) =>
-									sendIntent({ type: "task.take", taskInstanceId: task.instanceId })
-							: undefined
-					}
-					onPass={sendIntent ? () => sendIntent({ type: "task.pass" }) : undefined}
-				/>
-			);
-			break;
 		case "deal":
 		case "play":
 			scene = <PlayScene view={view} sendIntent={sendIntent} />;

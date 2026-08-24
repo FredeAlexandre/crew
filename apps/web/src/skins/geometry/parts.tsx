@@ -196,7 +196,6 @@ export function PlaySeat({
 			<div className={styles.playSeat} data-slot={slot}>
 				<div className={styles.seatHead}>
 					<SeatAvatar seat={seat} self={self} />
-					{!self ? <span className={styles.count}>{seat.handCount}</span> : null}
 				</div>
 				<div className={styles.seatBody}>
 					<WonTrickPile count={seat.wonTrickCount} onPeek={onPeekLastTrick} />
@@ -308,7 +307,6 @@ export function SeatPip({
 		>
 			<SeatAvatar seat={seat} self={seat.region === "seat.self"} compact={compact} />
 			<span className={styles.sonar} data-state={seat.sonar.state} />
-			{seat.region !== "seat.self" ? <span className={styles.count}>{seat.handCount}</span> : null}
 			<WonCount count={seat.wonTrickCount} onPeek={onPeekLastTrick} hole />
 			{seat.sonar.communication ? (
 				<CardFace cardId={seat.sonar.communication.cardId} communicated size="token" />
@@ -323,62 +321,6 @@ export function SeatPip({
 					))}
 				</div>
 			) : null}
-		</div>
-	);
-}
-
-export function SelfDock({
-	seat,
-	canSonar,
-	canPlay,
-	canPass,
-	onSonar,
-	onPlay,
-	onPass,
-	onPeekLastTrick,
-}: {
-	seat: SeatView;
-	canSonar: boolean;
-	canPlay: boolean;
-	canPass: boolean;
-	onSonar?: () => void;
-	onPlay?: () => void;
-	onPass?: () => void;
-	onPeekLastTrick?: () => void;
-}) {
-	return (
-		<div
-			className={styles.dock}
-			data-region={seat.region}
-			data-turn={seat.isTurn ? "true" : "false"}
-		>
-			<div className={styles.dockMeta}>
-				<SeatAvatar seat={seat} self />
-				<span className={styles.sonar} data-state={seat.sonar.state} />
-				<WonCount count={seat.wonTrickCount} onPeek={onPeekLastTrick} />
-			</div>
-			<div className={styles.dockTasks} data-region="tasks.self">
-				{seat.tasks.map((task) => (
-					<TaskMark key={task.instanceId} task={task} />
-				))}
-			</div>
-			<div className={styles.dockActions}>
-				{canSonar && onSonar ? (
-					<Button className={styles.textAction} onPress={onSonar}>
-						Sonar
-					</Button>
-				) : null}
-				{canPass && onPass ? (
-					<Button className={styles.textAction} onPress={onPass}>
-						Pass
-					</Button>
-				) : null}
-				{canPlay && onPlay ? (
-					<Button className={styles.textAction} onPress={onPlay}>
-						Play
-					</Button>
-				) : null}
-			</div>
 		</div>
 	);
 }

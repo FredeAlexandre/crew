@@ -1,11 +1,11 @@
 import type { CardId, DistressDirection, SonarPosition } from "@crew/protocol";
-import type { Overlay, TableView } from "@crew/view-model/fixtures";
+import type { Overlay, TableView, TaskView } from "@crew/view-model/fixtures";
 import { useEffect, useState } from "react";
 import { Button } from "react-aria-components";
 import type { ClientIntent } from "../../hooks/use-table.ts";
 import { CardBack, CardFace } from "./Card.tsx";
-import { illegalCopy, lobbySlot, trickSlot } from "./copy.ts";
-import { ChromeLine, HandStrip, PlaySeat, SonarDetailBody } from "./parts.tsx";
+import { illegalCopy, lobbySlot, trickSlot, turnCopy } from "./copy.ts";
+import { ChromeLine, HandStrip, PlaySeat, SonarDetailBody, TaskCard } from "./parts.tsx";
 import styles from "./play.module.css";
 import sceneStyles from "./scenes.module.css";
 
@@ -50,10 +50,14 @@ export function PlayScene({
 		? view.hand.map((card) => ({ ...card, legal: sonarIds.has(card.cardId) }))
 		: view.hand;
 	const canPeek =
+		view.scene === "play" &&
 		view.affordances.canPeekLastTrick &&
 		view.overlay === "none" &&
 		!sonarOpen &&
 		view.lastTrick !== null;
+	const isDraft = view.scene === "taskDraft";
+	const quietHand = isDraft || view.scene === "deal";
+	const turn = isDraft ? turnCopy(view) : null;
 	const sonarDetailSeat =
 		sonarDetailRegion === null
 			? null
@@ -119,6 +123,10 @@ export function PlayScene({
 		setSelected(null);
 	}
 
+	function passTask() {
+		sendIntent?.({ type: "task.pass" });
+	}
+
 	function playCard() {
 		if (selected === null || !canPlaySelected) {
 			return;
@@ -143,6 +151,26 @@ export function PlayScene({
 
 	return (
 		<div className={styles.table} data-scene={view.scene} data-overlay={overlay}>
+			{overlay !== "none" ? (
+				<div className={styles.overlayLayer} data-region="overlay">
+					<div className={styles.overlay}>
+						<OverlayBody
+							view={view}
+							overlay={overlay}
+							sonarDetailSeat={sonarDetailSeat}
+							sonarPositions={sonarPositions}
+							onSkipDistress={
+								view.affordances.canSkipDistress && sendIntent ? skipDistress : undefined
+							}
+							onActivateDistress={
+								view.affordances.canActivateDistress && sendIntent ? activateDistress : undefined
+							}
+							onUseSonar={useSonar}
+							onCloseSkin={closeSkinOverlay}
+						/>
+					</div>
+				</div>
+			) : null}
 			<div
 				className={`${sceneStyles.ring} ${styles.playRing}`}
 				data-count={String(view.playerCount)}
@@ -159,7 +187,7 @@ export function PlayScene({
 							onSonarDetail={() => openSonarDetail(seat.region)}
 							canSonar={isSelf && view.affordances.canSonar && !sonarOpen}
 							canPlay={isSelf && canPlaySelected}
-							canPass={isSelf && canPassSelected}
+							canPass={isSelf && (isDraft ? view.affordances.canPassTask : canPassSelected)}
 							onSonar={
 								isSelf
 									? () => {
@@ -170,42 +198,58 @@ export function PlayScene({
 									: undefined
 							}
 							onPlay={isSelf ? playCard : undefined}
-							onPass={isSelf ? passDistressCard : undefined}
+							onPass={isSelf ? (isDraft ? passTask : passDistressCard) : undefined}
 						/>
 					);
 				})}
 				<div className={`${sceneStyles.lobbyWell} ${styles.playWell}`}>
 					<ChromeLine view={view} />
-					<Well view={view} />
-					{overlay !== "none" ? (
-						<div className={styles.overlay} data-region="overlay">
-							<OverlayBody
-								view={view}
-								overlay={overlay}
-								sonarDetailSeat={sonarDetailSeat}
-								sonarPositions={sonarPositions}
-								onSkipDistress={
-									view.affordances.canSkipDistress && sendIntent ? skipDistress : undefined
-								}
-								onActivateDistress={
-									view.affordances.canActivateDistress && sendIntent ? activateDistress : undefined
-								}
-								onUseSonar={useSonar}
-								onCloseSkin={closeSkinOverlay}
-							/>
-						</div>
-					) : null}
+					<Well
+						view={view}
+						turn={turn}
+						onTake={
+							sendIntent
+								? (task: TaskView) =>
+										sendIntent({ type: "task.take", taskInstanceId: task.instanceId })
+								: undefined
+						}
+					/>
 				</div>
 			</div>
 			<div className={styles.handWrap}>
 				{hint && overlay !== "sonar" ? <p className={styles.hint}>{hint}</p> : null}
-				<HandStrip cards={displayHand} selected={selected} onSelect={setSelected} />
+				<HandStrip
+					cards={displayHand}
+					selected={selected}
+					quiet={quietHand}
+					onSelect={setSelected}
+				/>
 			</div>
 		</div>
 	);
 }
 
-function Well({ view }: { view: TableView }) {
+function Well({
+	view,
+	turn,
+	onTake,
+}: {
+	view: TableView;
+	turn: string | null;
+	onTake?: (task: TaskView) => void;
+}) {
+	if (view.scene === "taskDraft") {
+		return (
+			<div className={styles.draftWell} data-region="tasks.center">
+				{turn ? <p className={styles.draftPrompt}>{turn}. Take a task.</p> : null}
+				<div className={styles.taskRow}>
+					{view.centerTasks.map((task) => (
+						<TaskCard key={task.instanceId} task={task} onTake={onTake} />
+					))}
+				</div>
+			</div>
+		);
+	}
 	if (view.scene === "deal") {
 		return (
 			<div className={styles.stock} data-region="trick">

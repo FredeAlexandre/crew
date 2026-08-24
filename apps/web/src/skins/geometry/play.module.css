@@ -1,6 +1,7 @@
 .table {
 	display: grid;
 	grid-template-rows: minmax(0, 1fr) auto;
+	position: relative;
 	width: 100%;
 	max-width: 100%;
 	min-width: 0;
@@ -174,19 +175,61 @@
 	font-size: 0.88rem;
 }
 
-.overlay {
+.draftWell {
+	display: grid;
+	justify-items: center;
+	align-content: center;
+	gap: 0.45rem;
+	min-width: 0;
+	min-height: 0;
+	width: 100%;
+	max-width: 100%;
+	max-height: 100%;
+	overflow: auto;
+}
+
+.draftPrompt {
+	margin: 0;
+	color: var(--accent);
+	text-align: center;
+	font-size: 0.9rem;
+}
+
+.taskRow {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.45rem 0.55rem;
+	width: 100%;
+	max-width: 100%;
+}
+
+.overlayLayer {
 	position: absolute;
-	left: 50%;
-	bottom: 0.5rem;
-	transform: translateX(-50%);
+	inset: 0;
+	z-index: 6;
+	display: grid;
+	place-items: center;
+	align-content: center;
+	padding: 0.35rem;
+	pointer-events: none;
+}
+
+.overlay {
+	position: relative;
+	left: auto;
+	bottom: auto;
+	transform: none;
 	display: grid;
 	gap: 0.45rem;
-	width: fit-content;
-	max-width: calc(100% - 0.5rem);
+	width: min(100%, 22rem);
+	max-width: 100%;
+	max-height: min(72cqh, 100%);
+	overflow: auto;
 	padding: 0.85rem 1rem;
-	background: color-mix(in srgb, var(--table) 82%, var(--ink));
+	background: color-mix(in srgb, var(--table) 88%, var(--ink));
 	box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
-	z-index: 2;
+	pointer-events: auto;
 }
 
 .overlayTitle {
@@ -309,6 +352,20 @@
 	.trick {
 		--trick-w: min(3.35rem, 22cqi);
 		width: min(16rem, 100%);
+	}
+
+	.overlayLayer {
+		padding: 0.25rem;
+	}
+
+	.overlay {
+		width: min(100%, 20rem);
+		max-height: min(68cqh, 100%);
+		padding: 0.75rem 0.85rem;
+	}
+
+	.taskRow {
+		gap: 0.35rem 0.45rem;
 	}
 }
 
