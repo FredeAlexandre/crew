@@ -118,7 +118,12 @@ export function PlayScene({
 	}
 
 	return (
-		<div className={styles.table} data-scene={view.scene} data-overlay={overlay}>
+		<div
+			className={styles.table}
+			data-scene={view.scene}
+			data-overlay={overlay}
+			data-player-count={view.playerCount}
+		>
 			<div className={styles.crew}>
 				{opponentSeats(view).map((seat) => (
 					<SeatPip

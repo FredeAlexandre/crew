@@ -49,12 +49,16 @@ export function SeatPip({
 			data-empty={empty ? "true" : "false"}
 		>
 			<span className={styles.pipName}>{seatName(seat)}</span>
-			<span className={styles.captain} data-on={seat.isCaptain ? "true" : "false"}>
-				C
-			</span>
-			<span className={styles.sonar} data-state={seat.sonar.state} />
-			{seat.region !== "seat.self" ? <span className={styles.count}>{seat.handCount}</span> : null}
-			<WonCount count={seat.wonTrickCount} onPeek={onPeekLastTrick} hole />
+			<div className={compact ? styles.pipMeta : undefined}>
+				<span className={styles.captain} data-on={seat.isCaptain ? "true" : "false"}>
+					C
+				</span>
+				<span className={styles.sonar} data-state={seat.sonar.state} />
+				{seat.region !== "seat.self" ? (
+					<span className={styles.count}>{seat.handCount}</span>
+				) : null}
+				<WonCount count={seat.wonTrickCount} onPeek={onPeekLastTrick} hole />
+			</div>
 			{seat.sonar.communication ? (
 				<CardFace cardId={seat.sonar.communication.cardId} communicated size="token" />
 			) : null}

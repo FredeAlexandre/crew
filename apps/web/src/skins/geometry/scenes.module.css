@@ -215,8 +215,7 @@
 @container (max-width: 40rem) {
 	.ring,
 	.ring[data-count="3"],
-	.ring[data-count="4"],
-	.ring[data-count="5"] {
+	.ring[data-count="4"] {
 		display: flex;
 		flex-wrap: wrap;
 		align-content: stretch;
@@ -224,15 +223,6 @@
 		align-items: start;
 		gap: 0.3rem 0.45rem;
 		position: relative;
-	}
-
-	.ring[data-count="5"] .lobbyWell,
-	.ring[data-count="5"] .chair {
-		position: static;
-		transform: none;
-		left: auto;
-		top: auto;
-		bottom: auto;
 	}
 
 	.chair {
@@ -259,6 +249,78 @@
 	.notch {
 		width: 2.6rem;
 		height: 2.6rem;
+	}
+
+	/* Preserve the five-seat table map on small phones. A wrapped row loses
+	 * the relationship between each chair and the center of the table. */
+	.ring[data-count="5"] {
+		display: block;
+		position: relative;
+		min-height: 0;
+		--chair-width: clamp(3.8rem, 17cqi, 5.25rem);
+	}
+
+	.ring[data-count="5"] .chair,
+	.ring[data-count="5"] .lobbyWell {
+		position: absolute;
+		min-width: 0;
+		max-width: var(--chair-width);
+	}
+
+	.ring[data-count="5"] .chair {
+		width: var(--chair-width);
+		gap: 0.16rem;
+	}
+
+	.ring[data-count="5"] .chair[data-slot="northwest"] {
+		left: 23%;
+		top: 7%;
+	}
+
+	.ring[data-count="5"] .chair[data-slot="northeast"] {
+		left: 77%;
+		top: 7%;
+	}
+
+	.ring[data-count="5"] .chair[data-slot="west"] {
+		left: 3%;
+		top: 57%;
+		transform: translate(0, -50%);
+	}
+
+	.ring[data-count="5"] .chair[data-slot="east"] {
+		left: 97%;
+		top: 57%;
+		transform: translate(-100%, -50%);
+	}
+
+	.ring[data-count="5"] .chair[data-slot="self"] {
+		left: 50%;
+		bottom: 0;
+		transform: translateX(-50%);
+	}
+
+	.ring[data-count="5"] .lobbyWell {
+		left: 50%;
+		top: 55%;
+		width: min(11rem, 48cqi);
+		max-width: calc(100% - (var(--chair-width) * 2) - 0.8rem);
+		transform: translate(-50%, -50%);
+		gap: 0.25rem;
+		padding: 0.1rem;
+	}
+
+	.ring[data-count="5"] .notch {
+		width: clamp(2.25rem, 11cqi, 3rem);
+		height: clamp(2.25rem, 11cqi, 3rem);
+	}
+
+	.ring[data-count="5"] .chairName {
+		font-size: clamp(0.7rem, 3.8cqi, 0.88rem);
+	}
+
+	.ring[data-count="5"] .readyMark {
+		font-size: clamp(0.62rem, 3.2cqi, 0.75rem);
 	}
 
 	.board,

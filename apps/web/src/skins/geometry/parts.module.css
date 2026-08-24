@@ -17,9 +17,18 @@
 }
 
 .pipCompact {
-	flex-direction: row;
-	padding-inline: 0.15rem;
+	flex-direction: column;
+	gap: 0.1rem;
+	padding-inline: 0.1rem;
 	max-width: 100%;
+}
+
+.pipMeta {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.22rem;
+	min-width: 0;
 }
 
 .pipName {
@@ -196,6 +205,15 @@
 	touch-action: none;
 	user-select: none;
 	cursor: pointer;
+}
+
+@container (max-width: 40rem) {
+	.fan {
+		/* Keep the hand legible but let the table reserve room for the trick. */
+		--card-w: clamp(3rem, 15cqi, 4.25rem);
+		--card-h: calc(var(--card-w) * 1.44);
+		--lift: clamp(2rem, 9cqi, 2.75rem);
+	}
 }
 
 @container (min-width: 40rem) {
