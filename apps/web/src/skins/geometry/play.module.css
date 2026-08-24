@@ -70,15 +70,13 @@
 }
 
 .playRing[data-count="5"] .playChair[data-slot="west"] {
-	left: 0;
+	left: 10%;
 	top: 58%;
-	transform: translate(0, -50%);
 }
 
 .playRing[data-count="5"] .playChair[data-slot="east"] {
-	left: 100%;
+	left: 90%;
 	top: 58%;
-	transform: translate(-100%, -50%);
 }
 
 .playRing[data-count="5"] .playChair[data-slot="northwest"] {
@@ -383,25 +381,59 @@
 	}
 
 	.playRing[data-count="5"] .playChair[data-slot="west"] {
-		left: 0;
-		top: 58%;
-		transform: translate(0, -50%);
+		left: 10%;
+		top: 60%;
 	}
 
 	.playRing[data-count="5"] .playChair[data-slot="east"] {
-		left: 100%;
-		top: 58%;
-		transform: translate(-100%, -50%);
+		left: 90%;
+		top: 60%;
 	}
 
 	.playRing[data-count="5"] .playChair[data-slot="northwest"] {
 		left: 22%;
-		top: 12%;
+		top: 10%;
 	}
 
 	.playRing[data-count="5"] .playChair[data-slot="northeast"] {
 		left: 78%;
-		top: 12%;
+		top: 10%;
+	}
+
+	/* Keep the trick unobstructed: five-player opponents are compact markers
+	 * around it, while the hand and current cards retain their readable size. */
+	.playRing[data-count="5"] .playChair:not([data-slot="self"]) {
+		width: 4.3rem;
+	}
+
+	.playRing[data-count="5"] .playChair:not([data-slot="self"]) .playSeat {
+		/* The full seat payload stays available (task, sonar and won tricks),
+		 * but occupies a small, predictable perimeter marker on a phone. */
+		width: 5.15rem;
+		transform: scale(0.8);
+		transform-origin: top center;
+	}
+
+	.playRing[data-count="5"] .playWell {
+		width: min(70%, 18rem);
+	}
+
+	@container (max-width: 24rem) {
+		.playRing[data-count="5"] .playChair[data-slot="west"] {
+			left: 11%;
+		}
+
+		.playRing[data-count="5"] .playChair[data-slot="east"] {
+			left: 89%;
+		}
+
+		.playRing[data-count="5"] .playChair:not([data-slot="self"]) .playSeat {
+			transform: scale(0.72);
+		}
+
+		.playRing[data-count="5"] .playWell {
+			width: min(72%, 16rem);
+		}
 	}
 
 	.playRing .playChair {
