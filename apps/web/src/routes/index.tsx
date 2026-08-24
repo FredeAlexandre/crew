@@ -1,5 +1,5 @@
 import { isRoomCode, PLAYER_COUNTS, type PlayerCount } from "@crew/protocol";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button, Input, Label, Radio, RadioGroup, TextField } from "react-aria-components";
 import { useIdentitySheet } from "../components/identity-sheet.tsx";
@@ -63,6 +63,9 @@ function BootRoute() {
 			<header className={styles.masthead}>
 				<h1 className={styles.title}>Crew</h1>
 				<p className={styles.lede}>Sit at a table. Three to five players.</p>
+				<Link className={styles.catalogLink} to="/missions">
+					Browse mission tasks
+				</Link>
 				{identity.user?.isAnonymous !== false ? (
 					<Button className={styles.signIn} onPress={sheet.openSignIn}>
 						Sign in

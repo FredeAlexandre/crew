@@ -15,6 +15,10 @@
 		"./fixtures": {
 			"types": "./src/fixtures.ts",
 			"default": "./src/fixtures.ts"
+		},
+		"./catalog": {
+			"types": "./src/catalog.ts",
+			"default": "./src/catalog.ts"
 		}
 	},
 	"scripts": {
