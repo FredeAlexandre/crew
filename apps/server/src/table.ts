@@ -290,6 +290,9 @@ export function handleIntent(
 	if (intent.type === "player.ready") {
 		return setReady(state, seatId, intent.ready);
 	}
+	if (intent.type === "player.rename") {
+		return renamePlayer(state, seatId, intent.displayName);
+	}
 	if (intent.type === "host.start") {
 		return start(state, playerId, options);
 	}
@@ -367,6 +370,31 @@ function setReady(state: TableState, seatId: SeatId, ready: boolean): TableResul
 			attemptId: null,
 			seatId,
 			ready,
+		},
+	);
+	return succeed(pushed.state, [pushed.fact], false);
+}
+
+function renamePlayer(state: TableState, seatId: SeatId, displayName: string): TableResult {
+	if (state.status !== "lobby") {
+		return fail(state, "alreadyStarted", "game already started");
+	}
+	const seats = cloneSeats(state);
+	const occupant = seats[seatId];
+	if (occupant === undefined || occupant === null) {
+		return fail(state, "notSeated", "sit before acting");
+	}
+	if (occupant.displayName === displayName) {
+		return succeed(state, [], false);
+	}
+	occupant.displayName = displayName;
+	const pushed = pushFact(
+		{ ...state, seats },
+		{
+			type: "player.renamed",
+			attemptId: null,
+			seatId,
+			displayName,
 		},
 	);
 	return succeed(pushed.state, [pushed.fact], false);

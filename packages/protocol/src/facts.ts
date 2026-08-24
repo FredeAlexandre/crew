@@ -46,6 +46,13 @@ const playerReadyFactSchema = z.object({
 	ready: z.boolean(),
 });
 
+const playerRenamedFactSchema = z.object({
+	type: z.literal("player.renamed"),
+	...tableLifeMeta,
+	seatId: seatIdSchema,
+	displayName: z.string(),
+});
+
 const playerConnectionFactSchema = z.object({
 	type: z.literal("player.connection"),
 	...tableLifeMeta,
@@ -226,6 +233,7 @@ export const factSchema = z.discriminatedUnion("type", [
 	echoFactSchema,
 	playerSatFactSchema,
 	playerReadyFactSchema,
+	playerRenamedFactSchema,
 	playerConnectionFactSchema,
 	hostStartedFactSchema,
 	hostConfiguredFactSchema,

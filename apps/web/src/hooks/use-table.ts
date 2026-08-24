@@ -15,6 +15,7 @@ const RECONNECT_MS = 400;
 
 export type ClientIntent =
 	| { type: "player.ready"; ready: boolean }
+	| { type: "player.rename"; displayName: string }
 	| { type: "host.start" }
 	| {
 			type: "host.configure";
@@ -127,6 +128,7 @@ function roomSocketUrl(code: string): string {
 function stampIntent(intent: ClientIntent, view: TableView | null): Intent | null {
 	if (
 		intent.type === "player.ready" ||
+		intent.type === "player.rename" ||
 		intent.type === "host.start" ||
 		intent.type === "host.configure" ||
 		intent.type === "host.retry" ||

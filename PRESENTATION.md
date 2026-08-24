@@ -60,7 +60,7 @@ Responsibilities:
 - expose public table information (trick, tasks, sonar faces, last trick)
 - expose action affordances (`canPlay`, `canSonar`, `canTakeTask`, `canPassTask`, `canRetry`, `canFillBots`, `canConfigure`, …)
 - result actions: `canRetry` is true only for the host; Retry sends `host.retry` (same mission, new deal). Same-tasks and next-mission are later.
-- lobby: `canFillBots` is true only for the seated host while empty chairs remain. Fill sends `host.fillBots` (ready dummy seats for solo testing). `canConfigure` is true only for the seated host. Configure sends `host.configure` with the mission difficulty (task-point total, 1–16), a designated captain seat or `null` for a random deal, and `distressDisabled` (default false: distress is offered after task draft). The lobby view shows the current difficulty on `chrome.difficulty`, previews a designated captain with `isCaptain`, and shows the distress toggle on `chrome.flags.distressDisabled`. Start still sends `host.start`; the room applies the stored setup. The physical rule is unchanged: the captain is the holder of submarine 4. A designated seat is dealt that card. If distress is disabled, draft completion goes straight to play.
+- lobby: each seated player may edit their own display name in `seat.self`; changes send `player.rename` and are reflected at every seat before play. `canFillBots` is true only for the seated host while empty chairs remain. Fill sends `host.fillBots` (ready dummy seats for solo testing). `canConfigure` is true only for the seated host. Configure sends `host.configure` with the mission difficulty (task-point total, 1–16), a designated captain seat or `null` for a random deal, and `distressDisabled` (default false: distress is offered after task draft). The lobby view shows the current difficulty on `chrome.difficulty`, previews a designated captain with `isCaptain`, and shows the distress toggle on `chrome.flags.distressDisabled`. Start still sends `host.start`; the room applies the stored setup. The physical rule is unchanged: the captain is the holder of submarine 4. A designated seat is dealt that card. If distress is disabled, draft completion goes straight to play.
 
 The view model is the API the skin binds to. If the skin needs a new piece of information, add it here, not by peeking into the engine.
 
@@ -303,6 +303,7 @@ Group by phase. All events include `attemptId` and a monotonic `seq` so the skin
 | `room.snapshot` | full view model | no motion; hard apply |
 | `player.sat` | `seatId`, `playerId`, name | seat fills |
 | `player.stood` | `seatId` | seat empties |
+| `player.renamed` | `seatId`, `displayName` | seat label updates |
 | `player.ready` | `seatId`, ready | token/check |
 | `player.connection` | `seatId`, `connected` | dim seat, do not remove |
 | `host.configured` | `difficulty`, `captainSeat`, `distressDisabled` | lobby setup updates |

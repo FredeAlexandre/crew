@@ -5,7 +5,8 @@ import {
 	type SeatId,
 } from "@crew/protocol";
 import type { SeatView, TableView } from "@crew/view-model/fixtures";
-import { Button } from "react-aria-components";
+import { Button, Input, Label, TextField } from "react-aria-components";
+import { DISPLAY_NAME_MAX } from "../../lib/display-name.ts";
 import { useI18n } from "../../lib/i18n.tsx";
 import { type LobbySlot, lobbySlot, seatIsEmpty, seatName } from "./copy.ts";
 import styles from "./scenes.module.css";
@@ -21,6 +22,8 @@ export type LobbyActions = {
 	copied?: boolean;
 	statusNote?: string | null;
 	alert?: string | null;
+	name?: string;
+	onNameChange?: (name: string) => void;
 	onCopyCode?: () => void;
 	onReady?: (ready: boolean) => void;
 	onFillBots?: () => void;
@@ -55,6 +58,8 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 						seat={seat}
 						slot={lobbySlot(seat.region, view.playerCount)}
 						onReady={actions?.onReady}
+						name={actions?.name}
+						onNameChange={actions?.onNameChange}
 						onKick={actions?.onKick}
 					/>
 				))}
@@ -163,11 +168,15 @@ function Chair({
 	seat,
 	slot,
 	onReady,
+	name,
+	onNameChange,
 	onKick,
 }: {
 	seat: SeatView;
 	slot: LobbySlot;
 	onReady?: (ready: boolean) => void;
+	name?: string;
+	onNameChange?: (name: string) => void;
 	onKick?: (seatId: SeatId) => void;
 }) {
 	const { t } = useI18n();
@@ -190,7 +199,25 @@ function Chair({
 				data-ready={seat.ready ? "true" : "false"}
 				data-captain={seat.isCaptain ? "true" : "false"}
 			/>
-			<span className={styles.chairName}>{empty ? t("empty") : seatName(seat)}</span>
+			{self && !empty && name !== undefined ? (
+				<TextField
+					className={styles.chairNameField}
+					value={name}
+					onChange={onNameChange}
+					isDisabled={onNameChange === undefined}
+				>
+					<Label className={styles.visuallyHidden}>{t("yourName")}</Label>
+					<Input
+						className={styles.chairNameInput}
+						placeholder={t("yourName")}
+						autoComplete="nickname"
+						maxLength={DISPLAY_NAME_MAX}
+						spellCheck="false"
+					/>
+				</TextField>
+			) : (
+				<span className={styles.chairName}>{empty ? t("empty") : seatName(seat)}</span>
+			)}
 			{seat.isCaptain ? <span className={styles.readyMark}>{t("captain")}</span> : null}
 			{self && !empty ? (
 				<Button className={styles.ghost} onPress={() => onReady?.(!seat.ready)}>
