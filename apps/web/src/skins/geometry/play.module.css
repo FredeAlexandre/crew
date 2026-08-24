@@ -70,15 +70,13 @@
 }
 
 .playRing[data-count="5"] .playChair[data-slot="west"] {
-	left: 0;
+	left: 10%;
 	top: 58%;
-	transform: translate(0, -50%);
 }
 
 .playRing[data-count="5"] .playChair[data-slot="east"] {
-	left: 100%;
+	left: 90%;
 	top: 58%;
-	transform: translate(-100%, -50%);
 }
 
 .playRing[data-count="5"] .playChair[data-slot="northwest"] {
@@ -383,25 +381,33 @@
 	}
 
 	.playRing[data-count="5"] .playChair[data-slot="west"] {
-		left: 0;
-		top: 58%;
-		transform: translate(0, -50%);
+		left: 10%;
+		top: 60%;
 	}
 
 	.playRing[data-count="5"] .playChair[data-slot="east"] {
-		left: 100%;
-		top: 58%;
-		transform: translate(-100%, -50%);
+		left: 90%;
+		top: 60%;
 	}
 
 	.playRing[data-count="5"] .playChair[data-slot="northwest"] {
 		left: 22%;
-		top: 12%;
+		top: 10%;
 	}
 
 	.playRing[data-count="5"] .playChair[data-slot="northeast"] {
 		left: 78%;
-		top: 12%;
+		top: 10%;
+	}
+
+	/* Keep the trick unobstructed: five-player opponents are compact markers
+	 * around it, while the hand and current cards retain their readable size. */
+	.playRing[data-count="5"] .playChair:not([data-slot="self"]) {
+		width: 4.3rem;
+	}
+
+	.playRing[data-count="5"] .playWell {
+		width: min(70%, 18rem);
 	}
 
 	.playRing .playChair {
