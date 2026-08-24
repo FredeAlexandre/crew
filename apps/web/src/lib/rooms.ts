@@ -104,6 +104,8 @@ export function roomErrorCopy(error: unknown): string {
 			return "That table is full.";
 		case "alreadyStarted":
 			return "That game has already started.";
+		case "reconnectBlocked":
+			return error.message;
 		case "illegalIntent":
 			return "Could not open a table.";
 		default:
