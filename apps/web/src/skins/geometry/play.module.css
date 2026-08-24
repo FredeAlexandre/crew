@@ -1,67 +1,29 @@
 .table {
 	display: grid;
-	grid-template-areas:
-		"crew"
-		"well"
-		"self"
-		"hand";
-	grid-template-rows: auto minmax(0, 1fr) auto auto;
+	grid-template-rows: minmax(0, 1fr) auto;
 	width: 100%;
 	max-width: 100%;
 	min-width: 0;
 	min-height: 0;
 	height: 100%;
-	gap: 0.4rem;
+	gap: 0.35rem;
 	padding: 0.25rem 0.25rem 0.7rem;
 	overflow: hidden;
 	container-type: size;
 }
 
-.crew {
-	grid-area: crew;
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	gap: 0.25rem 0.55rem;
-	min-width: 0;
-	max-width: 100%;
-}
-
-.north,
-.west,
-.east {
-	display: none;
-	min-width: 0;
-	max-width: 100%;
-}
-
-.well {
-	grid-area: well;
+.playWell {
 	position: relative;
-	display: grid;
-	align-content: center;
-	justify-items: center;
-	gap: 0.35rem;
-	min-width: 0;
-	min-height: 0;
-	width: 100%;
-	max-width: 100%;
-	overflow: hidden;
-}
-
-.self {
-	grid-area: self;
-	min-width: 0;
-	max-width: 100%;
 }
 
 .handWrap {
-	grid-area: hand;
 	display: grid;
 	gap: 0.25rem;
 	min-width: 0;
 	max-width: 100%;
 	overflow: visible;
+	justify-self: center;
+	width: min(100%, 28rem);
 }
 
 .hint {
@@ -152,6 +114,7 @@
 	padding: 0.85rem 1rem;
 	background: color-mix(in srgb, var(--table) 82%, var(--ink));
 	box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+	z-index: 2;
 }
 
 .overlayTitle {
@@ -186,46 +149,6 @@
 }
 
 @container (min-width: 40rem) {
-	.table {
-		grid-template-columns: minmax(0, 1fr) minmax(12rem, 2.4fr) minmax(0, 1fr);
-		grid-template-rows: auto minmax(0, 1fr) auto auto;
-		grid-template-areas:
-			"west north east"
-			"west well east"
-			"west self east"
-			". hand .";
-		gap: 0.55rem;
-		padding: 0.4rem 0.4rem 0.9rem;
-	}
-
-	.crew {
-		display: none;
-	}
-
-	.north,
-	.west,
-	.east {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: center;
-		gap: 0.75rem;
-	}
-
-	.north {
-		grid-area: north;
-	}
-
-	.west {
-		grid-area: west;
-		flex-direction: column;
-	}
-
-	.east {
-		grid-area: east;
-		flex-direction: column;
-	}
-
 	.trick {
 		--trick-w: 4.65rem;
 	}
