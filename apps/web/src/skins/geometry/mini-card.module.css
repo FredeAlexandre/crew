@@ -58,8 +58,13 @@
 }
 
 .mini[data-suit="submarine"] {
-	--suit: var(--suit-submarine);
-	--face: color-mix(in srgb, #ece8e0 82%, var(--suit-submarine) 18%);
+	--suit: var(--ink);
+	--face: var(--suit-submarine);
+	--ink-face: var(--ink);
+}
+
+.mini[data-suit="submarine"] .mark {
+	color: var(--ink);
 }
 
 .value {

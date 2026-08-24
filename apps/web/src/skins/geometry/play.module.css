@@ -91,12 +91,28 @@
 
 .handWrap {
 	display: grid;
-	gap: 0.25rem;
+	gap: 0.55rem;
 	min-width: 0;
 	max-width: 100%;
 	overflow: visible;
 	justify-self: center;
 	width: min(100%, 28rem);
+}
+
+.handConfirm {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 44px;
+}
+
+.handAction {
+	min-height: 44px;
+	min-width: 44px;
+	padding-inline: 0.85rem;
+	border-color: var(--accent);
+	color: var(--accent);
 }
 
 .hint {
