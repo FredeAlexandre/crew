@@ -10,6 +10,8 @@
 	--ink: #f4efe6;
 	--muted: #b7b0a4;
 	--motion-travel: 220ms;
+	--motion-tick: 100ms;
+	--motion-pulse: 180ms;
 	font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
 	background: var(--table);
 	color: var(--ink);

@@ -163,6 +163,55 @@
 	grid-row: 3;
 }
 
+.trickCard {
+	display: grid;
+	transform-origin: center center;
+}
+
+.trickCard[data-land="true"] {
+	animation: trickLand var(--motion-travel) ease-out;
+}
+
+.trickCard[data-win="true"] {
+	animation: trickWin var(--motion-pulse) ease-out;
+}
+
+@keyframes trickLand {
+	from {
+		opacity: 0;
+		transform: translateY(-8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes trickWin {
+	50% {
+		transform: scale(1.04);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.trickCard[data-land="true"] {
+		animation: trickFade 80ms ease-out;
+	}
+
+	.trickCard[data-win="true"] {
+		animation: none;
+	}
+}
+
+@keyframes trickFade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
 .stock {
 	display: grid;
 	justify-items: center;

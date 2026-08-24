@@ -1,8 +1,10 @@
 import type { CardId, DistressDirection, SonarPosition } from "@crew/protocol";
 import type { Overlay, TableView, TaskView } from "@crew/view-model/fixtures";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "react-aria-components";
 import type { ClientIntent } from "../../hooks/use-table.ts";
+import { playCue } from "../../lib/sfx.ts";
+import { trickCardKey, trickJuice } from "../../lib/trick-juice.ts";
 import { CardBack, CardFace } from "./Card.tsx";
 import { illegalCopy, lobbySlot, trickSlot, turnCopy } from "./copy.ts";
 import { ChromeLine, HandStrip, PlaySeat, SonarDetailBody, TaskCard } from "./parts.tsx";
@@ -31,6 +33,13 @@ export function PlayScene({
 	const [sonarDetailRegion, setSonarDetailRegion] = useState<
 		TableView["seats"][number]["region"] | null
 	>(null);
+	const prevView = useRef<TableView | null>(null);
+	const [landKeys, setLandKeys] = useState<string[]>([]);
+	const [heldCards, setHeldCards] = useState<TableView["trick"]["cards"] | null>(null);
+	const [winnerRegion, setWinnerRegion] = useState<
+		TableView["trick"]["cards"][number]["region"] | null
+	>(null);
+	const [nudged, setNudged] = useState<CardId | null>(null);
 	const overlay: Overlay =
 		view.overlay !== "none"
 			? view.overlay
@@ -75,6 +84,12 @@ export function PlayScene({
 	const isDraft = view.scene === "taskDraft";
 	const quietHand = isDraft || view.scene === "deal";
 	const turn = isDraft ? turnCopy(view) : null;
+	const shownTrickCards = heldCards ?? view.trick.cards;
+	const shownLeadRegion =
+		heldCards === null
+			? view.trick.leadRegion
+			: (heldCards.find((card) => card.order === 1)?.region ?? null);
+	const landKeySet = new Set(heldCards === null ? landKeys : []);
 
 	useEffect(() => {
 		if (view.overlay !== "none") {
@@ -91,6 +106,44 @@ export function PlayScene({
 		setSelected(null);
 		setQueuedSonar(null);
 	}, [view.attemptId]);
+
+	useLayoutEffect(() => {
+		const prev = prevView.current;
+		prevView.current = view;
+		const juice = trickJuice(prev, view);
+		if (juice.landKeys.length > 0) {
+			setLandKeys(juice.landKeys);
+		}
+		if (juice.playWin) {
+			playCue("win", `win:${view.attemptId ?? "none"}:${view.lastTrick?.trickId ?? "x"}`);
+		}
+		if (juice.holdCards) {
+			setHeldCards(juice.holdCards);
+			setWinnerRegion(juice.winnerRegion);
+		} else if (view.trick.cards.length > 0) {
+			setHeldCards(null);
+			setWinnerRegion(null);
+		}
+	}, [view]);
+
+	useEffect(() => {
+		if (landKeys.length === 0) {
+			return;
+		}
+		const timer = window.setTimeout(() => setLandKeys([]), 220);
+		return () => window.clearTimeout(timer);
+	}, [landKeys]);
+
+	useEffect(() => {
+		if (heldCards === null) {
+			return;
+		}
+		const timer = window.setTimeout(() => {
+			setHeldCards(null);
+			setWinnerRegion(null);
+		}, 180);
+		return () => window.clearTimeout(timer);
+	}, [heldCards]);
 
 	useEffect(() => {
 		if (queuedSonar === null) {
@@ -167,10 +220,38 @@ export function PlayScene({
 		sendIntent?.({ type: "task.pass" });
 	}
 
+	function nudgeIllegal(cardId: CardId) {
+		setNudged(null);
+		window.requestAnimationFrame(() => {
+			setNudged(cardId);
+			playCue("tick");
+		});
+	}
+
+	function activateCard(cardId: CardId) {
+		if (quietHand || sonarOpen) {
+			return;
+		}
+		const card = displayHand.find((entry) => entry.cardId === cardId);
+		if (card === undefined) {
+			return;
+		}
+		if (!card.legal) {
+			nudgeIllegal(cardId);
+			return;
+		}
+		if (view.affordances.canPlay) {
+			playCue("place");
+			sendIntent?.({ type: "card.play", cardId });
+			setSelected(null);
+		}
+	}
+
 	function playCard() {
 		if (selected === null || !canPlaySelected) {
 			return;
 		}
+		playCue("place");
 		sendIntent?.({ type: "card.play", cardId: selected });
 		setSelected(null);
 	}
@@ -260,6 +341,10 @@ export function PlayScene({
 					<Well
 						view={view}
 						turn={turn}
+						trickCards={shownTrickCards}
+						leadRegion={shownLeadRegion}
+						landKeys={landKeySet}
+						winnerRegion={heldCards === null ? null : winnerRegion}
 						onTake={
 							sendIntent
 								? (task: TaskView) =>
@@ -275,7 +360,9 @@ export function PlayScene({
 					cards={displayHand}
 					selected={selected}
 					quiet={quietHand}
+					nudged={nudged}
 					onSelect={setSelected}
+					onActivate={quietHand ? undefined : activateCard}
 				/>
 				{confirmRail ? (
 					<div className={styles.handConfirm}>
@@ -299,10 +386,18 @@ export function PlayScene({
 function Well({
 	view,
 	turn,
+	trickCards,
+	leadRegion,
+	landKeys,
+	winnerRegion,
 	onTake,
 }: {
 	view: TableView;
 	turn: string | null;
+	trickCards: TableView["trick"]["cards"];
+	leadRegion: TableView["trick"]["leadRegion"];
+	landKeys: ReadonlySet<string>;
+	winnerRegion: TableView["trick"]["cards"][number]["region"] | null;
 	onTake?: (task: TaskView) => void;
 }) {
 	if (view.scene === "taskDraft") {
@@ -329,7 +424,7 @@ function Well({
 			</div>
 		);
 	}
-	if (view.undealt.present && view.trick.cards.length === 0) {
+	if (view.undealt.present && trickCards.length === 0) {
 		return (
 			<div className={styles.stock} data-region="undealt">
 				<CardBack size="token" />
@@ -339,18 +434,20 @@ function Well({
 	return (
 		<div className={styles.trick} data-region="trick">
 			{(["top", "left", "right", "bottom"] as const).map((slot) => {
-				const cards = view.trick.cards.filter(
+				const cards = trickCards.filter(
 					(card) => trickSlot(card.region, view.playerCount) === slot,
 				);
 				return (
 					<div key={slot} className={styles.slot} data-slot={slot}>
 						{cards.map((card) => (
-							<CardFace
+							<div
 								key={`${card.seatId}-${card.order}`}
-								cardId={card.cardId}
-								size="trick"
-								lead={view.trick.leadRegion === card.region}
-							/>
+								className={styles.trickCard}
+								data-land={landKeys.has(trickCardKey(card)) ? "true" : "false"}
+								data-win={winnerRegion === card.region ? "true" : "false"}
+							>
+								<CardFace cardId={card.cardId} size="trick" lead={leadRegion === card.region} />
+							</div>
 						))}
 					</div>
 				);

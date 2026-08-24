@@ -3,6 +3,7 @@ import type { HandCard, SeatView, TableView, TaskView } from "@crew/view-model/f
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useRef } from "react";
 import { Button } from "react-aria-components";
+import { useSfxMuted } from "../../hooks/use-sfx-muted.ts";
 import { CardBack, CardFace } from "./Card.tsx";
 import { type LobbySlot, seatIsEmpty, seatName, sonarPositionCopy, turnCopy } from "./copy.ts";
 import { cardIndexFromRects } from "./hand-layout.ts";
@@ -355,15 +356,23 @@ export function HandStrip({
 	cards,
 	selected,
 	quiet = false,
+	nudged = null,
 	onSelect,
+	onActivate,
 }: {
 	cards: HandCard[];
 	selected: CardId | null;
 	quiet?: boolean;
+	nudged?: CardId | null;
 	onSelect?: (cardId: CardId) => void;
+	onActivate?: (cardId: CardId) => void;
 }) {
 	const rootRef = useRef<HTMLDivElement>(null);
-	const dragging = useRef(false);
+	const peeking = useRef(false);
+	const moved = useRef(false);
+	const startSelected = useRef<CardId | null>(null);
+	const startX = useRef(0);
+	const startY = useRef(0);
 	const selectedIndex =
 		selected === null ? -1 : cards.findIndex((card) => card.cardId === selected);
 
@@ -400,16 +409,25 @@ export function HandStrip({
 			return;
 		}
 		event.preventDefault();
+		startSelected.current = selected;
+		moved.current = false;
+		startX.current = event.clientX;
+		startY.current = event.clientY;
 		const touchLike = event.pointerType === "touch" || event.pointerType === "pen";
 		if (touchLike) {
-			dragging.current = true;
+			peeking.current = true;
 			event.currentTarget.setPointerCapture(event.pointerId);
 		}
 		selectAtPointer(event);
 	}
 
 	function movePeek(event: ReactPointerEvent<HTMLDivElement>) {
-		if (dragging.current || event.buttons > 0) {
+		const dx = event.clientX - startX.current;
+		const dy = event.clientY - startY.current;
+		if (dx * dx + dy * dy > 100) {
+			moved.current = true;
+		}
+		if (peeking.current || event.buttons > 0) {
 			selectAtPointer(event);
 			return;
 		}
@@ -419,13 +437,26 @@ export function HandStrip({
 	}
 
 	function endPeek(event: ReactPointerEvent<HTMLDivElement>) {
-		if (dragging.current) {
-			dragging.current = false;
+		const hit = cardAtPointer(event);
+		if (peeking.current) {
+			peeking.current = false;
 			if (event.currentTarget.hasPointerCapture(event.pointerId)) {
 				event.currentTarget.releasePointerCapture(event.pointerId);
 			}
 		}
-		selectAtPointer(event);
+		if (event.type === "pointercancel") {
+			if (hit) {
+				onSelect?.(hit.id);
+			}
+			return;
+		}
+		if (!moved.current && hit !== null && hit.id === startSelected.current) {
+			onActivate?.(hit.id);
+			return;
+		}
+		if (hit) {
+			onSelect?.(hit.id);
+		}
 	}
 
 	return (
@@ -446,6 +477,7 @@ export function HandStrip({
 						key={card.cardId}
 						className={styles.fanSlot}
 						data-raised={raised ? "true" : "false"}
+						data-nudge={nudged === card.cardId ? "true" : "false"}
 						style={
 							{
 								"--i": index,
@@ -471,6 +503,7 @@ export function HandStrip({
 
 export function ChromeLine({ view }: { view: TableView }) {
 	const turn = turnCopy(view);
+	const [muted, setMuted] = useSfxMuted();
 	const bits = [
 		view.chrome.missionId ? `Mission ${view.chrome.missionId.replace(/^m/i, "")}` : null,
 		view.chrome.trickId ? `Trick ${view.chrome.trickId}` : null,
@@ -482,6 +515,15 @@ export function ChromeLine({ view }: { view: TableView }) {
 				<span key={bit}>{bit}</span>
 			))}
 			{turn ? <span className={styles.turn}>{turn}</span> : null}
+			<Button
+				className={styles.mute}
+				data-on={muted ? "false" : "true"}
+				aria-pressed={!muted}
+				aria-label={muted ? "Sound off" : "Sound on"}
+				onPress={() => setMuted(!muted)}
+			>
+				{muted ? "Muted" : "Sound"}
+			</Button>
 		</div>
 	);
 }
