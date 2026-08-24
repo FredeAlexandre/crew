@@ -1,61 +1,52 @@
 .mark {
-	--mark-size: 0.85rem;
 	display: block;
 	flex-shrink: 0;
-	width: var(--mark-size);
-	height: var(--mark-size);
-	background: var(--suit, var(--muted));
 	color: var(--suit, var(--muted));
 }
 
 .sm {
-	--mark-size: 0.55rem;
+	width: 0.55rem;
+	height: 0.55rem;
 }
 
 .md {
-	--mark-size: 0.85rem;
+	width: 0.85rem;
+	height: 0.85rem;
 }
 
 .lg {
-	--mark-size: 1.15rem;
+	width: 1.15rem;
+	height: 1.15rem;
 }
 
 .xl {
-	--mark-size: 1.55rem;
-}
-
-.mark[data-suit="pink"] {
-	--suit: var(--suit-pink);
-	border-radius: 50%;
-}
-
-.mark[data-suit="yellow"] {
-	--suit: var(--suit-yellow);
-	clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-
-.mark[data-suit="green"] {
-	--suit: var(--suit-green);
-	border-radius: 0.08rem;
-}
-
-.mark[data-suit="blue"] {
-	--suit: var(--suit-blue);
-	clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-}
-
-.mark[data-suit="submarine"] {
-	--suit: var(--suit-submarine);
-	width: calc(var(--mark-size) * 2.45);
-	height: var(--mark-size);
-	background: none;
-	overflow: visible;
+	width: 1.55rem;
+	height: 1.55rem;
 }
 
 .glyph {
 	display: block;
 	width: 100%;
 	height: 100%;
-	fill: currentColor;
 	overflow: visible;
+}
+
+.mark[data-suit="pink"] {
+	--suit: var(--suit-pink);
+}
+
+.mark[data-suit="yellow"] {
+	--suit: var(--suit-yellow);
+}
+
+.mark[data-suit="green"] {
+	--suit: var(--suit-green);
+}
+
+.mark[data-suit="blue"] {
+	--suit: var(--suit-blue);
+}
+
+.mark[data-suit="submarine"] {
+	--suit: var(--suit-submarine);
 }

@@ -45,7 +45,7 @@ export function CardFace({
 	const index = (
 		<span className={styles.index}>
 			<span className={styles.value}>{value}</span>
-			<SuitMark suit={suit} className={styles.mark} />
+			<SuitMark suit={suit} size="sm" className={styles.mark} />
 		</span>
 	);
 
@@ -55,10 +55,10 @@ export function CardFace({
 		) : (
 			<>
 				{index}
-				<SuitMark suit={suit} className={styles.pip} detailed />
+				<SuitMark suit={suit} size="xl" className={styles.pip} />
 				<span className={`${styles.index} ${styles.indexTail}`} aria-hidden="true">
 					<span className={styles.value}>{value}</span>
-					<SuitMark suit={suit} className={styles.mark} />
+					<SuitMark suit={suit} size="sm" className={styles.mark} />
 				</span>
 			</>
 		);

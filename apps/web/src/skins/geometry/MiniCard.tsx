@@ -19,7 +19,7 @@ export function MiniCard({ cardId, size = "md" }: MiniCardProps) {
 	return (
 		<div className={[styles.mini, styles[size]].join(" ")} data-suit={suit}>
 			{corner}
-			<SuitMark suit={suit} size={size === "lg" ? "lg" : "md"} className={styles.center} detailed />
+			<SuitMark suit={suit} size={size === "lg" ? "lg" : "md"} className={styles.center} />
 			<span className={[styles.corner, styles.cornerTail].join(" ")} aria-hidden="true">
 				<span className={styles.value}>{value}</span>
 				<SuitMark suit={suit} size="sm" />

@@ -26,7 +26,6 @@ const TABLE_STATES: readonly {
 		communicated?: boolean;
 		muted?: boolean;
 		lead?: boolean;
-		revealed?: boolean;
 	};
 	back?: boolean;
 }[] = [
@@ -36,7 +35,6 @@ const TABLE_STATES: readonly {
 	{ id: "communicated", label: "Communicated", cardId: "pink-7", props: { communicated: true } },
 	{ id: "muted", label: "Muted", cardId: "pink-7", props: { muted: true } },
 	{ id: "lead", label: "Lead", cardId: "pink-7", props: { lead: true } },
-	{ id: "stowed", label: "Stowed", cardId: "pink-7", props: { revealed: false } },
 	{ id: "back", label: "Back", back: true },
 ];
 
@@ -97,9 +95,7 @@ function PlayingCardsRoute() {
 				<li className={styles.group}>
 					<div className={styles.groupHead}>
 						<h2 className={styles.groupTitle}>Table states</h2>
-						<p className={styles.groupLede}>
-							How one card reads legal, selected, hidden, and face down.
-						</p>
+						<p className={styles.groupLede}>How one card reads legal, selected, and face down.</p>
 					</div>
 					<ul className={styles.cardGrid}>
 						{TABLE_STATES.map((state) => (
