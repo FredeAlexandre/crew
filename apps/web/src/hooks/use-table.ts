@@ -16,7 +16,12 @@ const RECONNECT_MS = 400;
 export type ClientIntent =
 	| { type: "player.ready"; ready: boolean }
 	| { type: "host.start" }
-	| { type: "host.configure"; difficulty: number; captainSeat: number | null }
+	| {
+			type: "host.configure";
+			difficulty: number;
+			captainSeat: number | null;
+			distressDisabled?: boolean;
+	  }
 	| { type: "host.retry" }
 	| { type: "host.fillBots" }
 	| { type: "task.take"; taskInstanceId: TaskInstanceId }

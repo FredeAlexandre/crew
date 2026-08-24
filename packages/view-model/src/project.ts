@@ -31,11 +31,13 @@ export type Occupancy = readonly OccupancySeat[];
 export type LobbySetup = {
 	difficulty: number;
 	captainSeat: SeatId | null;
+	distressDisabled: boolean;
 };
 
 const DEFAULT_LOBBY_SETUP: LobbySetup = {
 	difficulty: DEFAULT_MISSION_DIFFICULTY,
 	captainSeat: null,
+	distressDisabled: false,
 };
 
 /**
@@ -185,6 +187,7 @@ export function project(
 			flags: {
 				sonarDisabled: state.mission?.flags?.sonarDisabled === true,
 				discussionAllowed: state.mission?.flags?.discussionAllowed === true,
+				distressDisabled: state.mission?.flags?.distressDisabled === true,
 			},
 		},
 		seats,
@@ -261,7 +264,11 @@ export function projectLobby(
 			turnRegion: null,
 			distress: { active: false, direction: null },
 			sonarAvailable: false,
-			flags: { sonarDisabled: false, discussionAllowed: false },
+			flags: {
+				sonarDisabled: false,
+				discussionAllowed: false,
+				distressDisabled: setup.distressDisabled,
+			},
 		},
 		seats,
 		hand: [],

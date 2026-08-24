@@ -21,6 +21,7 @@ export type PlayerCount = 3 | 4 | 5;
 export type MissionFlags = {
 	readonly sonarDisabled?: boolean;
 	readonly discussionAllowed?: boolean;
+	readonly distressDisabled?: boolean;
 };
 
 export type MissionDef = {

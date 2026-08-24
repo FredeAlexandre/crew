@@ -12,6 +12,7 @@ import styles from "./scenes.module.css";
 export type LobbySetup = {
 	difficulty: number;
 	captainSeat: SeatId | null;
+	distressDisabled: boolean;
 };
 
 export type LobbyActions = {
@@ -132,6 +133,23 @@ function SetupPanel({
 					))}
 				</div>
 			</div>
+			<div className={styles.setupRow}>
+				<span className={styles.setupLabel}>Distress</span>
+				<div className={styles.setupPicks}>
+					<Button
+						className={setup.distressDisabled ? styles.ghost : styles.primary}
+						onPress={() => onConfigure({ ...setup, distressDisabled: false })}
+					>
+						On
+					</Button>
+					<Button
+						className={setup.distressDisabled ? styles.primary : styles.ghost}
+						onPress={() => onConfigure({ ...setup, distressDisabled: true })}
+					>
+						Off
+					</Button>
+				</div>
+			</div>
 		</div>
 	);
 }
@@ -181,15 +199,15 @@ function currentSetup(view: TableView): LobbySetup {
 	return {
 		difficulty: view.chrome.difficulty ?? DEFAULT_MISSION_DIFFICULTY,
 		captainSeat: view.seats.find((seat) => seat.isCaptain)?.seatId ?? null,
+		distressDisabled: view.chrome.flags.distressDisabled,
 	};
 }
 
 function setupCopy(view: TableView, setup: LobbySetup): string {
 	const captain = view.seats.find((seat) => seat.isCaptain);
-	if (captain === undefined) {
-		return `Difficulty ${setup.difficulty} · Captain random`;
-	}
-	return `Difficulty ${setup.difficulty} · Captain ${captainPickLabel(captain)}`;
+	const captainLabel = captain === undefined ? "random" : captainPickLabel(captain);
+	const distress = setup.distressDisabled ? "off" : "on";
+	return `Difficulty ${setup.difficulty} · Captain ${captainLabel} · Distress ${distress}`;
 }
 
 function captainPickLabel(seat: SeatView): string {

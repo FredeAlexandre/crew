@@ -143,6 +143,7 @@ export const chromeSchema = z.object({
 	flags: z.object({
 		sonarDisabled: z.boolean(),
 		discussionAllowed: z.boolean(),
+		distressDisabled: z.boolean(),
 	}),
 });
 export type Chrome = z.infer<typeof chromeSchema>;

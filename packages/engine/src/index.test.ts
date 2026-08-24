@@ -96,9 +96,14 @@ describe("apply", () => {
 		expect(apply(state, { type: "host.start" }).ok).toBe(false);
 		expect(apply(state, { type: "host.retry" }).ok).toBe(false);
 		expect(apply(state, { type: "host.fillBots" }).ok).toBe(false);
-		expect(apply(state, { type: "host.configure", difficulty: 4, captainSeat: null }).ok).toBe(
-			false,
-		);
+		expect(
+			apply(state, {
+				type: "host.configure",
+				difficulty: 4,
+				captainSeat: null,
+				distressDisabled: false,
+			}).ok,
+		).toBe(false);
 	});
 });
 

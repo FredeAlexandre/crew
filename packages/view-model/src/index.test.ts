@@ -44,7 +44,7 @@ describe("tableViewSchema", () => {
 				turnRegion: null,
 				distress: { active: false, direction: null },
 				sonarAvailable: false,
-				flags: { sonarDisabled: false, discussionAllowed: false },
+				flags: { sonarDisabled: false, discussionAllowed: false, distressDisabled: false },
 			},
 			seats: [emptySeat("seat.self", 0), emptySeat("seat.1", 1), emptySeat("seat.2", 2)],
 			hand: [],

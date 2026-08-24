@@ -95,7 +95,12 @@ describe("wire schemas", () => {
 		expect(intentSchema.parse({ type: "host.retry" }).type).toBe("host.retry");
 		expect(intentSchema.parse({ type: "host.fillBots" }).type).toBe("host.fillBots");
 		expect(
-			intentSchema.parse({ type: "host.configure", difficulty: 4, captainSeat: null }).type,
+			intentSchema.parse({
+				type: "host.configure",
+				difficulty: 4,
+				captainSeat: null,
+				distressDisabled: true,
+			}).type,
 		).toBe("host.configure");
 		expect(intentSchema.parse({ type: "host.configure", difficulty: 8, captainSeat: 2 }).type).toBe(
 			"host.configure",

@@ -17,7 +17,8 @@
 		"sonarAvailable": true,
 		"flags": {
 			"sonarDisabled": false,
-			"discussionAllowed": false
+			"discussionAllowed": false,
+			"distressDisabled": false
 		}
 	},
 	"seats": [
