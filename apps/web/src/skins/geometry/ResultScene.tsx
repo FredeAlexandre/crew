@@ -1,6 +1,7 @@
 import type { TableView } from "@crew/view-model/fixtures";
 import { useEffect, useState } from "react";
 import { Button } from "react-aria-components";
+import { useI18n } from "../../lib/i18n.tsx";
 import { playCue } from "../../lib/sfx.ts";
 import { resultCopy, seatName } from "./copy.ts";
 import { SeatPip, TaskMark } from "./parts.tsx";
@@ -15,6 +16,7 @@ export function ResultScene({
 	onRetry?: () => void;
 	enter?: boolean;
 }) {
+	const { t } = useI18n();
 	const [fresh] = useState(enter);
 	const outcome = view.result?.outcome ?? "failed";
 	const tasks = view.seats.flatMap((seat) =>
@@ -25,8 +27,8 @@ export function ResultScene({
 	const completed = tasks.length - incomplete.length;
 	const reason = resultCopy(view.result?.reason ?? null);
 	const mission = view.chrome.missionId
-		? `Mission ${view.chrome.missionId.replace(/^m/i, "")}`
-		: "Mission";
+		? t("mission", { number: view.chrome.missionId.replace(/^m/i, "") })
+		: t("missionPlain");
 
 	useEffect(() => {
 		if (!fresh) {
@@ -41,40 +43,37 @@ export function ResultScene({
 		<div className={styles.verdict} data-scene="result">
 			<p className={styles.kicker}>{mission}</p>
 			<h1 className={styles.outcome} data-outcome={outcome} data-enter={fresh ? "true" : undefined}>
-				{outcome === "won" ? "Won" : "Failed"}
+				{outcome === "won" ? t("won") : t("missionFailed")}
 			</h1>
 			<section className={styles.review} aria-labelledby="mission-review">
-				<h2 id="mission-review">Mission review</h2>
+				<h2 id="mission-review">{t("missionReview")}</h2>
 				{outcome === "failed" ? (
 					<>
 						<p className={styles.lede}>
-							{reason ?? "The crew did not complete every assigned task."} A mission fails as soon
-							as a task can no longer be completed.
+							{reason ?? t("defaultFailure")} {t("failureTiming")}
 						</p>
 						{failed.length > 0 ? (
-							<ul className={styles.reviewList} aria-label="Tasks that caused the failure">
+							<ul className={styles.reviewList} aria-label={t("failedTasks")}>
 								{failed.map(({ task, owner }) => (
 									<li key={task.instanceId}>
 										<TaskMark task={task} size="table" />
-										<span>{owner}'s task could no longer be completed.</span>
+										<span>{t("ownerTaskFailed", { owner })}</span>
 									</li>
 								))}
 							</ul>
 						) : null}
 					</>
 				) : (
-					<p className={styles.lede}>
-						Every assigned task was completed. The mission is a success.
-					</p>
+					<p className={styles.lede}>{t("success")}</p>
 				)}
 				<p className={styles.reviewSummary}>
-					{completed} of {tasks.length} tasks completed
+					{t("taskSummary", { completed, total: tasks.length })}
 				</p>
 				{outcome === "failed" && incomplete.length > failed.length ? (
 					<p className={styles.reviewRemaining}>
-						{incomplete.length - failed.length} other task
-						{incomplete.length - failed.length === 1 ? " was" : "s were"} still unfinished when the
-						mission ended.
+						{t(incomplete.length - failed.length === 1 ? "remainingOne" : "remainingMany", {
+							count: incomplete.length - failed.length,
+						})}
 					</p>
 				) : null}
 			</section>
@@ -86,7 +85,7 @@ export function ResultScene({
 			{view.affordances.canRetry && onRetry ? (
 				<div className={styles.boardActions}>
 					<Button className={styles.primary} onPress={onRetry}>
-						Retry
+						{t("retry")}
 					</Button>
 				</div>
 			) : null}
