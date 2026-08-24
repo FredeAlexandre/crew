@@ -28,6 +28,7 @@ import {
 	DISPLAY_NAME_DEBOUNCE_MS,
 	DISPLAY_NAME_MAX,
 } from "../lib/display-name.ts";
+import { type Translate, useI18n } from "../lib/i18n.tsx";
 import { persistDisplayName } from "../lib/rooms.ts";
 import styles from "../styles/identity.module.css";
 import { useIdentitySheet } from "./identity-sheet.tsx";
@@ -35,6 +36,7 @@ import { useIdentitySheet } from "./identity-sheet.tsx";
 type SheetMode = "home" | "create" | "signin" | "password";
 
 export function ProfileControl() {
+	const { t } = useI18n();
 	const sheet = useIdentitySheet();
 	const identity = useIdentity();
 	const refetchRef = useRef(identity.refetch);
@@ -61,11 +63,11 @@ export function ProfileControl() {
 	const shownError = error ?? identity.sessionError;
 	const openLabel = isAnonymous
 		? identity.displayName.length > 0
-			? `Guest profile, ${identity.displayName}`
-			: "Guest profile"
+			? t("guestProfileNamed", { name: identity.displayName })
+			: t("guestProfile")
 		: identity.displayName.length > 0
-			? `Profile, ${identity.displayName}`
-			: "Your profile";
+			? t("profileNamed", { name: identity.displayName })
+			: t("yourProfile");
 
 	function resetSheet(nextName: string, nextMode: SheetMode = "home") {
 		setMode(nextMode);
@@ -140,7 +142,7 @@ export function ProfileControl() {
 						{({ close }: { close: () => void }) => (
 							<>
 								<Heading slot="title" className={styles.title}>
-									{sheetTitle(mode, isAnonymous)}
+									{sheetTitle(mode, isAnonymous, t)}
 								</Heading>
 								{mode === "home" ? (
 									<>
@@ -153,10 +155,10 @@ export function ProfileControl() {
 											}}
 											isDisabled={busy || !identity.ready}
 										>
-											<Label className={styles.label}>Name</Label>
+											<Label className={styles.label}>{t("name")}</Label>
 											<Input
 												className={styles.input}
-												placeholder="Your name"
+												placeholder={t("yourName")}
 												autoComplete="nickname"
 												maxLength={DISPLAY_NAME_MAX}
 												spellCheck="false"
@@ -171,7 +173,7 @@ export function ProfileControl() {
 														setMode("create");
 													}}
 												>
-													Create account
+													{t("createAccount")}
 												</Button>
 												<Button
 													className={styles.primary}
@@ -180,12 +182,14 @@ export function ProfileControl() {
 														setMode("signin");
 													}}
 												>
-													Sign in
+													{t("signIn")}
 												</Button>
 											</div>
 										) : (
 											<>
-												<p className={styles.copy}>Signed in as {user?.email ?? "your account"}.</p>
+												<p className={styles.copy}>
+													{t("signedInAs", { email: user?.email ?? t("yourAccount") })}
+												</p>
 												<div className={styles.actions}>
 													<Button
 														className={styles.ghost}
@@ -194,7 +198,7 @@ export function ProfileControl() {
 															setMode("password");
 														}}
 													>
-														Change password
+														{t("changePassword")}
 													</Button>
 													<Button
 														className={styles.ghost}
@@ -205,15 +209,15 @@ export function ProfileControl() {
 														}
 														isDisabled={busy}
 													>
-														Sign out
+														{t("signOut")}
 													</Button>
 												</div>
-												<p className={styles.hint}>Change email later.</p>
+												<p className={styles.hint}>{t("changeEmailLater")}</p>
 											</>
 										)}
 										{!isAnonymous ? (
 											<div className={styles.photoRow}>
-												<span className={styles.label}>Photo</span>
+												<span className={styles.label}>{t("photo")}</span>
 												<div className={styles.photoActions}>
 													<FileTrigger
 														acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}
@@ -228,7 +232,7 @@ export function ProfileControl() {
 														}}
 													>
 														<Button className={styles.ghost} isDisabled={busy || !identity.ready}>
-															{user?.image ? "Replace" : "Choose"}
+															{user?.image ? t("replace") : t("choose")}
 														</Button>
 													</FileTrigger>
 													{user?.image ? (
@@ -241,26 +245,26 @@ export function ProfileControl() {
 																});
 															}}
 														>
-															Remove
+															{t("remove")}
 														</Button>
 													) : null}
 												</div>
 											</div>
 										) : null}
 										<fieldset className={styles.stubs} disabled>
-											<legend className={styles.legend}>Table feel</legend>
-											<p className={styles.hint}>Coming later.</p>
+											<legend className={styles.legend}>{t("tableFeel")}</legend>
+											<p className={styles.hint}>{t("comingLater")}</p>
 											<p className={styles.stubRow}>
-												Theme
-												<span>Dark / light</span>
+												{t("theme")}
+												<span>{t("darkLight")}</span>
 											</p>
 											<p className={styles.stubRow}>
-												SFX
-												<span>Volume</span>
+												{t("sfx")}
+												<span>{t("volume")}</span>
 											</p>
 											<p className={styles.stubRow}>
-												Animations
-												<span>On / off</span>
+												{t("animations")}
+												<span>{t("onOff")}</span>
 											</p>
 										</fieldset>
 									</>
@@ -276,9 +280,7 @@ export function ProfileControl() {
 											});
 										}}
 									>
-										<p className={styles.copy}>
-											Keeps this name on other devices. Preferences and mission history come later.
-										</p>
+										<p className={styles.copy}>{t("createAccountCopy")}</p>
 										<EmailPasswordFields
 											email={email}
 											password={password}
@@ -289,7 +291,7 @@ export function ProfileControl() {
 										/>
 										<div className={styles.actions}>
 											<Button className={styles.primary} type="submit" isDisabled={busy}>
-												{busy ? "Saving…" : "Create account"}
+												{busy ? t("saving") : t("createAccount")}
 											</Button>
 											<Button
 												className={styles.ghost}
@@ -299,7 +301,7 @@ export function ProfileControl() {
 												}}
 												isDisabled={busy}
 											>
-												Back
+												{t("back")}
 											</Button>
 										</div>
 									</form>
@@ -314,10 +316,7 @@ export function ProfileControl() {
 											});
 										}}
 									>
-										<p className={styles.copy}>
-											Sign in to an account you already created. A name or hosted tables from this
-											guest move over, then the guest is removed.
-										</p>
+										<p className={styles.copy}>{t("signInCopy")}</p>
 										<EmailPasswordFields
 											email={email}
 											password={password}
@@ -328,7 +327,7 @@ export function ProfileControl() {
 										/>
 										<div className={styles.actions}>
 											<Button className={styles.primary} type="submit" isDisabled={busy}>
-												{busy ? "Signing in…" : "Sign in"}
+												{busy ? t("signingIn") : t("signIn")}
 											</Button>
 											<Button
 												className={styles.ghost}
@@ -338,7 +337,7 @@ export function ProfileControl() {
 												}}
 												isDisabled={busy}
 											>
-												Back
+												{t("back")}
 											</Button>
 										</div>
 									</form>
@@ -359,7 +358,7 @@ export function ProfileControl() {
 											onChange={setCurrentPassword}
 											isDisabled={busy}
 										>
-											<Label className={styles.label}>Current password</Label>
+											<Label className={styles.label}>{t("currentPassword")}</Label>
 											<Input
 												className={styles.input}
 												type="password"
@@ -374,7 +373,7 @@ export function ProfileControl() {
 											onChange={setNewPassword}
 											isDisabled={busy}
 										>
-											<Label className={styles.label}>New password</Label>
+											<Label className={styles.label}>{t("newPassword")}</Label>
 											<Input
 												className={styles.input}
 												type="password"
@@ -385,7 +384,7 @@ export function ProfileControl() {
 										</TextField>
 										<div className={styles.actions}>
 											<Button className={styles.primary} type="submit" isDisabled={busy}>
-												{busy ? "Saving…" : "Save password"}
+												{busy ? t("saving") : t("savePassword")}
 											</Button>
 											<Button
 												className={styles.ghost}
@@ -395,7 +394,7 @@ export function ProfileControl() {
 												}}
 												isDisabled={busy}
 											>
-												Back
+												{t("back")}
 											</Button>
 										</div>
 									</form>
@@ -406,7 +405,7 @@ export function ProfileControl() {
 									</p>
 								) : null}
 								<Button className={styles.close} onPress={close} isDisabled={busy}>
-									Close
+									{t("close")}
 								</Button>
 							</>
 						)}
@@ -417,17 +416,17 @@ export function ProfileControl() {
 	);
 }
 
-function sheetTitle(mode: SheetMode, isAnonymous: boolean): string {
+function sheetTitle(mode: SheetMode, isAnonymous: boolean, t: Translate): string {
 	if (mode === "create") {
-		return "Create account";
+		return t("createAccount");
 	}
 	if (mode === "signin") {
-		return "Sign in";
+		return t("signIn");
 	}
 	if (mode === "password") {
-		return "Change password";
+		return t("changePassword");
 	}
-	return isAnonymous ? "Guest" : "You";
+	return isAnonymous ? t("guest") : t("you");
 }
 
 function EmailPasswordFields({
@@ -445,14 +444,15 @@ function EmailPasswordFields({
 	busy: boolean;
 	autoCompletePassword: string;
 }) {
+	const { t } = useI18n();
 	return (
 		<>
 			<TextField className={styles.field} value={email} onChange={onEmail} isDisabled={busy}>
-				<Label className={styles.label}>Email</Label>
+				<Label className={styles.label}>{t("email")}</Label>
 				<Input className={styles.input} type="email" autoComplete="email" required />
 			</TextField>
 			<TextField className={styles.field} value={password} onChange={onPassword} isDisabled={busy}>
-				<Label className={styles.label}>Password</Label>
+				<Label className={styles.label}>{t("password")}</Label>
 				<Input
 					className={styles.input}
 					type="password"

@@ -34,7 +34,7 @@ function BootRoute() {
 			const ticket = await createRoom(playerCount);
 			await navigate({ to: "/lobby/$code", params: { code: ticket.code } });
 		} catch (caught) {
-			setError(roomErrorCopy(caught));
+			setError(roomErrorCopy(caught, t));
 			setBusy("idle");
 		}
 	}
@@ -42,7 +42,7 @@ function BootRoute() {
 	async function sitDown() {
 		const normalized = extractLobbyCode(code);
 		if (!isRoomCode(normalized)) {
-			setError("Enter the 4–6 character code from your host.");
+			setError(t("invalidLobbyCode"));
 			return;
 		}
 		setBusy("join");
@@ -52,7 +52,7 @@ function BootRoute() {
 			const ticket = await joinRoom(normalized);
 			await navigate({ to: "/lobby/$code", params: { code: ticket.code } });
 		} catch (caught) {
-			setError(roomErrorCopy(caught));
+			setError(roomErrorCopy(caught, t));
 			setBusy("idle");
 		}
 	}
@@ -67,11 +67,11 @@ function BootRoute() {
 				<p className={styles.lede}>{t("openTable")}</p>
 				<nav className={styles.links}>
 					<Link className={styles.catalogLink} to="/assets">
-						Browse assets
+						{t("browseAssets")}
 					</Link>
 					{identity.user?.isAnonymous !== false ? (
 						<Button className={styles.signIn} onPress={sheet.openSignIn}>
-							Sign in
+							{t("signIn")}
 						</Button>
 					) : null}
 				</nav>
@@ -135,7 +135,7 @@ function BootRoute() {
 						<h2 className={styles.choiceTitle}>{t("joinLobby")}</h2>
 						<p className={styles.choiceCopy}>{t("pasteCode")}</p>
 						<TextField
-							aria-label="Lobby code"
+							aria-label={t("lobbyCode")}
 							value={code}
 							onChange={(value: string) => setCode(extractLobbyCode(value))}
 							isDisabled={blocked}

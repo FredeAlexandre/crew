@@ -3,6 +3,7 @@ import { fixtures, type TableView } from "@crew/view-model/fixtures";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTable } from "../hooks/use-table.ts";
+import { useI18n } from "../lib/i18n.tsx";
 import { lobbyShareUrl } from "../lib/lobby-code.ts";
 import { joinRoom, roomErrorCopy } from "../lib/rooms.ts";
 import { GeometryTable } from "../skins/geometry/Table.tsx";
@@ -36,12 +37,13 @@ function placeholderLobby(playerCount: PlayerCount): TableView {
 }
 
 function LobbyRoute() {
+	const { t } = useI18n();
 	const { code: rawCode } = Route.useParams();
 	const code = normalizeRoomCode(rawCode);
 	const [status, setStatus] = useState<"joining" | "ready" | "error">(
 		isRoomCode(code) ? "joining" : "error",
 	);
-	const [error, setError] = useState(isRoomCode(code) ? null : "That code is not a lobby.");
+	const [error, setError] = useState(isRoomCode(code) ? null : t("invalidLobby"));
 	const [copied, setCopied] = useState(false);
 	const [ticket, setTicket] = useState<RoomTicket | null>(null);
 	const table = useTable(ticket !== null ? ticket.code : null);
@@ -61,14 +63,14 @@ function LobbyRoute() {
 			})
 			.catch((caught) => {
 				if (!cancelled) {
-					setError(roomErrorCopy(caught));
+					setError(roomErrorCopy(caught, t));
 					setStatus("error");
 				}
 			});
 		return () => {
 			cancelled = true;
 		};
-	}, [code]);
+	}, [code, t]);
 
 	async function copyCode() {
 		try {
@@ -81,9 +83,9 @@ function LobbyRoute() {
 
 	const waitingToSit = status !== "error" && table.view === null;
 	const statusNote = waitingToSit
-		? "Sitting down…"
+		? t("sittingDown")
 		: view.scene === "lobby"
-			? "Waiting for the rest of the crew."
+			? t("waitingCrew")
 			: null;
 
 	return (

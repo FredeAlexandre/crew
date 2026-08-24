@@ -6,6 +6,7 @@ import {
 } from "@crew/protocol";
 import type { SeatView, TableView } from "@crew/view-model/fixtures";
 import { Button } from "react-aria-components";
+import { useI18n } from "../../lib/i18n.tsx";
 import { type LobbySlot, lobbySlot, seatIsEmpty, seatName } from "./copy.ts";
 import styles from "./scenes.module.css";
 
@@ -29,6 +30,7 @@ export type LobbyActions = {
 };
 
 export function LobbyScene({ view, actions }: { view: TableView; actions?: LobbyActions }) {
+	const { t } = useI18n();
 	const code = actions?.roomCode || "————";
 	const setup = currentSetup(view);
 	return (
@@ -39,12 +41,12 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 					className={styles.code}
 					onPress={actions?.onCopyCode}
 					isDisabled={!actions?.onCopyCode}
-					aria-label={`Copy lobby link for ${code}`}
+					aria-label={t("copyLobbyLink", { code })}
 				>
 					{code}
 				</Button>
-				<p className={styles.lede}>Share this link. Empty chairs stay empty until someone sits.</p>
-				{actions?.copied ? <p className={styles.lede}>Link copied.</p> : null}
+				<p className={styles.lede}>{t("shareLobby")}</p>
+				{actions?.copied ? <p className={styles.lede}>{t("linkCopied")}</p> : null}
 			</header>
 			<div className={styles.ring} data-count={String(view.playerCount)}>
 				{view.seats.map((seat) => (
@@ -60,12 +62,12 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 					<SetupPanel view={view} setup={setup} onConfigure={actions?.onConfigure} />
 					{actions?.onFillBots ? (
 						<Button className={styles.ghost} onPress={actions.onFillBots}>
-							Fill empty seats
+							{t("fillSeats")}
 						</Button>
 					) : null}
 					{actions?.onStart ? (
 						<Button className={styles.primary} onPress={actions.onStart}>
-							Start
+							{t("start")}
 						</Button>
 					) : null}
 					{actions?.statusNote ? <p className={styles.lede}>{actions.statusNote}</p> : null}
@@ -89,19 +91,20 @@ function SetupPanel({
 	setup: LobbySetup;
 	onConfigure?: (setup: LobbySetup) => void;
 }) {
+	const { t } = useI18n();
 	if (onConfigure === undefined) {
-		return <p className={styles.lede}>{setupCopy(view, setup)}</p>;
+		return <p className={styles.lede}>{setupCopy(view, setup, t)}</p>;
 	}
 
 	return (
 		<div className={styles.setup}>
 			<div className={styles.setupRow}>
-				<span className={styles.setupLabel}>Difficulty</span>
+				<span className={styles.setupLabel}>{t("difficulty")}</span>
 				<Button
 					className={styles.ghost}
 					isDisabled={setup.difficulty <= MISSION_DIFFICULTY_MIN}
 					onPress={() => onConfigure({ ...setup, difficulty: setup.difficulty - 1 })}
-					aria-label="Lower difficulty"
+					aria-label={t("lowerDifficulty")}
 				>
 					–
 				</Button>
@@ -110,19 +113,19 @@ function SetupPanel({
 					className={styles.ghost}
 					isDisabled={setup.difficulty >= MISSION_DIFFICULTY_MAX}
 					onPress={() => onConfigure({ ...setup, difficulty: setup.difficulty + 1 })}
-					aria-label="Raise difficulty"
+					aria-label={t("raiseDifficulty")}
 				>
 					+
 				</Button>
 			</div>
 			<div className={styles.setupRow}>
-				<span className={styles.setupLabel}>Captain</span>
+				<span className={styles.setupLabel}>{t("captain")}</span>
 				<div className={styles.setupPicks}>
 					<Button
 						className={setup.captainSeat === null ? styles.primary : styles.ghost}
 						onPress={() => onConfigure({ ...setup, captainSeat: null })}
 					>
-						Random
+						{t("random")}
 					</Button>
 					{view.seats.map((seat) => (
 						<Button
@@ -130,25 +133,25 @@ function SetupPanel({
 							className={setup.captainSeat === seat.seatId ? styles.primary : styles.ghost}
 							onPress={() => onConfigure({ ...setup, captainSeat: seat.seatId })}
 						>
-							{captainPickLabel(seat)}
+							{captainPickLabel(seat, t)}
 						</Button>
 					))}
 				</div>
 			</div>
 			<div className={styles.setupRow}>
-				<span className={styles.setupLabel}>Distress</span>
+				<span className={styles.setupLabel}>{t("distress")}</span>
 				<div className={styles.setupPicks}>
 					<Button
 						className={setup.distressDisabled ? styles.ghost : styles.primary}
 						onPress={() => onConfigure({ ...setup, distressDisabled: false })}
 					>
-						On
+						{t("on")}
 					</Button>
 					<Button
 						className={setup.distressDisabled ? styles.primary : styles.ghost}
 						onPress={() => onConfigure({ ...setup, distressDisabled: true })}
 					>
-						Off
+						{t("off")}
 					</Button>
 				</div>
 			</div>
@@ -167,6 +170,7 @@ function Chair({
 	onReady?: (ready: boolean) => void;
 	onKick?: (seatId: SeatId) => void;
 }) {
+	const { t } = useI18n();
 	const empty = seatIsEmpty(seat);
 	const self = slot === "self";
 	return (
@@ -186,14 +190,14 @@ function Chair({
 				data-ready={seat.ready ? "true" : "false"}
 				data-captain={seat.isCaptain ? "true" : "false"}
 			/>
-			<span className={styles.chairName}>{empty ? "Empty" : seatName(seat)}</span>
-			{seat.isCaptain ? <span className={styles.readyMark}>Captain</span> : null}
+			<span className={styles.chairName}>{empty ? t("empty") : seatName(seat)}</span>
+			{seat.isCaptain ? <span className={styles.readyMark}>{t("captain")}</span> : null}
 			{self && !empty ? (
 				<Button className={styles.ghost} onPress={() => onReady?.(!seat.ready)}>
-					{seat.ready ? "Ready" : "Sit ready"}
+					{seat.ready ? t("ready") : t("sitReady")}
 				</Button>
 			) : seat.ready ? (
-				<span className={styles.readyMark}>Ready</span>
+				<span className={styles.readyMark}>{t("ready")}</span>
 			) : null}
 			{!self && !empty && onKick ? (
 				<Button className={styles.ghost} onPress={() => onKick(seat.seatId)}>
@@ -212,19 +216,19 @@ function currentSetup(view: TableView): LobbySetup {
 	};
 }
 
-function setupCopy(view: TableView, setup: LobbySetup): string {
+function setupCopy(view: TableView, setup: LobbySetup, t: ReturnType<typeof useI18n>["t"]): string {
 	const captain = view.seats.find((seat) => seat.isCaptain);
-	const captainLabel = captain === undefined ? "random" : captainPickLabel(captain);
-	const distress = setup.distressDisabled ? "off" : "on";
-	return `Difficulty ${setup.difficulty} · Captain ${captainLabel} · Distress ${distress}`;
+	const captainLabel = captain === undefined ? t("random") : captainPickLabel(captain, t);
+	const distress = setup.distressDisabled ? t("off") : t("on");
+	return t("setup", { difficulty: setup.difficulty, captain: captainLabel, distress });
 }
 
-function captainPickLabel(seat: SeatView): string {
+function captainPickLabel(seat: SeatView, t: ReturnType<typeof useI18n>["t"]): string {
 	if (seat.region === "seat.self") {
-		return "You";
+		return t("you");
 	}
 	if (seatIsEmpty(seat)) {
-		return `Seat ${seat.seatId + 1}`;
+		return `${t("seat")} ${seat.seatId + 1}`;
 	}
 	return seatName(seat);
 }
