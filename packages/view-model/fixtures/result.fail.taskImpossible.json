@@ -245,6 +245,7 @@
 		"canPeekLastTrick": true,
 		"canStart": false,
 		"canFillBots": false,
+		"canConfigure": false,
 		"canRetry": true
 	},
 	"result": {

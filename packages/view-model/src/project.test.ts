@@ -338,6 +338,22 @@ describe("occupancy", () => {
 		expect(projectLobby(full, 0, 5, 0).affordances.canFillBots).toBe(false);
 	});
 
+	it("lets only the seated host configure difficulty and captain", () => {
+		const hostOnly = [
+			{ playerId: "p0", displayName: "Alex", connected: true, ready: false },
+			null,
+			null,
+		] as const;
+		const host = projectLobby(hostOnly, 0, 1, 0, { difficulty: 6, captainSeat: 0 });
+		expect(host.affordances.canConfigure).toBe(true);
+		expect(host.chrome.difficulty).toBe(6);
+		expect(host.seats.find((seat) => seat.seatId === 0)?.isCaptain).toBe(true);
+		expect(host.seats.find((seat) => seat.seatId === 1)?.isCaptain).toBe(false);
+		expect(projectLobby(hostOnly, 1, 1, 0).affordances.canConfigure).toBe(false);
+		expect(projectLobby([null, null, null], 0, 0, 0).affordances.canConfigure).toBe(false);
+		expect(projectLobby(hostOnly, 0, 1, 0).chrome.difficulty).toBe(4);
+	});
+
 	it("keeps occupancy names after a deal", () => {
 		const occupancy = [
 			{ playerId: "p0", displayName: "Alex", connected: true, ready: true },

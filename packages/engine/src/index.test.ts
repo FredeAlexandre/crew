@@ -31,6 +31,22 @@ describe("deck and deal", () => {
 		expect(state.captainSeat).not.toBeNull();
 		expect(state.hands[state.captainSeat ?? -1]).toContain("submarine-4");
 	});
+
+	it("can deal submarine-4 to a chosen seat without changing hand sizes", () => {
+		for (const seed of [1, 2, 7, 99]) {
+			const { state } = createAttempt({
+				attemptId: "a1",
+				mission: { id: "m1", difficulty: 1 },
+				playerCount: 4,
+				seed,
+				captainSeat: 2,
+			});
+			expect(state.captainSeat).toBe(2);
+			expect(state.hands[2]).toContain("submarine-4");
+			expect(state.hands.map((hand) => hand.length)).toEqual([10, 10, 10, 10]);
+			expect(state.hands.filter((hand) => hand.includes("submarine-4"))).toHaveLength(1);
+		}
+	});
 });
 
 describe("createAttempt", () => {
@@ -80,6 +96,9 @@ describe("apply", () => {
 		expect(apply(state, { type: "host.start" }).ok).toBe(false);
 		expect(apply(state, { type: "host.retry" }).ok).toBe(false);
 		expect(apply(state, { type: "host.fillBots" }).ok).toBe(false);
+		expect(apply(state, { type: "host.configure", difficulty: 4, captainSeat: null }).ok).toBe(
+			false,
+		);
 	});
 });
 

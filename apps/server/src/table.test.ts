@@ -109,6 +109,48 @@ describe("table lobby", () => {
 		expect(viewForSeat(started.state, 0).affordances.canStart).toBe(false);
 	});
 
+	it("lets the host set difficulty and captain before start", () => {
+		const seated = sitAll();
+		expect(viewForSeat(seated, 0).affordances.canConfigure).toBe(true);
+		expect(viewForSeat(seated, 1).affordances.canConfigure).toBe(false);
+		expect(viewForSeat(seated, 0).chrome.difficulty).toBe(4);
+		expect(viewForSeat(seated, 0).seats.every((seat) => !seat.isCaptain)).toBe(true);
+
+		const guest = handleIntent(seated, "p1", {
+			type: "host.configure",
+			difficulty: 8,
+			captainSeat: 1,
+		});
+		expect(guest.ok).toBe(false);
+		if (!guest.ok) {
+			expect(guest.code).toBe("notHost");
+		}
+
+		const configured = mustOk(
+			handleIntent(seated, "p0", { type: "host.configure", difficulty: 8, captainSeat: 1 }),
+		);
+		expect(configured.facts[0]?.type).toBe("host.configured");
+		expect(viewForSeat(configured.state, 1).chrome.difficulty).toBe(8);
+		expect(
+			viewForSeat(configured.state, 1).seats.find((seat) => seat.seatId === 1)?.isCaptain,
+		).toBe(true);
+
+		const oob = handleIntent(configured.state, "p0", {
+			type: "host.configure",
+			difficulty: 8,
+			captainSeat: 4,
+		});
+		expect(oob.ok).toBe(false);
+		if (!oob.ok) {
+			expect(oob.code).toBe("illegalSeat");
+		}
+
+		const started = startGame(readyAll(configured.state));
+		expect(started.state.engine?.mission?.difficulty).toBe(8);
+		expect(started.state.engine?.captainSeat).toBe(1);
+		expect(started.state.engine?.hands[1]).toContain("submarine-4");
+	});
+
 	it("dims a disconnected seat without clearing it", () => {
 		const seated = sitAll();
 		const left = mustOk(disconnect(seated, "p1"));

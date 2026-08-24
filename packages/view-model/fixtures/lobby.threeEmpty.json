@@ -7,7 +7,7 @@
 	"overlay": "none",
 	"chrome": {
 		"missionId": null,
-		"difficulty": null,
+		"difficulty": 4,
 		"trickId": null,
 		"turnRegion": null,
 		"distress": {
@@ -97,6 +97,7 @@
 		"canPeekLastTrick": false,
 		"canStart": false,
 		"canFillBots": false,
+		"canConfigure": false,
 		"canRetry": false
 	},
 	"result": null

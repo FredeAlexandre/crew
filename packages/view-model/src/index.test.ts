@@ -64,6 +64,7 @@ describe("tableViewSchema", () => {
 				canPeekLastTrick: false,
 				canStart: false,
 				canFillBots: false,
+				canConfigure: false,
 				canRetry: false,
 			},
 			result: null,
