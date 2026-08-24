@@ -1,6 +1,7 @@
 import type { TableView } from "@crew/view-model/fixtures";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import type { ClientIntent } from "../../hooks/use-table.ts";
+import { unlockSfx } from "../../lib/sfx.ts";
 import { BriefingScene, CampaignScene } from "./BriefingScene.tsx";
 import { type LobbyActions, LobbyScene } from "./LobbyScene.tsx";
 import { PlayScene } from "./PlayScene.tsx";
@@ -14,6 +15,24 @@ type GeometryTableProps = {
 };
 
 export function GeometryTable({ view, lobby, sendIntent }: GeometryTableProps) {
+	const prevScene = useRef(view.scene);
+	const enteredResult = view.scene === "result" && prevScene.current !== "result";
+
+	useEffect(() => {
+		prevScene.current = view.scene;
+	}, [view.scene]);
+
+	useEffect(() => {
+		function unlock() {
+			unlockSfx();
+		}
+		window.addEventListener("pointerdown", unlock);
+		window.addEventListener("keydown", unlock);
+		return () => {
+			window.removeEventListener("pointerdown", unlock);
+			window.removeEventListener("keydown", unlock);
+		};
+	}, []);
 	let scene: ReactNode;
 	switch (view.scene) {
 		case "boot":
@@ -35,6 +54,7 @@ export function GeometryTable({ view, lobby, sendIntent }: GeometryTableProps) {
 			scene = (
 				<ResultScene
 					view={view}
+					enter={enteredResult}
 					onRetry={sendIntent ? () => sendIntent({ type: "host.retry" }) : undefined}
 				/>
 			);

@@ -386,8 +386,38 @@
 	line-height: 0.95;
 }
 
+.outcome[data-enter="true"] {
+	animation: outcomeEnter 800ms ease-out;
+}
+
 .outcome[data-outcome="won"] {
 	color: var(--accent);
+}
+
+@keyframes outcomeEnter {
+	from {
+		opacity: 0;
+		transform: translateY(-8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.outcome[data-enter="true"] {
+		animation: outcomeFade 80ms ease-out;
+	}
+}
+
+@keyframes outcomeFade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 .difficulty {
