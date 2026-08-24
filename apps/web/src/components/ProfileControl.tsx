@@ -3,6 +3,7 @@ import {
 	Button,
 	Dialog,
 	DialogTrigger,
+	FileTrigger,
 	Heading,
 	Input,
 	Label,
@@ -17,8 +18,10 @@ import {
 	convertAnonymousAccount,
 	MAX_PASSWORD_LENGTH,
 	MIN_PASSWORD_LENGTH,
+	removeAccountPhoto,
 	signInAccount,
 	signOutAccount,
+	uploadAccountPhoto,
 } from "../lib/account.ts";
 import {
 	createDebouncedAction,
@@ -208,13 +211,43 @@ export function ProfileControl() {
 												<p className={styles.hint}>Change email later.</p>
 											</>
 										)}
+										<div className={styles.photoRow}>
+											<span className={styles.label}>Photo</span>
+											<div className={styles.photoActions}>
+												<FileTrigger
+													acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}
+													onSelect={(files: FileList | null) => {
+														const file = files?.item(0);
+														if (file === null || file === undefined) {
+															return;
+														}
+														void run(async () => {
+															await uploadAccountPhoto(file);
+														});
+													}}
+												>
+													<Button className={styles.ghost} isDisabled={busy || !identity.ready}>
+														{user?.image ? "Replace" : "Choose"}
+													</Button>
+												</FileTrigger>
+												{user?.image ? (
+													<Button
+														className={styles.ghost}
+														isDisabled={busy}
+														onPress={() => {
+															void run(async () => {
+																await removeAccountPhoto();
+															});
+														}}
+													>
+														Remove
+													</Button>
+												) : null}
+											</div>
+										</div>
 										<fieldset className={styles.stubs} disabled>
 											<legend className={styles.legend}>Table feel</legend>
 											<p className={styles.hint}>Coming later.</p>
-											<p className={styles.stubRow}>
-												Photo
-												<span>Coming later</span>
-											</p>
 											<p className={styles.stubRow}>
 												Theme
 												<span>Dark / light</span>
