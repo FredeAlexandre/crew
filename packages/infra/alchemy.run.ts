@@ -24,8 +24,6 @@ export const db = Cloudflare.D1.Database("database", {
 	migrationsDir,
 });
 
-export const photos = Cloudflare.R2.Bucket("photos");
-
 export const server = Cloudflare.Worker("server", {
 	main: "../../apps/server/src/index.ts",
 	compatibility: {
@@ -33,7 +31,6 @@ export const server = Cloudflare.Worker("server", {
 	},
 	env: {
 		DB: db,
-		PHOTOS: photos,
 		CORS_ORIGIN: Config.string("CORS_ORIGIN"),
 		BETTER_AUTH_SECRET: Config.redacted("BETTER_AUTH_SECRET"),
 		BETTER_AUTH_URL: Cloudflare.Worker.URL,
@@ -56,7 +53,6 @@ export default Alchemy.Stack(
 		const stack = yield* Alchemy.Stack;
 		const domain = websiteDomain(stack.stage);
 		yield* db;
-		yield* photos;
 		const serverWorker = yield* server;
 		const webWorker = yield* Cloudflare.Website.Vite("web", {
 			rootDir: "../../apps/web",

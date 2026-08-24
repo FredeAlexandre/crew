@@ -378,8 +378,11 @@ describe("occupancy", () => {
 		];
 		const lobby = projectLobby(occupancy, 0, 3, 0);
 		expect(lobby.seats[0]?.displayName).toBe("Alex");
+		expect(lobby.seats[0]?.avatarSeed).toBe("p0");
 		expect(lobby.seats[1]?.displayName).toBe("Bea");
+		expect(lobby.seats[1]?.avatarSeed).toBe("p1");
 		expect(lobby.seats[2]?.displayName).toBeNull();
+		expect(lobby.seats[2]?.avatarSeed).toBeUndefined();
 		expect(lobby.seats[2]?.connected).toBe(false);
 		expect(lobby.affordances.canStart).toBe(false);
 
