@@ -184,8 +184,8 @@
 }
 
 .fan {
-	--card-w: 3.5rem;
-	--card-h: 5.05rem;
+	--card-w: 3.75rem;
+	--card-h: 5.4rem;
 	--lift: 2.35rem;
 	position: relative;
 	width: min(calc(100% - 0.2rem), 26rem);
