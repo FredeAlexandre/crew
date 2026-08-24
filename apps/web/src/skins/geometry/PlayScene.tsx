@@ -38,6 +38,9 @@ export function PlayScene({
 	const hint = selectedCard && !selectedCard.legal ? illegalCopy(selectedCard.illegalReason) : null;
 	const canPlaySelected = Boolean(view.affordances.canPlay && selectedCard?.legal && !sonarOpen);
 	const canPassSelected = Boolean(view.affordances.canPassDistressCard && selectedCard?.legal);
+	const confirmRail = Boolean(
+		(view.affordances.canPlay && !sonarOpen) || view.affordances.canPassDistressCard,
+	);
 	const sonarIds = new Set(view.sonarCandidates.map((candidate) => candidate.cardId));
 	const sonarPositions = view.sonarCandidates
 		.filter((candidate) => candidate.cardId === selected)
@@ -185,14 +188,11 @@ export function PlayScene({
 					<SelfDock
 						seat={self}
 						canSonar={view.affordances.canSonar && !sonarOpen}
-						canPlay={canPlaySelected}
-						canPass={canPassSelected}
+						canPass={false}
 						onSonar={() => {
 							setLastTrickOpen(false);
 							setSonarOpen(true);
 						}}
-						onPlay={playCard}
-						onPass={passDistressCard}
 						onPeekLastTrick={canPeek && self.isLastTrickWinner ? peekLastTrick : undefined}
 					/>
 				</div>
@@ -204,6 +204,20 @@ export function PlayScene({
 					selected={selected}
 					onSelect={(cardId) => setSelected((current) => (current === cardId ? null : cardId))}
 				/>
+				{confirmRail ? (
+					<div className={styles.handConfirm}>
+						{canPassSelected ? (
+							<Button className={styles.handAction} onPress={passDistressCard}>
+								Pass
+							</Button>
+						) : null}
+						{canPlaySelected ? (
+							<Button className={styles.handAction} onPress={playCard}>
+								Play
+							</Button>
+						) : null}
+					</div>
+				) : null}
 			</div>
 		</div>
 	);

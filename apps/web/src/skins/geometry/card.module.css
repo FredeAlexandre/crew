@@ -49,8 +49,20 @@
 }
 
 .card[data-suit="submarine"] {
-	--suit: var(--suit-submarine);
+	--suit: var(--ink);
+	--hull-sheen:
+		inset 0 1px 0 color-mix(in srgb, var(--ink) 28%, transparent),
+		inset 0 -2px 5px color-mix(in srgb, #000 60%, transparent);
+	color: var(--ink);
+	background: linear-gradient(
+		165deg,
+		color-mix(in srgb, var(--ink) 16%, var(--suit-submarine)) 0%,
+		#12110f 42%,
+		var(--suit-submarine) 100%
+	);
+	border-color: color-mix(in srgb, var(--ink) 38%, var(--suit-submarine));
 	border-radius: 0.4rem 0.4rem 0.85rem 0.85rem;
+	box-shadow: var(--hull-sheen);
 }
 
 .value {
@@ -87,6 +99,11 @@
 
 .mark[data-suit="submarine"] {
 	clip-path: polygon(0 40%, 70% 40%, 70% 15%, 100% 50%, 70% 85%, 70% 60%, 0 60%);
+	background: linear-gradient(
+		180deg,
+		var(--ink),
+		color-mix(in srgb, var(--ink) 72%, var(--suit-submarine))
+	);
 }
 
 .illegal {
@@ -94,6 +111,8 @@
 }
 
 .selected {
+	position: relative;
+	z-index: 2;
 	transform: translateY(-0.45rem);
 	outline: 2px solid var(--accent);
 	outline-offset: 2px;
@@ -103,12 +122,24 @@
 	box-shadow: inset 0 0 0 1px var(--accent);
 }
 
+.card[data-suit="submarine"].communicated {
+	box-shadow:
+		var(--hull-sheen),
+		inset 0 0 0 1px var(--accent);
+}
+
 .muted {
 	opacity: 0.55;
 }
 
 .lead {
 	box-shadow: 0 0 0 1px var(--accent);
+}
+
+.card[data-suit="submarine"].lead {
+	box-shadow:
+		var(--hull-sheen),
+		0 0 0 1px var(--accent);
 }
 
 .back {

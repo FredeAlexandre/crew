@@ -172,7 +172,9 @@
 	display: flex;
 	justify-content: center;
 	align-items: flex-end;
+	min-width: 0;
 	min-height: 5rem;
+	padding-top: 0.85rem;
 	padding-bottom: 0.25rem;
 }
 

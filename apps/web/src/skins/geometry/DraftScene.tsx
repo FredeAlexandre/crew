@@ -37,7 +37,6 @@ export function DraftScene({
 				<SelfDock
 					seat={self}
 					canSonar={false}
-					canPlay={false}
 					canPass={view.affordances.canPassTask}
 					onPass={onPass}
 				/>

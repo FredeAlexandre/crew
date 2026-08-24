@@ -72,19 +72,15 @@ export function SeatPip({
 export function SelfDock({
 	seat,
 	canSonar,
-	canPlay,
 	canPass,
 	onSonar,
-	onPlay,
 	onPass,
 	onPeekLastTrick,
 }: {
 	seat: SeatView;
 	canSonar: boolean;
-	canPlay: boolean;
 	canPass: boolean;
 	onSonar?: () => void;
-	onPlay?: () => void;
 	onPass?: () => void;
 	onPeekLastTrick?: () => void;
 }) {
@@ -116,11 +112,6 @@ export function SelfDock({
 				{canPass && onPass ? (
 					<Button className={styles.textAction} onPress={onPass}>
 						Pass
-					</Button>
-				) : null}
-				{canPlay && onPlay ? (
-					<Button className={styles.textAction} onPress={onPlay}>
-						Play
 					</Button>
 				) : null}
 			</div>
