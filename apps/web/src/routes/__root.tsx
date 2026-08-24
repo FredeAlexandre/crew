@@ -20,7 +20,7 @@ export const Route = createRootRoute({
 
 function RootComponent() {
 	const pathname = useRouterState({ select: (state) => state.location.pathname });
-	const atTable = pathname !== "/";
+	const atTable = pathname.startsWith("/lobby/");
 
 	return (
 		<>

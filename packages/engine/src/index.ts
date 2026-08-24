@@ -20,3 +20,5 @@ export type {
 	Phase,
 	PlayerCount,
 } from "./state.ts";
+export type { TaskSpec } from "./tasks/catalog.ts";
+export { TASK_BY_ID, TASK_CATALOG, taskCost } from "./tasks/catalog.ts";
