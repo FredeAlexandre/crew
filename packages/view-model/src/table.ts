@@ -182,6 +182,8 @@ export const tableViewSchema = z.object({
 	trick: trickViewSchema,
 	centerTasks: z.array(taskViewSchema),
 	lastTrick: lastTrickViewSchema.nullable(),
+	/** Every completed trick, revealed only once the mission has ended. */
+	history: z.array(lastTrickViewSchema).default([]),
 	undealt: z.object({ present: z.boolean() }),
 	sonarCandidates: z.array(sonarCandidateSchema),
 	affordances: affordancesSchema,

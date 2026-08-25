@@ -181,6 +181,21 @@ export function project(
 						order: index + 1,
 					})),
 				};
+	const history =
+		state.phase === "result"
+			? state.trickHistory.map((trick) => ({
+					trickId: trick.trickId,
+					winnerRegion: regionForSeat(trick.winnerSeat, viewerSeat, playerCount),
+					winnerSeatId: trick.winnerSeat,
+					ledSuit: trick.ledSuit,
+					cards: trick.cards.map((play, index) => ({
+						region: regionForSeat(play.seatId, viewerSeat, playerCount),
+						seatId: play.seatId,
+						cardId: play.cardId,
+						order: index + 1,
+					})),
+				}))
+			: [];
 
 	const turnRegion: SeatRegion | null =
 		state.currentSeat === null ? null : regionForSeat(state.currentSeat, viewerSeat, playerCount);
@@ -221,6 +236,7 @@ export function project(
 			.filter((task) => task.ownerSeat === null)
 			.map((task) => toTaskView(task, viewerSeat, playerCount, takeable)),
 		lastTrick,
+		history,
 		undealt: { present: playerCount === 3 },
 		sonarCandidates,
 		affordances: {
@@ -296,6 +312,7 @@ export function projectLobby(
 		trick: { trickId: null, ledSuit: null, leadRegion: null, cards: [] },
 		centerTasks: [],
 		lastTrick: null,
+		history: [],
 		undealt: { present: playerCount === 3 },
 		sonarCandidates: [],
 		affordances: {

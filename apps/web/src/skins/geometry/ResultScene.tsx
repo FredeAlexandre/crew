@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "react-aria-components";
 import { useI18n } from "../../lib/i18n.tsx";
 import { playCue } from "../../lib/sfx.ts";
+import { CardFace } from "./Card.tsx";
 import { resultCopy, seatName } from "./copy.ts";
 import { SeatPip, TaskMark } from "./parts.tsx";
 import styles from "./scenes.module.css";
@@ -29,6 +30,10 @@ export function ResultScene({
 	const mission = view.chrome.missionId
 		? t("mission", { number: view.chrome.missionId.replace(/^m/i, "") })
 		: t("missionPlain");
+	const winnerName = (seatId: number) => {
+		const seat = view.seats.find((entry) => entry.seatId === seatId);
+		return seat ? seatName(seat) : t("crew");
+	};
 
 	useEffect(() => {
 		if (!fresh) {
@@ -77,6 +82,30 @@ export function ResultScene({
 					</p>
 				) : null}
 			</section>
+			{view.history.length > 0 ? (
+				<section className={styles.history} aria-labelledby="match-history">
+					<h2 id="match-history">{t("matchHistory")}</h2>
+					<ol className={styles.historyList}>
+						{view.history.map((trick) => (
+							<li key={trick.trickId} className={styles.historyTrick}>
+								<p>
+									{t("trick", { number: trick.trickId })} ·{" "}
+									{t("trickWonBy", { name: winnerName(trick.winnerSeatId) })}
+								</p>
+								<div className={styles.historyCards}>
+									{trick.cards.map((card) => (
+										<CardFace
+											key={`${trick.trickId}-${card.seatId}-${card.order}`}
+											cardId={card.cardId}
+											size="token"
+										/>
+									))}
+								</div>
+							</li>
+						))}
+					</ol>
+				</section>
+			) : null}
 			<div className={styles.crewLineWrap}>
 				{view.seats.map((seat) => (
 					<SeatPip key={seat.region} seat={seat} compact />

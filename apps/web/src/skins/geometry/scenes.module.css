@@ -548,6 +548,49 @@
 	gap: 0.45rem;
 }
 
+.history {
+	display: grid;
+	gap: 0.65rem;
+	width: min(100%, 32rem);
+}
+
+.history h2 {
+	margin: 0;
+	font-size: 1rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.historyList {
+	display: grid;
+	gap: 0.45rem;
+	max-height: 18rem;
+	margin: 0;
+	padding: 0;
+	overflow: auto;
+	list-style: none;
+}
+
+.historyTrick {
+	display: grid;
+	gap: 0.35rem;
+	padding: 0.55rem;
+	border: 1px solid color-mix(in srgb, var(--muted) 35%, transparent);
+	border-radius: 0.5rem;
+}
+
+.historyTrick p {
+	margin: 0;
+	color: var(--muted);
+	font-size: 0.85rem;
+}
+
+.historyCards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+}
+
 .market {
 	align-content: stretch;
 	grid-template-rows: auto auto minmax(0, 1fr) auto auto;
