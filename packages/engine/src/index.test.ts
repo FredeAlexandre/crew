@@ -102,6 +102,7 @@ describe("apply", () => {
 				difficulty: 4,
 				captainSeat: null,
 				distressDisabled: false,
+				completedTricksVisible: false,
 			}).ok,
 		).toBe(false);
 	});

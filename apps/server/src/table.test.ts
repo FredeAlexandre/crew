@@ -167,6 +167,7 @@ describe("table lobby", () => {
 			difficulty: 8,
 			captainSeat: 1,
 			distressDisabled: false,
+			completedTricksVisible: false,
 		});
 		expect(guest.ok).toBe(false);
 		if (!guest.ok) {
@@ -179,6 +180,7 @@ describe("table lobby", () => {
 				difficulty: 8,
 				captainSeat: 1,
 				distressDisabled: false,
+				completedTricksVisible: false,
 			}),
 		);
 		expect(configured.facts[0]?.type).toBe("host.configured");
@@ -192,6 +194,7 @@ describe("table lobby", () => {
 			difficulty: 8,
 			captainSeat: 4,
 			distressDisabled: false,
+			completedTricksVisible: false,
 		});
 		expect(oob.ok).toBe(false);
 		if (!oob.ok) {
@@ -213,6 +216,7 @@ describe("table lobby", () => {
 				difficulty: 4,
 				captainSeat: null,
 				distressDisabled: true,
+				completedTricksVisible: false,
 			}),
 		);
 		expect(viewForSeat(configured.state, 1).chrome.flags.distressDisabled).toBe(true);
@@ -240,6 +244,23 @@ describe("table lobby", () => {
 		}
 		expect(offeredDistress).toBe(false);
 		expect(current.engine?.phase).toBe("play");
+	});
+
+	it("lets the host enable completed-trick inspection before start", () => {
+		const seated = sitAll();
+		expect(viewForSeat(seated, 0).chrome.flags.completedTricksVisible).toBe(false);
+		const configured = mustOk(
+			handleIntent(seated, "p0", {
+				type: "host.configure",
+				difficulty: 4,
+				captainSeat: null,
+				distressDisabled: false,
+				completedTricksVisible: true,
+			}),
+		);
+		expect(viewForSeat(configured.state, 1).chrome.flags.completedTricksVisible).toBe(true);
+		const started = startGame(readyAll(configured.state));
+		expect(viewForSeat(started.state, 1).chrome.flags.completedTricksVisible).toBe(true);
 	});
 
 	it("dims a disconnected seat without clearing it", () => {

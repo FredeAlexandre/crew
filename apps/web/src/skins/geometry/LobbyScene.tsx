@@ -15,6 +15,7 @@ export type LobbySetup = {
 	difficulty: number;
 	captainSeat: SeatId | null;
 	distressDisabled: boolean;
+	completedTricksVisible: boolean;
 };
 
 export type LobbyActions = {
@@ -156,6 +157,23 @@ function SetupPanel({
 					</Button>
 				</div>
 			</div>
+			<div className={styles.setupRow}>
+				<span className={styles.setupLabel}>{t("completedTricks")}</span>
+				<div className={styles.setupPicks}>
+					<Button
+						className={setup.completedTricksVisible ? styles.primary : styles.ghost}
+						onPress={() => onConfigure({ ...setup, completedTricksVisible: true })}
+					>
+						{t("on")}
+					</Button>
+					<Button
+						className={setup.completedTricksVisible ? styles.ghost : styles.primary}
+						onPress={() => onConfigure({ ...setup, completedTricksVisible: false })}
+					>
+						{t("off")}
+					</Button>
+				</div>
+			</div>
 		</div>
 	);
 }
@@ -206,6 +224,7 @@ function currentSetup(view: TableView): LobbySetup {
 		difficulty: view.chrome.difficulty ?? DEFAULT_MISSION_DIFFICULTY,
 		captainSeat: view.seats.find((seat) => seat.isCaptain)?.seatId ?? null,
 		distressDisabled: view.chrome.flags.distressDisabled,
+		completedTricksVisible: view.chrome.flags.completedTricksVisible,
 	};
 }
 
