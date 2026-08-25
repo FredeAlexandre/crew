@@ -46,6 +46,13 @@ const playerReadyFactSchema = z.object({
 	ready: z.boolean(),
 });
 
+const playerRenamedFactSchema = z.object({
+	type: z.literal("player.renamed"),
+	...tableLifeMeta,
+	seatId: seatIdSchema,
+	displayName: z.string(),
+});
+
 const playerConnectionFactSchema = z.object({
 	type: z.literal("player.connection"),
 	...tableLifeMeta,
@@ -65,6 +72,7 @@ const hostConfiguredFactSchema = z.object({
 	difficulty: missionDifficultySchema,
 	captainSeat: seatIdSchema.nullable(),
 	distressDisabled: z.boolean().default(false),
+	completedTricksVisible: z.boolean().default(false),
 });
 
 const cardDealtFactSchema = z.object({
@@ -226,6 +234,7 @@ export const factSchema = z.discriminatedUnion("type", [
 	echoFactSchema,
 	playerSatFactSchema,
 	playerReadyFactSchema,
+	playerRenamedFactSchema,
 	playerConnectionFactSchema,
 	hostStartedFactSchema,
 	hostConfiguredFactSchema,

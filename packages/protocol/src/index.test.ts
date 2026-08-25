@@ -91,6 +91,11 @@ describe("wire schemas", () => {
 
 	it("parses lobby intents", () => {
 		expect(intentSchema.parse({ type: "player.ready", ready: true }).type).toBe("player.ready");
+		expect(intentSchema.parse({ type: "player.rename", displayName: "  Alex  " })).toEqual({
+			type: "player.rename",
+			displayName: "Alex",
+		});
+		expect(() => intentSchema.parse({ type: "player.rename", displayName: "   " })).toThrow();
 		expect(intentSchema.parse({ type: "host.start" }).type).toBe("host.start");
 		expect(intentSchema.parse({ type: "host.retry" }).type).toBe("host.retry");
 		expect(intentSchema.parse({ type: "host.fillBots" }).type).toBe("host.fillBots");
@@ -101,6 +106,7 @@ describe("wire schemas", () => {
 				difficulty: 4,
 				captainSeat: null,
 				distressDisabled: true,
+				completedTricksVisible: false,
 			}).type,
 		).toBe("host.configure");
 		expect(intentSchema.parse({ type: "host.configure", difficulty: 8, captainSeat: 2 }).type).toBe(

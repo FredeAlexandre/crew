@@ -51,6 +51,7 @@ describe("tableViewSchema", () => {
 			trick: { trickId: null, ledSuit: null, leadRegion: null, cards: [] },
 			centerTasks: [],
 			lastTrick: null,
+			history: [],
 			undealt: { present: true },
 			sonarCandidates: [],
 			affordances: {

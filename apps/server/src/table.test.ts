@@ -7,6 +7,7 @@ import {
 	factsForSeat,
 	handleIntent,
 	isBotPlayerId,
+	playBotTurn,
 	seatOf,
 	snapshotMessage,
 	summary,
@@ -49,6 +50,39 @@ function startGame(state = readyAll(sitAll()), seed = 1) {
 }
 
 describe("table lobby", () => {
+	it("lets a seated player rename themself before the game starts", () => {
+		const seated = sitAll();
+		const renamed = mustOk(
+			handleIntent(seated, "p1", { type: "player.rename", displayName: "Bex" }),
+		);
+		expect(renamed.state.seats[1]?.displayName).toBe("Bex");
+		expect(viewForSeat(renamed.state, 0).seats.find((seat) => seat.seatId === 1)?.displayName).toBe(
+			"Bex",
+		);
+		expect(renamed.facts).toEqual([
+			{
+				type: "player.renamed",
+				attemptId: null,
+				seq: seated.seq + 1,
+				seatId: 1,
+				displayName: "Bex",
+			},
+		]);
+
+		const unchanged = mustOk(
+			handleIntent(renamed.state, "p1", { type: "player.rename", displayName: "Bex" }),
+		);
+		expect(unchanged.state.seq).toBe(renamed.state.seq);
+		expect(unchanged.facts).toEqual([]);
+
+		const started = startGame(readyAll(renamed.state)).state;
+		const late = handleIntent(started, "p1", { type: "player.rename", displayName: "Bea" });
+		expect(late.ok).toBe(false);
+		if (!late.ok) {
+			expect(late.code).toBe("alreadyStarted");
+		}
+	});
+
 	it("lets the host remove a guest and doubles the reconnect cooldown for repeat removals", () => {
 		const seated = sitAll();
 		const guest = handleIntent(seated, "p1", { type: "host.kick", seatId: 2 }, { now: 1_000 });
@@ -167,6 +201,7 @@ describe("table lobby", () => {
 			difficulty: 8,
 			captainSeat: 1,
 			distressDisabled: false,
+			completedTricksVisible: false,
 		});
 		expect(guest.ok).toBe(false);
 		if (!guest.ok) {
@@ -179,6 +214,7 @@ describe("table lobby", () => {
 				difficulty: 8,
 				captainSeat: 1,
 				distressDisabled: false,
+				completedTricksVisible: false,
 			}),
 		);
 		expect(configured.facts[0]?.type).toBe("host.configured");
@@ -192,6 +228,7 @@ describe("table lobby", () => {
 			difficulty: 8,
 			captainSeat: 4,
 			distressDisabled: false,
+			completedTricksVisible: false,
 		});
 		expect(oob.ok).toBe(false);
 		if (!oob.ok) {
@@ -213,6 +250,7 @@ describe("table lobby", () => {
 				difficulty: 4,
 				captainSeat: null,
 				distressDisabled: true,
+				completedTricksVisible: false,
 			}),
 		);
 		expect(viewForSeat(configured.state, 1).chrome.flags.distressDisabled).toBe(true);
@@ -240,6 +278,23 @@ describe("table lobby", () => {
 		}
 		expect(offeredDistress).toBe(false);
 		expect(current.engine?.phase).toBe("play");
+	});
+
+	it("lets the host enable completed-trick inspection before start", () => {
+		const seated = sitAll();
+		expect(viewForSeat(seated, 0).chrome.flags.completedTricksVisible).toBe(false);
+		const configured = mustOk(
+			handleIntent(seated, "p0", {
+				type: "host.configure",
+				difficulty: 4,
+				captainSeat: null,
+				distressDisabled: false,
+				completedTricksVisible: true,
+			}),
+		);
+		expect(viewForSeat(configured.state, 1).chrome.flags.completedTricksVisible).toBe(true);
+		const started = startGame(readyAll(configured.state));
+		expect(viewForSeat(started.state, 1).chrome.flags.completedTricksVisible).toBe(true);
 	});
 
 	it("dims a disconnected seat without clearing it", () => {
@@ -401,7 +456,7 @@ describe("table bots", () => {
 		expect(oneBot.seats.map((seat) => seat?.displayName)).toEqual(["Alex", "Bea", "Bot 1"]);
 	});
 
-	it("plays bot turns until a human must act, and pauses on distress", () => {
+	it("plays one bot turn at a time and pauses on distress", () => {
 		const lobby = mustOk(
 			handleIntent(sit(fresh(), "p0", "Alex"), "p0", { type: "host.fillBots" }),
 		).state;
@@ -411,12 +466,21 @@ describe("table bots", () => {
 		).state;
 		expect(started.status).toBe("playing");
 		expect(started.engine).not.toBeNull();
+		expect(isBotPlayerId(started.seats[started.engine?.currentSeat ?? 0]?.playerId ?? "")).toBe(
+			true,
+		);
 
 		let current = started;
 		while (current.engine?.phase === "taskDraft") {
 			const seat = current.engine.currentSeat;
-			expect(seat).toBe(0);
-			const intent = pickSeatIntent(current.engine, 0);
+			if (seat === null) {
+				throw new Error("expected draft seat");
+			}
+			if (isBotPlayerId(current.seats[seat]?.playerId ?? "")) {
+				current = mustOk(playBotTurn(current)).state;
+				continue;
+			}
+			const intent = pickSeatIntent(current.engine, seat);
 			if (intent === null) {
 				throw new Error("host had no draft intent");
 			}
@@ -437,7 +501,10 @@ describe("table bots", () => {
 		if (turn === undefined || turn === null) {
 			throw new Error("expected a leader");
 		}
-		expect(isBotPlayerId(playing.seats[turn]?.playerId ?? "")).toBe(false);
+		if (isBotPlayerId(playing.seats[turn]?.playerId ?? "")) {
+			const afterOneBot = mustOk(playBotTurn(playing)).state;
+			expect(afterOneBot.seq).toBeGreaterThan(playing.seq);
+		}
 	});
 });
 
