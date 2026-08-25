@@ -45,7 +45,7 @@ function seatInitial(seat: SeatView): string {
 	return name.charAt(0).toUpperCase();
 }
 
-function SeatAvatar({
+export function SeatAvatar({
 	seat,
 	self = false,
 	compact = false,

@@ -94,6 +94,7 @@ function resolveTrick(state: EngineState, facts: Fact[]): IllegalReason | null {
 	};
 	state.lastTrick = resolvedTrick;
 	state.trickHistory.push(resolvedTrick);
+	state.completedTricks[winner]?.push(resolvedTrick);
 	emit(state, facts, {
 		type: "trick.resolved",
 		trickId: state.trickId,

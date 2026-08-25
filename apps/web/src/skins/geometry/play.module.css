@@ -372,6 +372,19 @@
 	max-width: 100%;
 }
 
+.completedTricks {
+	display: grid;
+	gap: 0.75rem;
+	max-height: min(22rem, 55vh);
+	overflow-y: auto;
+}
+
+.completedTrickLabel {
+	grid-column: 1 / -1;
+	font-size: 0.75rem;
+	font-weight: 700;
+}
+
 .inspectCard {
 	width: min(8.75rem, 100%);
 	justify-self: center;

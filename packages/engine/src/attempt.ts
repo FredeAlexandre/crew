@@ -35,6 +35,7 @@ export function createAttempt(config: CreateAttemptConfig): ApplyOk {
 		currentTrick: [],
 		lastTrick: null,
 		trickHistory: [],
+		completedTricks: [],
 		tricksWon: [],
 		captured: [],
 		consecutiveWins: [],
@@ -59,6 +60,7 @@ export function createAttempt(config: CreateAttemptConfig): ApplyOk {
 	}
 	state.captainSeat = seatWithCard(state.hands, "submarine-4");
 	state.tricksWon = seats(config.playerCount).map(() => []);
+	state.completedTricks = seats(config.playerCount).map(() => []);
 	state.captured = seats(config.playerCount).map(() => []);
 	state.consecutiveWins = seats(config.playerCount).map(() => 0);
 	state.sonar = seats(config.playerCount).map(() => ({

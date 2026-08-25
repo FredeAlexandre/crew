@@ -74,6 +74,7 @@ export type EngineState = {
 	lastTrick: LastTrick | null;
 	/** Completed tricks, retained for the end-of-mission review only. */
 	trickHistory: LastTrick[];
+	completedTricks: LastTrick[][];
 	tricksWon: number[][];
 	captured: CardId[][];
 	consecutiveWins: number[];

@@ -8,12 +8,14 @@ import type { SeatView, TableView } from "@crew/view-model/fixtures";
 import { Button } from "react-aria-components";
 import { useI18n } from "../../lib/i18n.tsx";
 import { type LobbySlot, lobbySlot, seatIsEmpty, seatName } from "./copy.ts";
+import { SeatAvatar } from "./parts.tsx";
 import styles from "./scenes.module.css";
 
 export type LobbySetup = {
 	difficulty: number;
 	captainSeat: SeatId | null;
 	distressDisabled: boolean;
+	completedTricksVisible: boolean;
 };
 
 export type LobbyActions = {
@@ -155,6 +157,23 @@ function SetupPanel({
 					</Button>
 				</div>
 			</div>
+			<div className={styles.setupRow}>
+				<span className={styles.setupLabel}>{t("completedTricks")}</span>
+				<div className={styles.setupPicks}>
+					<Button
+						className={setup.completedTricksVisible ? styles.primary : styles.ghost}
+						onPress={() => onConfigure({ ...setup, completedTricksVisible: true })}
+					>
+						{t("on")}
+					</Button>
+					<Button
+						className={setup.completedTricksVisible ? styles.ghost : styles.primary}
+						onPress={() => onConfigure({ ...setup, completedTricksVisible: false })}
+					>
+						{t("off")}
+					</Button>
+				</div>
+			</div>
 		</div>
 	);
 }
@@ -183,15 +202,7 @@ function Chair({
 			data-captain={seat.isCaptain ? "true" : "false"}
 			data-self={self ? "true" : "false"}
 		>
-			<span
-				className={styles.notch}
-				data-empty={empty ? "true" : "false"}
-				data-self={self ? "true" : "false"}
-				data-ready={seat.ready ? "true" : "false"}
-				data-captain={seat.isCaptain ? "true" : "false"}
-			/>
-			<span className={styles.chairName}>{empty ? t("empty") : seatName(seat)}</span>
-			{seat.isCaptain ? <span className={styles.readyMark}>{t("captain")}</span> : null}
+			<SeatAvatar seat={seat} self={self} />
 			{self && !empty ? (
 				<Button className={styles.ghost} onPress={() => onReady?.(!seat.ready)}>
 					{seat.ready ? t("ready") : t("sitReady")}
@@ -213,6 +224,7 @@ function currentSetup(view: TableView): LobbySetup {
 		difficulty: view.chrome.difficulty ?? DEFAULT_MISSION_DIFFICULTY,
 		captainSeat: view.seats.find((seat) => seat.isCaptain)?.seatId ?? null,
 		distressDisabled: view.chrome.flags.distressDisabled,
+		completedTricksVisible: view.chrome.flags.completedTricksVisible,
 	};
 }
 
