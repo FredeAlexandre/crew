@@ -22,6 +22,7 @@ export type ClientIntent =
 			difficulty: number;
 			captainSeat: number | null;
 			distressDisabled?: boolean;
+			completedTricksVisible?: boolean;
 	  }
 	| { type: "host.retry" }
 	| { type: "host.fillBots" }

@@ -199,38 +199,7 @@
 		]
 	},
 	"centerTasks": [],
-	"lastTrick": {
-		"trickId": 1,
-		"winnerRegion": "seat.2",
-		"winnerSeatId": 2,
-		"ledSuit": "submarine",
-		"cards": [
-			{
-				"region": "seat.2",
-				"seatId": 2,
-				"cardId": "submarine-3",
-				"order": 1
-			},
-			{
-				"region": "seat.3",
-				"seatId": 3,
-				"cardId": "blue-3",
-				"order": 2
-			},
-			{
-				"region": "seat.self",
-				"seatId": 0,
-				"cardId": "submarine-2",
-				"order": 3
-			},
-			{
-				"region": "seat.1",
-				"seatId": 1,
-				"cardId": "blue-9",
-				"order": 4
-			}
-		]
-	},
+	"lastTrick": null,
 	"undealt": {
 		"present": false
 	},
@@ -243,7 +212,7 @@
 		"canSkipDistress": false,
 		"canActivateDistress": false,
 		"canPassDistressCard": false,
-		"canPeekLastTrick": true,
+		"canPeekLastTrick": false,
 		"canStart": false,
 		"canFillBots": false,
 		"canConfigure": false,

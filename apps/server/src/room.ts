@@ -2,6 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import { createDb, rooms } from "@crew/db";
 import { type Fact, intentSchema, type RoomErrorCode } from "@crew/protocol";
 import { eq } from "drizzle-orm";
+import { botPlayDelayMs } from "./bot-delay.ts";
 import { readPlayerHeaders } from "./player-headers.ts";
 import {
 	connect,
@@ -9,6 +10,8 @@ import {
 	disconnect,
 	factsForSeat,
 	handleIntent,
+	isBotPlayerId,
+	playBotTurn,
 	type RoomSummary,
 	reconnectBlockedUntil,
 	seatOf,
@@ -90,6 +93,7 @@ export default class Room extends DurableObject<RoomBindings> {
 			seq: result.state.seq,
 		});
 		this.fanout(result.state, result.facts, result.reconnect ? player.playerId : null);
+		await this.scheduleBotTurn(result.state);
 		return new Response(null, { status: 101, webSocket: client });
 	}
 
@@ -145,6 +149,22 @@ export default class Room extends DurableObject<RoomBindings> {
 			});
 		}
 		this.fanout(result.state, result.facts, null);
+		await this.scheduleBotTurn(result.state);
+	}
+
+	async alarm() {
+		const loaded = await this.load();
+		if (loaded === null) {
+			return;
+		}
+		const result = playBotTurn(loaded);
+		if (!result.ok) {
+			await this.scheduleBotTurn(loaded, true);
+			return;
+		}
+		await this.save(result.state);
+		this.fanout(result.state, result.facts, null);
+		await this.scheduleBotTurn(result.state, true);
 	}
 
 	async webSocketClose(ws: WebSocket, code: number, reason: string) {
@@ -203,6 +223,19 @@ export default class Room extends DurableObject<RoomBindings> {
 
 	private async save(state: TableState) {
 		await this.ctx.storage.put(TABLE_KEY, state);
+	}
+
+	private async scheduleBotTurn(state: TableState, replace = false) {
+		const seat = state.engine?.currentSeat;
+		const occupant = seat === null || seat === undefined ? null : state.seats[seat];
+		if (occupant === null || occupant === undefined || !isBotPlayerId(occupant.playerId)) {
+			await this.ctx.storage.deleteAlarm();
+			return;
+		}
+		if (!replace && (await this.ctx.storage.getAlarm()) !== null) {
+			return;
+		}
+		await this.ctx.storage.setAlarm(Date.now() + botPlayDelayMs());
 	}
 
 	private playerIdOf(socket: WebSocket): string | null {

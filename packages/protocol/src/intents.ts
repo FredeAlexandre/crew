@@ -41,6 +41,7 @@ export const hostConfigureIntentSchema = z.object({
 	difficulty: missionDifficultySchema,
 	captainSeat: seatIdSchema.nullable(),
 	distressDisabled: z.boolean().default(false),
+	completedTricksVisible: z.boolean().default(false),
 });
 
 export const hostRetryIntentSchema = z.object({

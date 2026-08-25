@@ -106,6 +106,7 @@ describe("wire schemas", () => {
 				difficulty: 4,
 				captainSeat: null,
 				distressDisabled: true,
+				completedTricksVisible: false,
 			}).type,
 		).toBe("host.configure");
 		expect(intentSchema.parse({ type: "host.configure", difficulty: 8, captainSeat: 2 }).type).toBe(

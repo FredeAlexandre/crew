@@ -343,22 +343,8 @@
 		top: 11%;
 	}
 
-	.ring[data-count="5"] .notch {
-		width: 2.25rem;
-		height: 2.25rem;
-	}
-
-	.ring[data-count="5"] .chairName {
-		font-size: 0.72rem;
-	}
-
 	.ring[data-count="5"] .readyMark {
 		font-size: 0.66rem;
-	}
-
-	.notch {
-		width: 2.6rem;
-		height: 2.6rem;
 	}
 
 	.board,
@@ -368,37 +354,6 @@
 		padding: 0.45rem 0.25rem 0.65rem;
 		gap: 0.55rem;
 	}
-}
-
-.notch {
-	width: 3.4rem;
-	height: 3.4rem;
-	border-radius: 50%;
-	box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--muted) 50%, transparent);
-}
-
-.notch[data-empty="true"] {
-	opacity: 0.4;
-}
-
-.notch[data-self="true"] {
-	box-shadow: inset 0 0 0 2px var(--accent);
-}
-
-.notch[data-ready="true"] {
-	background: color-mix(in srgb, var(--accent) 16%, var(--table));
-}
-
-.notch[data-captain="true"] {
-	background: color-mix(in srgb, var(--accent) 28%, var(--table));
-}
-
-.chairName {
-	font-size: 0.9rem;
-	max-width: 100%;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
 }
 
 .chairNameField {

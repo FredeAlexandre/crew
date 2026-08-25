@@ -29,11 +29,13 @@ export function PlayScene({
 	const [selected, setSelected] = useState<CardId | null>(null);
 	const [sonarOpen, setSonarOpen] = useState(false);
 	const [queuedSonar, setQueuedSonar] = useState<QueuedSonar | null>(null);
-	const [lastTrickOpen, setLastTrickOpen] = useState(false);
 	const [sonarDetailRegion, setSonarDetailRegion] = useState<
 		TableView["seats"][number]["region"] | null
 	>(null);
 	const [inspectedTask, setInspectedTask] = useState<TaskView | null>(null);
+	const [inspectedCompletedTricks, setInspectedCompletedTricks] = useState<
+		TableView["seats"][number] | null
+	>(null);
 	const prevView = useRef<TableView | null>(null);
 	const [landKeys, setLandKeys] = useState<string[]>([]);
 	const [heldCards, setHeldCards] = useState<TableView["trick"]["cards"] | null>(null);
@@ -47,7 +49,7 @@ export function PlayScene({
 			? view.overlay
 			: sonarOpen
 				? "sonar"
-				: lastTrickOpen && view.lastTrick !== null
+				: inspectedCompletedTricks !== null
 					? "lastTrick"
 					: sonarDetailRegion !== null || inspectedTask !== null
 						? "reminder"
@@ -79,12 +81,11 @@ export function PlayScene({
 		sonarDetailRegion === null
 			? null
 			: (shownSeats.find((seat) => seat.region === sonarDetailRegion) ?? null);
-	const canPeek =
+	const canInspectCompletedTricks =
 		view.scene === "play" &&
-		view.affordances.canPeekLastTrick &&
+		view.chrome.flags.completedTricksVisible &&
 		view.overlay === "none" &&
-		!sonarOpen &&
-		view.lastTrick !== null;
+		!sonarOpen;
 	const isDraft = view.scene === "taskDraft";
 	const quietHand = isDraft || view.scene === "deal";
 	const turn = isDraft ? turnCopy(view) : null;
@@ -98,17 +99,17 @@ export function PlayScene({
 	useEffect(() => {
 		if (view.overlay !== "none") {
 			setSonarOpen(false);
-			setLastTrickOpen(false);
 			setSonarDetailRegion(null);
 			setInspectedTask(null);
+			setInspectedCompletedTricks(null);
 		}
 	}, [view.overlay]);
 
 	useEffect(() => {
 		setSonarOpen(false);
-		setLastTrickOpen(false);
 		setSonarDetailRegion(null);
 		setInspectedTask(null);
+		setInspectedCompletedTricks(null);
 		setSelected(null);
 		setQueuedSonar(null);
 		setHeldCards(null);
@@ -212,42 +213,48 @@ export function PlayScene({
 	}, [queuedSonar, sendIntent, view]);
 
 	useEffect(() => {
-		if (!sonarOpen && !lastTrickOpen && sonarDetailRegion === null && inspectedTask === null) {
+		if (
+			!sonarOpen &&
+			sonarDetailRegion === null &&
+			inspectedTask === null &&
+			inspectedCompletedTricks === null
+		) {
 			return;
 		}
 		function onKey(event: KeyboardEvent) {
 			if (event.key === "Escape") {
 				setSonarOpen(false);
-				setLastTrickOpen(false);
 				setSonarDetailRegion(null);
 				setInspectedTask(null);
+				setInspectedCompletedTricks(null);
 			}
 		}
 		window.addEventListener("keydown", onKey);
 		return () => window.removeEventListener("keydown", onKey);
-	}, [sonarOpen, lastTrickOpen, sonarDetailRegion, inspectedTask]);
-
-	function peekLastTrick() {
-		if (view.overlay !== "none" || sonarOpen || !view.affordances.canPeekLastTrick) {
-			return;
-		}
-		setSonarDetailRegion(null);
-		setInspectedTask(null);
-		setLastTrickOpen(true);
-	}
+	}, [sonarOpen, sonarDetailRegion, inspectedTask, inspectedCompletedTricks]);
 
 	function openSonarDetail(region: TableView["seats"][number]["region"]) {
 		setSonarOpen(false);
-		setLastTrickOpen(false);
 		setInspectedTask(null);
+		setInspectedCompletedTricks(null);
 		setSonarDetailRegion(region);
 	}
 
 	function inspectTask(task: TaskView) {
 		setSonarOpen(false);
-		setLastTrickOpen(false);
 		setSonarDetailRegion(null);
 		setInspectedTask(task);
+		setInspectedCompletedTricks(null);
+	}
+
+	function inspectCompletedTricks(seat: TableView["seats"][number]) {
+		if (!canInspectCompletedTricks || seat.completedTricks.length === 0) {
+			return;
+		}
+		setSonarOpen(false);
+		setSonarDetailRegion(null);
+		setInspectedTask(null);
+		setInspectedCompletedTricks(seat);
 	}
 
 	function skipDistress() {
@@ -326,9 +333,9 @@ export function PlayScene({
 
 	function closeSkinOverlay() {
 		setSonarOpen(false);
-		setLastTrickOpen(false);
 		setSonarDetailRegion(null);
 		setInspectedTask(null);
+		setInspectedCompletedTricks(null);
 	}
 
 	return (
@@ -341,6 +348,7 @@ export function PlayScene({
 							overlay={overlay}
 							sonarDetailSeat={sonarDetailSeat}
 							inspectedTask={inspectedTask}
+							inspectedCompletedTricks={inspectedCompletedTricks}
 							sonarPositions={sonarPositions}
 							queued={!view.affordances.canSonar}
 							onSkipDistress={
@@ -368,7 +376,11 @@ export function PlayScene({
 							seat={seat}
 							slot={lobbySlot(seat.region, view.playerCount)}
 							chairClassName={`${sceneStyles.chair} ${styles.playChair}`}
-							onPeekLastTrick={canPeek && seat.isLastTrickWinner ? peekLastTrick : undefined}
+							onPeekLastTrick={
+								canInspectCompletedTricks && seat.completedTricks.length > 0
+									? () => inspectCompletedTricks(seat)
+									: undefined
+							}
 							onSonarDetail={() => openSonarDetail(seat.region)}
 							onInspectTask={inspectTask}
 							canSonar={isSelf && sonarEnabled && !sonarOpen}
@@ -376,9 +388,9 @@ export function PlayScene({
 							onSonar={
 								isSelf
 									? () => {
-											setLastTrickOpen(false);
 											setSonarDetailRegion(null);
 											setInspectedTask(null);
+											setInspectedCompletedTricks(null);
 											if (queuedSonar !== null) {
 												setSelected(queuedSonar.cardId);
 											}
@@ -553,6 +565,7 @@ function OverlayBody({
 	overlay,
 	sonarDetailSeat,
 	inspectedTask,
+	inspectedCompletedTricks,
 	sonarPositions,
 	queued = false,
 	onSkipDistress,
@@ -565,6 +578,7 @@ function OverlayBody({
 	overlay: Overlay;
 	sonarDetailSeat: TableView["seats"][number] | null;
 	inspectedTask: TaskView | null;
+	inspectedCompletedTricks: TableView["seats"][number] | null;
 	sonarPositions: SonarPosition[];
 	queued?: boolean;
 	onSkipDistress?: () => void;
@@ -647,13 +661,22 @@ function OverlayBody({
 			</>
 		);
 	}
-	if (overlay === "lastTrick" && view.lastTrick) {
+	if (overlay === "lastTrick" && inspectedCompletedTricks) {
 		return (
 			<>
-				<p className={styles.overlayTitle}>{t("lastTrick")}</p>
-				<div className={styles.lastTrick}>
-					{view.lastTrick.cards.map((card) => (
-						<CardFace key={`${card.seatId}-${card.order}`} cardId={card.cardId} size="token" />
+				<p className={styles.overlayTitle}>{inspectedCompletedTricks.displayName} — tricks won</p>
+				<div className={styles.completedTricks}>
+					{inspectedCompletedTricks.completedTricks.map((trick) => (
+						<div key={trick.trickId} className={styles.lastTrick}>
+							<span className={styles.completedTrickLabel}>Trick {trick.trickId}</span>
+							{trick.cards.map((card) => (
+								<CardFace
+									key={`${trick.trickId}-${card.seatId}-${card.order}`}
+									cardId={card.cardId}
+									size="token"
+								/>
+							))}
+						</div>
 					))}
 				</div>
 				<Button className={styles.overlayAction} onPress={onCloseSkin}>
