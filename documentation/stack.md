@@ -109,8 +109,7 @@ from `packages/db/src/migrations` during deploy / `alchemy dev`.
 | Per-seat visibility / affordances | view-model | derived; not source of truth |
 | Selected card, overlays, skip-anim | skin | client only |
 | `PlayerId`, display name, session | auth | D1 + HTTP-only cookie |
-| Profile photo bytes | server | R2 (`PHOTOS`) |
-| Profile photo URL | auth | D1 `user.image` |
+| Profile photo | web | DiceBear seeded Bottts avatar; external `user.image` if present |
 | Room code, host, occupancy | server | DO + D1 index for join |
 | Connection dim/reconnect | server | DO, ephemeral |
 | Campaign / logbook | later | D1 |
@@ -124,8 +123,9 @@ not reserve a chair; if you already sit at a table, you stay seated only
 because the id did not change. **Sign in** (boot + profile sheet) keeps
 the guest cookie, then Better Auth links: guest name (if the account has
 none), photo, and hosted `rooms` rows move onto the existing user, then
-the anonymous user is deleted. Profile photo lives in R2; the sheet can
-upload a JPEG, PNG, or WebP. Client prefs (theme, SFX, animations) stay
+the anonymous user is deleted. Profile photos are generated locally from
+the stable player id using DiceBear's seeded Bottts API; no image bytes
+are uploaded or stored in R2. Client prefs (theme, SFX, animations) stay
 shell stubs; mute/skip-anim stay table chrome when they ship. Sessions
 are cookies, not tokens in logs or `localStorage`.
 
@@ -157,7 +157,7 @@ server       → protocol, db, auth, engine, view-model
 ## Host + CI
 
 **Host:** Cloudflare. Web → Worker (Alchemy Vite website) at
-`https://crew.aleno.casa`. Server → Workers + Durable Objects + D1 + R2.
+`https://crew.aleno.casa`. Server → Workers + Durable Objects + D1.
 Not Vercel for the play path. No Docker in v1.
 
 Alchemy state is remote (`Cloudflare.state()`): a Durable Object Worker

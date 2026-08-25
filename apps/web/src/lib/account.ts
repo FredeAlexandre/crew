@@ -4,7 +4,6 @@ import { ensureGuestSession } from "./rooms.ts";
 
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 128;
-const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 
 class AccountError extends Error {
 	readonly code: string;
@@ -82,34 +81,6 @@ export async function changeAccountPassword(
 			result.error.message ?? "Could not change the password.",
 		);
 	}
-}
-
-export async function uploadAccountPhoto(file: File): Promise<void> {
-	if (file.size > PHOTO_MAX_BYTES) {
-		throw new AccountError("tooLarge", "Photo must be 5 MB or smaller.");
-	}
-	const body = new FormData();
-	body.append("photo", file);
-	const response = await fetch(new URL("/photos", `${authOrigin()}/`), {
-		method: "POST",
-		credentials: "include",
-		body,
-	});
-	if (!response.ok) {
-		throw await readAuthError(response, "Could not save the photo.");
-	}
-	await authClient.getSession();
-}
-
-export async function removeAccountPhoto(): Promise<void> {
-	const response = await fetch(new URL("/photos", `${authOrigin()}/`), {
-		method: "DELETE",
-		credentials: "include",
-	});
-	if (!response.ok) {
-		throw await readAuthError(response, "Could not remove the photo.");
-	}
-	await authClient.getSession();
 }
 
 export function accountErrorCopy(error: unknown): string {
