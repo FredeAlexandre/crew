@@ -15,6 +15,7 @@ const RECONNECT_MS = 400;
 
 export type ClientIntent =
 	| { type: "player.ready"; ready: boolean }
+	| { type: "player.leave" }
 	| { type: "player.rename"; displayName: string }
 	| { type: "host.start" }
 	| {
@@ -93,6 +94,13 @@ export function useTable(code: string | null): {
 			});
 		}
 
+		function leaveTable() {
+			if (socket?.readyState === WebSocket.OPEN) {
+				socket.send(JSON.stringify({ type: "player.leave" }));
+			}
+		}
+		window.addEventListener("crew:leave-table", leaveTable);
+
 		connect();
 		return () => {
 			cancelled = true;
@@ -101,6 +109,7 @@ export function useTable(code: string | null): {
 			}
 			socketRef.current = null;
 			socket?.close();
+			window.removeEventListener("crew:leave-table", leaveTable);
 		};
 	}, [code]);
 
@@ -129,6 +138,7 @@ function roomSocketUrl(code: string): string {
 function stampIntent(intent: ClientIntent, view: TableView | null): Intent | null {
 	if (
 		intent.type === "player.ready" ||
+		intent.type === "player.leave" ||
 		intent.type === "player.rename" ||
 		intent.type === "host.start" ||
 		intent.type === "host.configure" ||

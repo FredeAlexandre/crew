@@ -27,6 +27,10 @@ export const playerReadyIntentSchema = z.object({
 	ready: z.boolean(),
 });
 
+export const playerLeaveIntentSchema = z.object({
+	type: z.literal("player.leave"),
+});
+
 export const playerRenameIntentSchema = z.object({
 	type: z.literal("player.rename"),
 	displayName: z.string().trim().min(1).max(24),
@@ -100,6 +104,7 @@ export const sonarUseIntentSchema = z.object({
 
 export const intentSchema = z.discriminatedUnion("type", [
 	echoIntentSchema,
+	playerLeaveIntentSchema,
 	playerReadyIntentSchema,
 	playerRenameIntentSchema,
 	hostStartIntentSchema,
@@ -118,6 +123,7 @@ export const intentSchema = z.discriminatedUnion("type", [
 
 export type EchoIntent = z.infer<typeof echoIntentSchema>;
 export type PlayerReadyIntent = z.infer<typeof playerReadyIntentSchema>;
+export type PlayerLeaveIntent = z.infer<typeof playerLeaveIntentSchema>;
 export type PlayerRenameIntent = z.infer<typeof playerRenameIntentSchema>;
 export type HostStartIntent = z.infer<typeof hostStartIntentSchema>;
 export type HostConfigureIntent = z.infer<typeof hostConfigureIntentSchema>;
@@ -133,6 +139,7 @@ export type CardPlayIntent = z.infer<typeof cardPlayIntentSchema>;
 export type SonarUseIntent = z.infer<typeof sonarUseIntentSchema>;
 export type Intent = z.infer<typeof intentSchema>;
 export type LobbyIntent =
+	| PlayerLeaveIntent
 	| PlayerReadyIntent
 	| PlayerRenameIntent
 	| HostStartIntent

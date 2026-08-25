@@ -52,6 +52,8 @@ export function SeatAvatar({
 			className={compact ? styles.avatarWrapCompact : styles.avatarWrap}
 			data-turn={seat.isTurn ? "true" : "false"}
 			data-captain={seat.isCaptain ? "true" : "false"}
+			data-connected={seat.connected ? "true" : "false"}
+			data-leaving={seat.leaving ? "true" : "false"}
 		>
 			{seat.isCaptain ? <CrownIcon /> : <span className={styles.crownHole} aria-hidden="true" />}
 			{seat.isCaptain ? <span className={styles.srOnly}>Captain</span> : null}
@@ -70,6 +72,15 @@ export function SeatAvatar({
 					/>
 				)}
 			</span>
+			{!empty && !seat.connected ? (
+				<span
+					className={styles.connectionDots}
+					role="img"
+					aria-label={seat.leaving ? "Leaving" : "Reconnecting"}
+				>
+					•••
+				</span>
+			) : null}
 			{showName ? <span className={styles.pipName}>{empty ? "Empty" : seatName(seat)}</span> : null}
 		</div>
 	);
