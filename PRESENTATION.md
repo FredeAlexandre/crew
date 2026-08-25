@@ -57,10 +57,10 @@ Responsibilities:
 - hide other players’ hands (show count only)
 - mark which of *my* cards are legal right now
 - rotate seats so the viewer is always in region `seat.self`
-- expose public table information (trick, tasks, sonar faces, last trick)
+- expose public table information (trick, tasks, sonar faces, last trick); on `result`, expose the complete completed-trick history to every client
 - expose action affordances (`canPlay`, `canSonar`, `canTakeTask`, `canPassTask`, `canRetry`, `canFillBots`, `canConfigure`, …)
 - result actions: `canRetry` is true only for the host; Retry sends `host.retry` (same mission, new deal). Same-tasks and next-mission are later.
-- lobby: `canFillBots` is true only for the seated host while empty chairs remain. Fill sends `host.fillBots` (ready dummy seats for solo testing). `canConfigure` is true only for the seated host. Configure sends `host.configure` with the mission difficulty (task-point total, 1–16), a designated captain seat or `null` for a random deal, and `distressDisabled` (default false: distress is offered after task draft). The lobby view shows the current difficulty on `chrome.difficulty`, previews a designated captain with `isCaptain`, and shows the distress toggle on `chrome.flags.distressDisabled`. Start still sends `host.start`; the room applies the stored setup. The physical rule is unchanged: the captain is the holder of submarine 4. A designated seat is dealt that card. If distress is disabled, draft completion goes straight to play.
+- lobby: each seated player may edit their own display name in `seat.self`; changes send `player.rename` and are reflected at every seat before play. `canFillBots` is true only for the seated host while empty chairs remain. Fill sends `host.fillBots` (ready dummy seats for solo testing). `canConfigure` is true only for the seated host. Configure sends `host.configure` with the mission difficulty (task-point total, 1–16), a designated captain seat or `null` for a random deal, `distressDisabled` (default false: distress is offered after task draft), and `completedTricksVisible` (default false). The lobby view shows the current difficulty on `chrome.difficulty`, previews a designated captain with `isCaptain`, and shows the setup toggles on `chrome.flags`. When completed tricks are visible, tapping a won-trick pile shows every trick in that player’s pile; otherwise its count remains visible but is not tappable. Start still sends `host.start`; the room applies the stored setup. The physical rule is unchanged: the captain is the holder of submarine 4. A designated seat is dealt that card. If distress is disabled, draft completion goes straight to play.
 
 The view model is the API the skin binds to. If the skin needs a new piece of information, add it here, not by peeking into the engine.
 
@@ -126,11 +126,11 @@ A **scene** is a full-table mode. An **overlay** sits on the current scene and m
 | `deal` | scene | Cards fly to seats. Captain token appears when submarine 4 is known to that client. |
 | `taskDraft` | scene | Face-up tasks in the center. Clockwise take/pass. Sonar disabled. |
 | `play` | scene | The mission. Default state of the product. |
-| `result` | scene | Success or failure. Retry / same tasks / new tasks / next mission. |
+| `result` | scene | Success or failure, complete trick history, and retry / same tasks / new tasks / next mission. |
 | `campaign` | scene | Logbook: which missions are done, attempt counts, distress used. |
 | `sonar` | overlay | Choose a legal color card and a token position. Table remains visible. |
 | `distress` | overlay | After tasks, before first sonar: activate or skip; if on, pick left/right, then pick a non-submarine card to pass. |
-| `lastTrick` | overlay | Peek at the most recently completed trick (normally the only one that may be inspected). |
+| `lastTrick` | overlay | Inspect completed tricks when the lobby has enabled their visibility. |
 | `reminder` | overlay | Optional: follow-suit / sonar / trump cheat-sheet. Not a website help page — a compact reminder card. |
 
 `trickResolve` is **not** a scene. It is a short moment inside `play` (winning card marked, cards collected to the winner’s won-trick pile, tasks ticking).
@@ -176,7 +176,7 @@ Named slots. Layouts change *where* they sit, not *what they are called*. Skins 
 - ready / connected / disconnected
 - captain token (or empty slot of the same size)
 - sonar token: `available` (green) / `used` / `communicating`
-- won-trick pile: a compact count; the pile is tappable to request `lastTrick` only for the latest trick owner as rules allow
+- won-trick pile: a compact count that is always visible; when completed-trick visibility is enabled, the pile is tappable to inspect all tricks won by that player
 - communicated card slot (public): card + sonar position, or empty
 - hand count (opponents) or nothing extra (self uses `hand`)
 
@@ -303,9 +303,10 @@ Group by phase. All events include `attemptId` and a monotonic `seq` so the skin
 | `room.snapshot` | full view model | no motion; hard apply |
 | `player.sat` | `seatId`, `playerId`, name | seat fills |
 | `player.stood` | `seatId` | seat empties |
+| `player.renamed` | `seatId`, `displayName` | seat label updates |
 | `player.ready` | `seatId`, ready | token/check |
 | `player.connection` | `seatId`, `connected` | dim seat, do not remove |
-| `host.configured` | `difficulty`, `captainSeat`, `distressDisabled` | lobby setup updates |
+| `host.configured` | `difficulty`, `captainSeat`, `distressDisabled`, `completedTricksVisible` | lobby setup updates |
 | `host.started` | `missionId` | leave lobby |
 
 ### 10.2 Mission setup

@@ -21,6 +21,7 @@ export {
 	affordancesSchema,
 	chromeSchema,
 	communicationSchema,
+	completedTrickViewSchema,
 	handCardSchema,
 	lastTrickViewSchema,
 	overlaySchema,

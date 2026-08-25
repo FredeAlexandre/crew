@@ -86,12 +86,15 @@ function resolveTrick(state: EngineState, facts: Fact[]): IllegalReason | null {
 	}
 	state.tricksWon[winner]?.push(state.trickId);
 	state.captured[winner]?.push(...trick.map((play) => play.cardId));
-	state.lastTrick = {
+	const resolvedTrick = {
 		trickId: state.trickId,
 		winnerSeat: winner,
 		ledSuit,
 		cards: trick,
 	};
+	state.lastTrick = resolvedTrick;
+	state.trickHistory.push(resolvedTrick);
+	state.completedTricks[winner]?.push(resolvedTrick);
 	emit(state, facts, {
 		type: "trick.resolved",
 		trickId: state.trickId,
