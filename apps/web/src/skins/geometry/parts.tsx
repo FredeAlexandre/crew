@@ -4,6 +4,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useRef } from "react";
 import { Button } from "react-aria-components";
 import { useSfxMuted } from "../../hooks/use-sfx-muted.ts";
+import { identiconUrl } from "../../lib/avatar.ts";
 import { CardBack, CardFace } from "./Card.tsx";
 import { type LobbySlot, seatIsEmpty, seatName, sonarPositionCopy, turnCopy } from "./copy.ts";
 import { cardIndexFromRects } from "./hand-layout.ts";
@@ -32,17 +33,6 @@ function CrownIcon() {
 			<rect x="2" y="11.5" width="16" height="2" rx="0.4" fill="currentColor" />
 		</svg>
 	);
-}
-
-function seatInitial(seat: SeatView): string {
-	if (seatIsEmpty(seat)) {
-		return "";
-	}
-	const name = seatName(seat).trim();
-	if (name.length === 0) {
-		return "?";
-	}
-	return name.charAt(0).toUpperCase();
 }
 
 export function SeatAvatar({
@@ -74,10 +64,12 @@ export function SeatAvatar({
 				data-self={self ? "true" : "false"}
 				aria-hidden="true"
 			>
-				{seat.image ? (
-					<img className={styles.avatarPhoto} src={seat.image} alt="" />
-				) : (
-					seatInitial(seat)
+				{empty ? null : (
+					<img
+						className={styles.avatarPhoto}
+						src={seat.image ?? identiconUrl(seat.avatarSeed ?? seatName(seat))}
+						alt=""
+					/>
 				)}
 			</span>
 			{!empty && !seat.connected ? (

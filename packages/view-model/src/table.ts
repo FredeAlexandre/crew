@@ -89,6 +89,8 @@ export const seatViewSchema = z.object({
 	displayName: z.string().nullable(),
 	/** Public account avatar, when the seated player has chosen one. */
 	image: z.string().nullable().optional(),
+	/** Stable seed for the locally rendered fallback avatar. */
+	avatarSeed: z.string().optional(),
 	connected: z.boolean(),
 	leaving: z.boolean().default(false),
 	ready: z.boolean(),
