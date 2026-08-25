@@ -62,27 +62,6 @@ export const taskViewSchema = z.object({
 });
 export type TaskView = z.infer<typeof taskViewSchema>;
 
-export const seatViewSchema = z.object({
-	region: seatRegionSchema,
-	seatId: seatIdSchema,
-	displayName: z.string().nullable(),
-	/** Public account avatar, when the seated player has chosen one. */
-	image: z.string().nullable().optional(),
-	connected: z.boolean(),
-	ready: z.boolean(),
-	isCaptain: z.boolean(),
-	sonar: z.object({
-		state: sonarTokenStateSchema,
-		communication: communicationSchema.nullable(),
-	}),
-	handCount: z.number().int().nonnegative(),
-	wonTrickCount: z.number().int().nonnegative(),
-	isTurn: z.boolean(),
-	isLastTrickWinner: z.boolean(),
-	tasks: z.array(taskViewSchema),
-});
-export type SeatView = z.infer<typeof seatViewSchema>;
-
 export const handCardSchema = z.object({
 	cardId: cardIdSchema,
 	legal: z.boolean(),
@@ -98,6 +77,33 @@ export const trickCardSchema = z.object({
 	order: z.number().int().positive(),
 });
 export type TrickCard = z.infer<typeof trickCardSchema>;
+
+export const completedTrickViewSchema = z.object({
+	trickId: trickIdSchema,
+	ledSuit: suitSchema,
+	cards: z.array(trickCardSchema),
+});
+export const seatViewSchema = z.object({
+	region: seatRegionSchema,
+	seatId: seatIdSchema,
+	displayName: z.string().nullable(),
+	/** Public account avatar, when the seated player has chosen one. */
+	image: z.string().nullable().optional(),
+	connected: z.boolean(),
+	ready: z.boolean(),
+	isCaptain: z.boolean(),
+	sonar: z.object({
+		state: sonarTokenStateSchema,
+		communication: communicationSchema.nullable(),
+	}),
+	handCount: z.number().int().nonnegative(),
+	wonTrickCount: z.number().int().nonnegative(),
+	completedTricks: z.array(completedTrickViewSchema).default([]),
+	isTurn: z.boolean(),
+	isLastTrickWinner: z.boolean(),
+	tasks: z.array(taskViewSchema),
+});
+export type SeatView = z.infer<typeof seatViewSchema>;
 
 export const trickViewSchema = z.object({
 	trickId: trickIdSchema.nullable(),
@@ -146,6 +152,7 @@ export const chromeSchema = z.object({
 		sonarDisabled: z.boolean(),
 		discussionAllowed: z.boolean(),
 		distressDisabled: z.boolean(),
+		completedTricksVisible: z.boolean().default(false),
 	}),
 });
 export type Chrome = z.infer<typeof chromeSchema>;

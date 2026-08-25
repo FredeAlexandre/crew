@@ -72,6 +72,7 @@ export type EngineState = {
 	ledSuit: Suit | null;
 	currentTrick: TrickPlay[];
 	lastTrick: LastTrick | null;
+	completedTricks: LastTrick[][];
 	tricksWon: number[][];
 	captured: CardId[][];
 	consecutiveWins: number[];

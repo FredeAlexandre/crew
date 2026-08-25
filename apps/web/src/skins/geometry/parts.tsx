@@ -4,7 +4,6 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useRef } from "react";
 import { Button } from "react-aria-components";
 import { useSfxMuted } from "../../hooks/use-sfx-muted.ts";
-import { useI18n } from "../../lib/i18n.tsx";
 import { CardBack, CardFace } from "./Card.tsx";
 import { type LobbySlot, seatIsEmpty, seatName, sonarPositionCopy, turnCopy } from "./copy.ts";
 import { cardIndexFromRects } from "./hand-layout.ts";
@@ -166,7 +165,6 @@ export function PlaySeat({
 	seat,
 	slot,
 	onPeekLastTrick,
-	showCompletedTricks = true,
 	onSonarDetail,
 	onInspectTask,
 	canSonar,
@@ -178,7 +176,6 @@ export function PlaySeat({
 	seat: SeatView;
 	slot: LobbySlot;
 	onPeekLastTrick?: () => void;
-	showCompletedTricks?: boolean;
 	onSonarDetail?: () => void;
 	onInspectTask?: (task: TaskView) => void;
 	canSonar?: boolean;
@@ -204,9 +201,7 @@ export function PlaySeat({
 					<SeatAvatar seat={seat} self={self} />
 				</div>
 				<div className={styles.seatBody}>
-					{showCompletedTricks ? (
-						<WonTrickPile count={seat.wonTrickCount} onPeek={onPeekLastTrick} />
-					) : null}
+					<WonTrickPile count={seat.wonTrickCount} onPeek={onPeekLastTrick} />
 					<div className={styles.seatTasks} data-region={self ? "tasks.self" : undefined}>
 						{seat.tasks.length > 0 ? (
 							seat.tasks.map((task) => (
@@ -518,18 +513,9 @@ export function HandStrip({
 	);
 }
 
-export function ChromeLine({
-	view,
-	showCompletedTricks = false,
-	onToggleCompletedTricks,
-}: {
-	view: TableView;
-	showCompletedTricks?: boolean;
-	onToggleCompletedTricks?: () => void;
-}) {
+export function ChromeLine({ view }: { view: TableView }) {
 	const turn = turnCopy(view);
 	const [muted, setMuted] = useSfxMuted();
-	const { t } = useI18n();
 	const bits = [
 		view.chrome.missionId ? `Mission ${view.chrome.missionId.replace(/^m/i, "")}` : null,
 		view.chrome.trickId ? `Trick ${view.chrome.trickId}` : null,
@@ -541,15 +527,6 @@ export function ChromeLine({
 				<span key={bit}>{bit}</span>
 			))}
 			{turn ? <span className={styles.turn}>{turn}</span> : null}
-			{onToggleCompletedTricks ? (
-				<Button
-					className={styles.mute}
-					aria-pressed={showCompletedTricks}
-					onPress={onToggleCompletedTricks}
-				>
-					{t(showCompletedTricks ? "hideCompletedTricks" : "showCompletedTricks")}
-				</Button>
-			) : null}
 			<Button
 				className={styles.mute}
 				data-on={muted ? "false" : "true"}

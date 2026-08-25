@@ -182,10 +182,16 @@ describe("project", () => {
 		const playing = skipDistressToPlay(startAttempt(4, 11));
 		const afterTrick = playCards(playing, 4);
 		expect(afterTrick.lastTrick).not.toBeNull();
-		const view = project(afterTrick, 2);
-		expect(view.lastTrick?.cards).toHaveLength(4);
-		expect(view.affordances.canPeekLastTrick).toBe(true);
+		const view = project(afterTrick, 2, undefined, undefined, false);
+		expect(view.lastTrick).toBeNull();
+		expect(view.affordances.canPeekLastTrick).toBe(false);
 		expect(view.seats.filter((seat) => seat.isLastTrickWinner)).toHaveLength(1);
+		expect(view.seats.every((seat) => seat.completedTricks.length === 0)).toBe(true);
+		const visible = project(afterTrick, 2, undefined, undefined, true);
+		expect(visible.lastTrick?.cards).toHaveLength(4);
+		expect(visible.affordances.canPeekLastTrick).toBe(true);
+		expect(visible.seats.flatMap((seat) => seat.completedTricks)).toHaveLength(1);
+		expect(visible.seats.flatMap((seat) => seat.completedTricks)[0]?.cards).toHaveLength(4);
 		expect(view.undealt.present).toBe(false);
 	});
 
@@ -358,10 +364,12 @@ describe("occupancy", () => {
 			difficulty: 6,
 			captainSeat: 0,
 			distressDisabled: true,
+			completedTricksVisible: false,
 		});
 		expect(host.affordances.canConfigure).toBe(true);
 		expect(host.chrome.difficulty).toBe(6);
 		expect(host.chrome.flags.distressDisabled).toBe(true);
+		expect(host.chrome.flags.completedTricksVisible).toBe(false);
 		expect(host.seats.find((seat) => seat.seatId === 0)?.isCaptain).toBe(true);
 		expect(host.seats.find((seat) => seat.seatId === 1)?.isCaptain).toBe(false);
 		expect(projectLobby(hostOnly, 1, 1, 0).affordances.canConfigure).toBe(false);

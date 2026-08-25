@@ -92,6 +92,7 @@ function resolveTrick(state: EngineState, facts: Fact[]): IllegalReason | null {
 		ledSuit,
 		cards: trick,
 	};
+	state.completedTricks[winner]?.push(state.lastTrick);
 	emit(state, facts, {
 		type: "trick.resolved",
 		trickId: state.trickId,

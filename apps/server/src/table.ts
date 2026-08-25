@@ -22,6 +22,7 @@ const DEFAULT_SETUP: TableSetup = {
 	difficulty: DEFAULT_MISSION_DIFFICULTY,
 	captainSeat: null,
 	distressDisabled: false,
+	completedTricksVisible: false,
 };
 const BOT_PLAYER_PREFIX = "bot:";
 const BOT_TURN_CAP = 400;
@@ -41,6 +42,7 @@ export type TableSetup = {
 	difficulty: number;
 	captainSeat: SeatId | null;
 	distressDisabled: boolean;
+	completedTricksVisible: boolean;
 };
 
 export type TableState = {
@@ -157,7 +159,13 @@ export function viewForSeat(state: TableState, viewerSeat: SeatId): TableView {
 		);
 	}
 	return {
-		...project(state.engine, viewerSeat, occupancyOf(state), seatOf(state, state.hostPlayerId)),
+		...project(
+			state.engine,
+			viewerSeat,
+			occupancyOf(state),
+			seatOf(state, state.hostPlayerId),
+			setupOf(state).completedTricksVisible,
+		),
 		seq: state.seq,
 	};
 }
@@ -300,6 +308,7 @@ export function handleIntent(
 			intent.difficulty,
 			intent.captainSeat,
 			intent.distressDisabled,
+			intent.completedTricksVisible,
 		);
 	}
 	if (intent.type === "host.retry") {
@@ -378,6 +387,7 @@ function configure(
 	difficulty: number,
 	captainSeat: SeatId | null,
 	distressDisabled: boolean,
+	completedTricksVisible: boolean,
 ): TableResult {
 	if (playerId !== state.hostPlayerId) {
 		return fail(state, "notHost", "only the host can configure the table");
@@ -393,19 +403,21 @@ function configure(
 	if (
 		setup.difficulty === difficulty &&
 		setup.captainSeat === captainSeat &&
-		setup.distressDisabled === distressDisabled
+		setup.distressDisabled === distressDisabled &&
+		setup.completedTricksVisible === completedTricksVisible
 	) {
 		return succeed(state, [], false);
 	}
 
 	const pushed = pushFact(
-		{ ...state, setup: { difficulty, captainSeat, distressDisabled } },
+		{ ...state, setup: { difficulty, captainSeat, distressDisabled, completedTricksVisible } },
 		{
 			type: "host.configured",
 			attemptId: null,
 			difficulty,
 			captainSeat,
 			distressDisabled,
+			completedTricksVisible,
 		},
 	);
 	return succeed(pushed.state, [pushed.fact], false);
@@ -591,6 +603,7 @@ function setupOf(state: TableState): TableSetup {
 		difficulty: setup.difficulty,
 		captainSeat: setup.captainSeat,
 		distressDisabled: setup.distressDisabled === true,
+		completedTricksVisible: setup.completedTricksVisible === true,
 	};
 }
 

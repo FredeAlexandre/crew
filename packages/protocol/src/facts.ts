@@ -65,6 +65,7 @@ const hostConfiguredFactSchema = z.object({
 	difficulty: missionDifficultySchema,
 	captainSeat: seatIdSchema.nullable(),
 	distressDisabled: z.boolean().default(false),
+	completedTricksVisible: z.boolean().default(false),
 });
 
 const cardDealtFactSchema = z.object({
