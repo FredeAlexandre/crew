@@ -25,7 +25,6 @@ const DEFAULT_SETUP: TableSetup = {
 	completedTricksVisible: false,
 };
 const BOT_PLAYER_PREFIX = "bot:";
-const BOT_TURN_CAP = 400;
 const KICK_COOLDOWN_MS = 10_000;
 
 export type Occupant = {
@@ -475,8 +474,7 @@ function beginAttempt(state: TableState, options?: StartOptions): TableResult {
 		},
 	);
 	const stamped = stampFacts(started.state, created.facts);
-	const drained = drainBots(stamped.state);
-	return succeed(drained.state, [started.fact, ...stamped.facts, ...drained.facts], false);
+	return succeed(stamped.state, [started.fact, ...stamped.facts], false);
 }
 
 function play(state: TableState, seatId: SeatId, intent: PlayIntent): TableResult {
@@ -493,8 +491,7 @@ function play(state: TableState, seatId: SeatId, intent: PlayIntent): TableResul
 		return fail(state, result.error, result.error);
 	}
 	const stamped = stampFacts({ ...state, engine: result.state }, result.facts);
-	const drained = drainBots(stamped.state);
-	return succeed(drained.state, [...stamped.facts, ...drained.facts], false);
+	return succeed(stamped.state, stamped.facts, false);
 }
 
 function fillBots(state: TableState, playerId: string): TableResult {
@@ -549,42 +546,32 @@ function fillBots(state: TableState, playerId: string): TableResult {
 	return succeed(next, facts, false);
 }
 
-function drainBots(state: TableState): { state: TableState; facts: Fact[] } {
+export function playBotTurn(state: TableState): TableResult {
 	if (state.engine === null) {
-		return { state, facts: [] };
+		return fail(state, "wrongPhase", "game has not started");
 	}
-	const facts: Fact[] = [];
-	let current = state;
-	for (let step = 0; step < BOT_TURN_CAP; step += 1) {
-		const engine = current.engine;
-		if (engine === null || engine.phase === "result") {
-			break;
-		}
-		const seat = engine.currentSeat;
-		if (seat === null) {
-			break;
-		}
-		const occupant = current.seats[seat];
-		if (occupant === null || occupant === undefined || !isBotPlayerId(occupant.playerId)) {
-			break;
-		}
-		const intent = pickSeatIntent(engine, seat);
-		if (intent === null) {
-			break;
-		}
-		const result = apply(engine, {
-			...intent,
-			seatId: seat,
-			attemptId: engine.attemptId,
-		});
-		if (!result.ok) {
-			break;
-		}
-		const stamped = stampFacts({ ...current, engine: result.state }, result.facts);
-		facts.push(...stamped.facts);
-		current = stamped.state;
+	const seat = state.engine.currentSeat;
+	if (seat === null) {
+		return fail(state, "wrongPhase", "no bot turn is available");
 	}
-	return { state: current, facts };
+	const occupant = state.seats[seat];
+	if (occupant === null || occupant === undefined || !isBotPlayerId(occupant.playerId)) {
+		return fail(state, "notYourTurn", "the current seat is not a bot");
+	}
+	const intent = pickSeatIntent(state.engine, seat);
+	if (intent === null) {
+		return fail(state, "illegalIntent", "bot has no supported action");
+	}
+	const result = apply(state.engine, {
+		...intent,
+		seatId: seat,
+		attemptId: state.engine.attemptId,
+	});
+	if (!result.ok) {
+		return fail(state, result.error, result.error);
+	}
+	const stamped = stampFacts({ ...state, engine: result.state }, result.facts);
+	return succeed(stamped.state, stamped.facts, false);
 }
 
 function randomSeed(): number {
