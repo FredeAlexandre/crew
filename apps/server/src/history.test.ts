@@ -1,4 +1,5 @@
 import type { createDb } from "@crew/db";
+import type { Fact } from "@crew/protocol";
 import { describe, expect, it } from "vitest";
 import { recordPlayerHistory } from "./history.ts";
 import type { TableState } from "./table.ts";
@@ -28,6 +29,14 @@ function resultState(): TableState {
 			attemptId: "attempt-1",
 			mission: { id: "m1", difficulty: 1 },
 		} as TableState["engine"],
+		historyFacts: [
+			{
+				type: "host.started",
+				attemptId: "attempt-1",
+				seq: 1,
+				missionId: "m1",
+			} as Fact,
+		],
 		kicks: {},
 	};
 }
@@ -42,8 +51,18 @@ describe("recordPlayerHistory", () => {
 				}),
 			}),
 			insert: () => ({
-				values: (values: Array<{ userId: string; attemptId: string }>) => {
-					inserted = values.map(({ userId, attemptId }) => ({ userId, attemptId }));
+				values: (values: unknown) => {
+					if (
+						Array.isArray(values) &&
+						values.every((value) => {
+							return typeof value === "object" && value !== null && "userId" in value;
+						})
+					) {
+						inserted = values.map((value) => {
+							const row = value as { userId: string; attemptId: string };
+							return { userId: row.userId, attemptId: row.attemptId };
+						});
+					}
 					return { onConflictDoNothing: async () => undefined };
 				},
 			}),

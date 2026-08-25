@@ -53,6 +53,10 @@ export type TableState = {
 	seats: Array<Occupant | null>;
 	setup: TableSetup;
 	engine: EngineState | null;
+	/** Server-only authoritative facts for the current attempt, retained for history persistence. */
+	historyFacts: Fact[];
+	/** Wall-clock start retained for the history record; absent on tables created before this field. */
+	historyStartedAt?: number;
 	/** Kept after a seat is vacated so repeat kicks lengthen the reconnect delay. */
 	kicks: Record<string, { count: number; blockedUntil: number }>;
 };
@@ -101,6 +105,7 @@ export function createTable(input: {
 		seats: Array.from({ length: input.playerCount }, () => null),
 		setup: { ...DEFAULT_SETUP },
 		engine: null,
+		historyFacts: [],
 		kicks: {},
 	};
 }

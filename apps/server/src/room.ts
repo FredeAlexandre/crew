@@ -128,7 +128,8 @@ export default class Room extends DurableObject<RoomBindings> {
 			this.sendError(socket, result.code, result.message);
 			return;
 		}
-		await this.save(result.state);
+		const next = appendHistoryFacts(loaded, result.state, result.facts);
+		await this.save(next);
 		if (parsed.data.type === "host.kick") {
 			const removed = loaded.seats[parsed.data.seatId];
 			if (removed !== null && removed !== undefined) {
@@ -149,11 +150,11 @@ export default class Room extends DurableObject<RoomBindings> {
 				seq: result.state.seq,
 			});
 		}
-		if (loaded.engine?.phase !== "result" && result.state.engine?.phase === "result") {
-			await recordPlayerHistory(createDb(this.env.DB), result.state);
+		if (loaded.engine?.phase !== "result" && next.engine?.phase === "result") {
+			await recordPlayerHistory(createDb(this.env.DB), next);
 		}
-		this.fanout(result.state, result.facts, null);
-		await this.scheduleBotTurn(result.state);
+		this.fanout(next, result.facts, null);
+		await this.scheduleBotTurn(next);
 	}
 
 	async alarm() {
@@ -166,12 +167,13 @@ export default class Room extends DurableObject<RoomBindings> {
 			await this.scheduleBotTurn(loaded, true);
 			return;
 		}
-		await this.save(result.state);
-		if (loaded.engine?.phase !== "result" && result.state.engine?.phase === "result") {
-			await recordPlayerHistory(createDb(this.env.DB), result.state);
+		const next = appendHistoryFacts(loaded, result.state, result.facts);
+		await this.save(next);
+		if (loaded.engine?.phase !== "result" && next.engine?.phase === "result") {
+			await recordPlayerHistory(createDb(this.env.DB), next);
 		}
-		this.fanout(result.state, result.facts, null);
-		await this.scheduleBotTurn(result.state, true);
+		this.fanout(next, result.facts, null);
+		await this.scheduleBotTurn(next, true);
 	}
 
 	async webSocketClose(ws: WebSocket, code: number, reason: string) {
@@ -279,4 +281,16 @@ function statusFor(code: RoomErrorCode): number {
 		return 404;
 	}
 	return 409;
+}
+
+function appendHistoryFacts(previous: TableState, next: TableState, facts: Fact[]): TableState {
+	if (next.engine === null || facts.length === 0) {
+		return next;
+	}
+	const sameAttempt = previous.engine?.attemptId === next.engine.attemptId;
+	return {
+		...next,
+		historyFacts: [...(sameAttempt ? (previous.historyFacts ?? []) : []), ...facts],
+		historyStartedAt: sameAttempt ? previous.historyStartedAt : Date.now(),
+	};
 }

@@ -59,3 +59,43 @@ export const playerHistory = sqliteTable(
 		uniqueIndex("player_history_user_attempt_unique").on(table.userId, table.attemptId),
 	],
 );
+
+export const gameHistory = sqliteTable(
+	"game_history",
+	{
+		attemptId: text("attempt_id").primaryKey(),
+		roomCode: text("room_code").notNull(),
+		missionId: text("mission_id").notNull(),
+		result: text("result", { enum: ["won", "failed"] }).notNull(),
+		failReason: text("fail_reason"),
+		difficulty: integer("difficulty").notNull(),
+		playerCount: integer("player_count").notNull(),
+		participants: text("participants").notNull(),
+		setup: text("setup").notNull(),
+		finalState: text("final_state").notNull(),
+		startedAt: integer("started_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+		completedAt: integer("completed_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+	},
+	(table) => [index("game_history_roomCode_idx").on(table.roomCode)],
+);
+
+export const gameHistoryEvents = sqliteTable(
+	"game_history_events",
+	{
+		id: text("id").primaryKey(),
+		attemptId: text("attempt_id")
+			.notNull()
+			.references(() => gameHistory.attemptId, { onDelete: "cascade" }),
+		seq: integer("seq").notNull(),
+		type: text("type").notNull(),
+		payload: text("payload").notNull(),
+	},
+	(table) => [
+		index("game_history_events_attempt_idx").on(table.attemptId),
+		uniqueIndex("game_history_events_attempt_seq_unique").on(table.attemptId, table.seq),
+	],
+);
