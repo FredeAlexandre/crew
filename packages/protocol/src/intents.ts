@@ -31,6 +31,11 @@ export const playerLeaveIntentSchema = z.object({
 	type: z.literal("player.leave"),
 });
 
+export const playerRenameIntentSchema = z.object({
+	type: z.literal("player.rename"),
+	displayName: z.string().trim().min(1).max(24),
+});
+
 export const hostStartIntentSchema = z.object({
 	type: z.literal("host.start"),
 });
@@ -40,6 +45,7 @@ export const hostConfigureIntentSchema = z.object({
 	difficulty: missionDifficultySchema,
 	captainSeat: seatIdSchema.nullable(),
 	distressDisabled: z.boolean().default(false),
+	completedTricksVisible: z.boolean().default(false),
 });
 
 export const hostRetryIntentSchema = z.object({
@@ -100,6 +106,7 @@ export const intentSchema = z.discriminatedUnion("type", [
 	echoIntentSchema,
 	playerLeaveIntentSchema,
 	playerReadyIntentSchema,
+	playerRenameIntentSchema,
 	hostStartIntentSchema,
 	hostConfigureIntentSchema,
 	hostRetryIntentSchema,
@@ -117,6 +124,7 @@ export const intentSchema = z.discriminatedUnion("type", [
 export type EchoIntent = z.infer<typeof echoIntentSchema>;
 export type PlayerReadyIntent = z.infer<typeof playerReadyIntentSchema>;
 export type PlayerLeaveIntent = z.infer<typeof playerLeaveIntentSchema>;
+export type PlayerRenameIntent = z.infer<typeof playerRenameIntentSchema>;
 export type HostStartIntent = z.infer<typeof hostStartIntentSchema>;
 export type HostConfigureIntent = z.infer<typeof hostConfigureIntentSchema>;
 export type HostRetryIntent = z.infer<typeof hostRetryIntentSchema>;
@@ -133,6 +141,7 @@ export type Intent = z.infer<typeof intentSchema>;
 export type LobbyIntent =
 	| PlayerLeaveIntent
 	| PlayerReadyIntent
+	| PlayerRenameIntent
 	| HostStartIntent
 	| HostConfigureIntent
 	| HostRetryIntent

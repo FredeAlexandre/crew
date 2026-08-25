@@ -37,12 +37,14 @@ export type LobbySetup = {
 	difficulty: number;
 	captainSeat: SeatId | null;
 	distressDisabled: boolean;
+	completedTricksVisible: boolean;
 };
 
 const DEFAULT_LOBBY_SETUP: LobbySetup = {
 	difficulty: DEFAULT_MISSION_DIFFICULTY,
 	captainSeat: null,
 	distressDisabled: false,
+	completedTricksVisible: false,
 };
 
 /**
@@ -53,6 +55,7 @@ export function project(
 	viewerSeat: SeatId,
 	occupancy?: Occupancy,
 	hostSeatId?: SeatId | null,
+	completedTricksVisible = false,
 ): TableView {
 	const playerCount = state.playerCount;
 	const intents = legalIntents(state, viewerSeat);
@@ -123,6 +126,18 @@ export function project(
 			},
 			handCount: state.hands[seatId]?.length ?? 0,
 			wonTrickCount: state.tricksWon[seatId]?.length ?? 0,
+			completedTricks: completedTricksVisible
+				? (state.completedTricks[seatId] ?? []).map((trick) => ({
+						trickId: trick.trickId,
+						ledSuit: trick.ledSuit,
+						cards: trick.cards.map((play, index) => ({
+							region: regionForSeat(play.seatId, viewerSeat, playerCount),
+							seatId: play.seatId,
+							cardId: play.cardId,
+							order: index + 1,
+						})),
+					}))
+				: [],
 			isTurn: state.currentSeat === seatId,
 			isLastTrickWinner: lastTrickWinner === seatId,
 			tasks: state.tasks
@@ -153,7 +168,7 @@ export function project(
 	const trickId = state.trickId >= 1 ? state.trickId : null;
 
 	const lastTrick =
-		state.lastTrick === null
+		state.lastTrick === null || !completedTricksVisible
 			? null
 			: {
 					trickId: state.lastTrick.trickId,
@@ -167,6 +182,21 @@ export function project(
 						order: index + 1,
 					})),
 				};
+	const history =
+		state.phase === "result"
+			? state.trickHistory.map((trick) => ({
+					trickId: trick.trickId,
+					winnerRegion: regionForSeat(trick.winnerSeat, viewerSeat, playerCount),
+					winnerSeatId: trick.winnerSeat,
+					ledSuit: trick.ledSuit,
+					cards: trick.cards.map((play, index) => ({
+						region: regionForSeat(play.seatId, viewerSeat, playerCount),
+						seatId: play.seatId,
+						cardId: play.cardId,
+						order: index + 1,
+					})),
+				}))
+			: [];
 
 	const turnRegion: SeatRegion | null =
 		state.currentSeat === null ? null : regionForSeat(state.currentSeat, viewerSeat, playerCount);
@@ -192,6 +222,7 @@ export function project(
 				sonarDisabled: state.mission?.flags?.sonarDisabled === true,
 				discussionAllowed: state.mission?.flags?.discussionAllowed === true,
 				distressDisabled: state.mission?.flags?.distressDisabled === true,
+				completedTricksVisible,
 			},
 		},
 		seats,
@@ -206,6 +237,7 @@ export function project(
 			.filter((task) => task.ownerSeat === null)
 			.map((task) => toTaskView(task, viewerSeat, playerCount, takeable)),
 		lastTrick,
+		history,
 		undealt: { present: playerCount === 3 },
 		sonarCandidates,
 		affordances: {
@@ -216,7 +248,7 @@ export function project(
 			canSkipDistress,
 			canActivateDistress,
 			canPassDistressCard,
-			canPeekLastTrick: lastTrick !== null,
+			canPeekLastTrick: completedTricksVisible && lastTrick !== null,
 			canStart: false,
 			canFillBots: false,
 			canConfigure: false,
@@ -249,6 +281,7 @@ export function projectLobby(
 			sonar: { state: "available", communication: null },
 			handCount: 0,
 			wonTrickCount: 0,
+			completedTricks: [],
 			isTurn: false,
 			isLastTrickWinner: false,
 			tasks: [],
@@ -272,6 +305,7 @@ export function projectLobby(
 				sonarDisabled: false,
 				discussionAllowed: false,
 				distressDisabled: setup.distressDisabled,
+				completedTricksVisible: setup.completedTricksVisible,
 			},
 		},
 		seats,
@@ -279,6 +313,7 @@ export function projectLobby(
 		trick: { trickId: null, ledSuit: null, leadRegion: null, cards: [] },
 		centerTasks: [],
 		lastTrick: null,
+		history: [],
 		undealt: { present: playerCount === 3 },
 		sonarCandidates: [],
 		affordances: {

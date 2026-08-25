@@ -62,6 +62,27 @@ export const taskViewSchema = z.object({
 });
 export type TaskView = z.infer<typeof taskViewSchema>;
 
+export const handCardSchema = z.object({
+	cardId: cardIdSchema,
+	legal: z.boolean(),
+	illegalReason: illegalReasonSchema.nullable(),
+	communicated: z.boolean(),
+});
+export type HandCard = z.infer<typeof handCardSchema>;
+
+export const trickCardSchema = z.object({
+	region: seatRegionSchema,
+	seatId: seatIdSchema,
+	cardId: cardIdSchema,
+	order: z.number().int().positive(),
+});
+export type TrickCard = z.infer<typeof trickCardSchema>;
+
+export const completedTrickViewSchema = z.object({
+	trickId: trickIdSchema,
+	ledSuit: suitSchema,
+	cards: z.array(trickCardSchema),
+});
 export const seatViewSchema = z.object({
 	region: seatRegionSchema,
 	seatId: seatIdSchema,
@@ -78,27 +99,12 @@ export const seatViewSchema = z.object({
 	}),
 	handCount: z.number().int().nonnegative(),
 	wonTrickCount: z.number().int().nonnegative(),
+	completedTricks: z.array(completedTrickViewSchema).default([]),
 	isTurn: z.boolean(),
 	isLastTrickWinner: z.boolean(),
 	tasks: z.array(taskViewSchema),
 });
 export type SeatView = z.infer<typeof seatViewSchema>;
-
-export const handCardSchema = z.object({
-	cardId: cardIdSchema,
-	legal: z.boolean(),
-	illegalReason: illegalReasonSchema.nullable(),
-	communicated: z.boolean(),
-});
-export type HandCard = z.infer<typeof handCardSchema>;
-
-export const trickCardSchema = z.object({
-	region: seatRegionSchema,
-	seatId: seatIdSchema,
-	cardId: cardIdSchema,
-	order: z.number().int().positive(),
-});
-export type TrickCard = z.infer<typeof trickCardSchema>;
 
 export const trickViewSchema = z.object({
 	trickId: trickIdSchema.nullable(),
@@ -147,6 +153,7 @@ export const chromeSchema = z.object({
 		sonarDisabled: z.boolean(),
 		discussionAllowed: z.boolean(),
 		distressDisabled: z.boolean(),
+		completedTricksVisible: z.boolean().default(false),
 	}),
 });
 export type Chrome = z.infer<typeof chromeSchema>;
@@ -176,6 +183,8 @@ export const tableViewSchema = z.object({
 	trick: trickViewSchema,
 	centerTasks: z.array(taskViewSchema),
 	lastTrick: lastTrickViewSchema.nullable(),
+	/** Every completed trick, revealed only once the mission has ended. */
+	history: z.array(lastTrickViewSchema).default([]),
 	undealt: z.object({ present: z.boolean() }),
 	sonarCandidates: z.array(sonarCandidateSchema),
 	affordances: affordancesSchema,

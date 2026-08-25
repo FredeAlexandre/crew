@@ -16,12 +16,14 @@ const RECONNECT_MS = 400;
 export type ClientIntent =
 	| { type: "player.ready"; ready: boolean }
 	| { type: "player.leave" }
+	| { type: "player.rename"; displayName: string }
 	| { type: "host.start" }
 	| {
 			type: "host.configure";
 			difficulty: number;
 			captainSeat: number | null;
 			distressDisabled?: boolean;
+			completedTricksVisible?: boolean;
 	  }
 	| { type: "host.retry" }
 	| { type: "host.fillBots" }
@@ -137,6 +139,7 @@ function stampIntent(intent: ClientIntent, view: TableView | null): Intent | nul
 	if (
 		intent.type === "player.ready" ||
 		intent.type === "player.leave" ||
+		intent.type === "player.rename" ||
 		intent.type === "host.start" ||
 		intent.type === "host.configure" ||
 		intent.type === "host.retry" ||

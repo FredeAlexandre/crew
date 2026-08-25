@@ -2,6 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import { createDb, rooms } from "@crew/db";
 import { type Fact, intentSchema, type RoomErrorCode } from "@crew/protocol";
 import { eq } from "drizzle-orm";
+import { botPlayDelayMs } from "./bot-delay.ts";
 import { readPlayerHeaders } from "./player-headers.ts";
 import {
 	connect,
@@ -9,6 +10,8 @@ import {
 	disconnect,
 	factsForSeat,
 	handleIntent,
+	isBotPlayerId,
+	playBotTurn,
 	type RoomSummary,
 	reconnectBlockedUntil,
 	removeLeaving,
@@ -91,22 +94,25 @@ export default class Room extends DurableObject<RoomBindings> {
 			seq: result.state.seq,
 		});
 		this.fanout(result.state, result.facts, result.reconnect ? player.playerId : null);
+		await this.scheduleBotTurn(result.state);
 		return new Response(null, { status: 101, webSocket: client });
 	}
 
 	async alarm() {
 		const loaded = await this.load();
 		if (loaded === null) return;
-		const next = removeLeaving(loaded);
-		if (next === loaded) {
-			const pending = Object.values(loaded.leavingUntil ?? {});
-			if (pending.length > 0) await this.ctx.storage.setAlarm(Math.min(...pending));
-			return;
+		let next = removeLeaving(loaded);
+		if (next !== loaded) {
+			await this.save(next);
+			this.fanout(next, [], null);
 		}
-		await this.save(next);
-		const pending = Object.values(next.leavingUntil ?? {});
-		if (pending.length > 0) await this.ctx.storage.setAlarm(Math.min(...pending));
-		this.fanout(next, [], null);
+		const result = playBotTurn(next);
+		if (result.ok) {
+			next = result.state;
+			await this.save(next);
+			this.fanout(next, result.facts, null);
+		}
+		await this.scheduleBotTurn(next, true);
 	}
 
 	async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer) {
@@ -164,6 +170,7 @@ export default class Room extends DurableObject<RoomBindings> {
 			});
 		}
 		this.fanout(result.state, result.facts, null);
+		await this.scheduleBotTurn(result.state);
 	}
 
 	async webSocketClose(ws: WebSocket, code: number, reason: string) {
@@ -222,6 +229,26 @@ export default class Room extends DurableObject<RoomBindings> {
 
 	private async save(state: TableState) {
 		await this.ctx.storage.put(TABLE_KEY, state);
+	}
+
+	private async scheduleBotTurn(state: TableState, replace = false) {
+		const seat = state.engine?.currentSeat;
+		const occupant = seat === null || seat === undefined ? null : state.seats[seat];
+		if (occupant === null || occupant === undefined || !isBotPlayerId(occupant.playerId)) {
+			const pending = Object.values(state.leavingUntil ?? {});
+			if (pending.length > 0) {
+				await this.ctx.storage.setAlarm(Math.min(...pending));
+			} else {
+				await this.ctx.storage.deleteAlarm();
+			}
+			return;
+		}
+		if (!replace && (await this.ctx.storage.getAlarm()) !== null) return;
+		const botAlarm = Date.now() + botPlayDelayMs();
+		const leavingAlarm = Math.min(...Object.values(state.leavingUntil ?? {}));
+		await this.ctx.storage.setAlarm(
+			Number.isFinite(leavingAlarm) ? Math.min(botAlarm, leavingAlarm) : botAlarm,
+		);
 	}
 
 	private playerIdOf(socket: WebSocket): string | null {
