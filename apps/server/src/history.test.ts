@@ -15,7 +15,12 @@ function resultState(): TableState {
 			{ playerId: "guest-1", displayName: "Guest", connected: true, ready: true },
 			{ playerId: "bot:2", displayName: "Bot", connected: true, ready: true },
 		],
-		setup: { difficulty: 1, captainSeat: null, distressDisabled: false },
+		setup: {
+			difficulty: 1,
+			captainSeat: null,
+			distressDisabled: false,
+			completedTricksVisible: false,
+		},
 		engine: {
 			phase: "result",
 			result: "won",
