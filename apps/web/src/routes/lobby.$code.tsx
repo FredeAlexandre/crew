@@ -2,7 +2,9 @@ import { isRoomCode, normalizeRoomCode, type PlayerCount, type RoomTicket } from
 import { fixtures, type TableView } from "@crew/view-model/fixtures";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useDisplayName } from "../hooks/use-display-name.ts";
 import { useTable } from "../hooks/use-table.ts";
+import { normalizeDisplayName } from "../lib/display-name.ts";
 import { useI18n } from "../lib/i18n.tsx";
 import { lobbyShareUrl } from "../lib/lobby-code.ts";
 import { joinRoom, roomErrorCopy } from "../lib/rooms.ts";
@@ -46,6 +48,7 @@ function LobbyRoute() {
 	const [error, setError] = useState(isRoomCode(code) ? null : t("invalidLobby"));
 	const [copied, setCopied] = useState(false);
 	const [ticket, setTicket] = useState<RoomTicket | null>(null);
+	const displayName = useDisplayName();
 	const table = useTable(ticket !== null ? ticket.code : null);
 	const view = table.view ?? placeholderLobby(ticket?.playerCount ?? 3);
 
@@ -99,6 +102,20 @@ function LobbyRoute() {
 						copied,
 						statusNote,
 						alert: error ?? table.error,
+						name: displayName.name,
+						onNameChange:
+							table.view === null
+								? undefined
+								: (value) => {
+										displayName.onChange(value);
+										const normalized = normalizeDisplayName(value);
+										if (normalized.length > 0) {
+											table.sendIntent({
+												type: "player.rename",
+												displayName: normalized,
+											});
+										}
+									},
 						onCopyCode: isRoomCode(code) ? () => void copyCode() : undefined,
 						onReady: (ready) => table.sendIntent({ type: "player.ready", ready }),
 						onFillBots: view.affordances.canFillBots

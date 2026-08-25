@@ -91,6 +91,11 @@ describe("wire schemas", () => {
 
 	it("parses lobby intents", () => {
 		expect(intentSchema.parse({ type: "player.ready", ready: true }).type).toBe("player.ready");
+		expect(intentSchema.parse({ type: "player.rename", displayName: "  Alex  " })).toEqual({
+			type: "player.rename",
+			displayName: "Alex",
+		});
+		expect(() => intentSchema.parse({ type: "player.rename", displayName: "   " })).toThrow();
 		expect(intentSchema.parse({ type: "host.start" }).type).toBe("host.start");
 		expect(intentSchema.parse({ type: "host.retry" }).type).toBe("host.retry");
 		expect(intentSchema.parse({ type: "host.fillBots" }).type).toBe("host.fillBots");

@@ -49,10 +49,12 @@ export function SeatAvatar({
 	seat,
 	self = false,
 	compact = false,
+	showName = true,
 }: {
 	seat: SeatView;
 	self?: boolean;
 	compact?: boolean;
+	showName?: boolean;
 }) {
 	const empty = seatIsEmpty(seat);
 	return (
@@ -76,7 +78,7 @@ export function SeatAvatar({
 					seatInitial(seat)
 				)}
 			</span>
-			<span className={styles.pipName}>{empty ? "Empty" : seatName(seat)}</span>
+			{showName ? <span className={styles.pipName}>{empty ? "Empty" : seatName(seat)}</span> : null}
 		</div>
 	);
 }

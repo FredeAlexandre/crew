@@ -50,6 +50,39 @@ function startGame(state = readyAll(sitAll()), seed = 1) {
 }
 
 describe("table lobby", () => {
+	it("lets a seated player rename themself before the game starts", () => {
+		const seated = sitAll();
+		const renamed = mustOk(
+			handleIntent(seated, "p1", { type: "player.rename", displayName: "Bex" }),
+		);
+		expect(renamed.state.seats[1]?.displayName).toBe("Bex");
+		expect(viewForSeat(renamed.state, 0).seats.find((seat) => seat.seatId === 1)?.displayName).toBe(
+			"Bex",
+		);
+		expect(renamed.facts).toEqual([
+			{
+				type: "player.renamed",
+				attemptId: null,
+				seq: seated.seq + 1,
+				seatId: 1,
+				displayName: "Bex",
+			},
+		]);
+
+		const unchanged = mustOk(
+			handleIntent(renamed.state, "p1", { type: "player.rename", displayName: "Bex" }),
+		);
+		expect(unchanged.state.seq).toBe(renamed.state.seq);
+		expect(unchanged.facts).toEqual([]);
+
+		const started = startGame(readyAll(renamed.state)).state;
+		const late = handleIntent(started, "p1", { type: "player.rename", displayName: "Bea" });
+		expect(late.ok).toBe(false);
+		if (!late.ok) {
+			expect(late.code).toBe("alreadyStarted");
+		}
+	});
+
 	it("lets the host remove a guest and doubles the reconnect cooldown for repeat removals", () => {
 		const seated = sitAll();
 		const guest = handleIntent(seated, "p1", { type: "host.kick", seatId: 2 }, { now: 1_000 });
