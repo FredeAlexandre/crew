@@ -126,6 +126,8 @@ export const lastTrickViewSchema = z.object({
 export type LastTrickView = z.infer<typeof lastTrickViewSchema>;
 
 export const affordancesSchema = z.object({
+	canStartAbandon: z.boolean().default(false),
+	canVoteAbandon: z.boolean().default(false),
 	canPlay: z.boolean(),
 	canSonar: z.boolean(),
 	canTakeTask: z.boolean(),
@@ -157,8 +159,19 @@ export const chromeSchema = z.object({
 		distressDisabled: z.boolean(),
 		completedTricksVisible: z.boolean().default(false),
 	}),
+	abandon: z
+		.object({
+			deadline: z.number().int().positive(),
+			yes: z.number().int().nonnegative(),
+			no: z.number().int().nonnegative(),
+			myVote: z.enum(["yes", "no"]).nullable(),
+		})
+		.nullable()
+		.default(null),
 });
 export type Chrome = z.infer<typeof chromeSchema>;
+
+export type AbandonView = NonNullable<Chrome["abandon"]>;
 
 export const resultViewSchema = z.object({
 	outcome: z.enum(["won", "failed"]),

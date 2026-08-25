@@ -403,7 +403,7 @@ export function PlayScene({
 					);
 				})}
 				<div className={`${sceneStyles.lobbyWell} ${styles.playWell}`}>
-					<ChromeLine view={view} />
+					<ChromeLine view={view} sendIntent={sendIntent} />
 					<Well
 						view={view}
 						turn={turn}

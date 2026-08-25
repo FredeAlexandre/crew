@@ -16,6 +16,7 @@ import {
 	type RoomSummary,
 	reconnectBlockedUntil,
 	removeLeaving,
+	resolveExpiredAbandon,
 	seatOf,
 	snapshotMessage,
 	summary,
@@ -106,6 +107,16 @@ export default class Room extends DurableObject<RoomBindings> {
 		if (next !== loaded) {
 			await this.save(next);
 			this.fanout(next, [], null);
+		}
+		const expired = resolveExpiredAbandon(next);
+		if (expired?.ok) {
+			const previous = next;
+			next = appendHistoryFacts(previous, expired.state, expired.facts);
+			await this.save(next);
+			if (previous.engine?.phase !== "result" && next.engine?.phase === "result") {
+				await recordPlayerHistory(createDb(this.env.DB), next);
+			}
+			this.fanout(next, expired.facts, null);
 		}
 		const result = playBotTurn(next);
 		if (result.ok) {
@@ -245,8 +256,10 @@ export default class Room extends DurableObject<RoomBindings> {
 		const occupant = seat === null || seat === undefined ? null : state.seats[seat];
 		if (occupant === null || occupant === undefined || !isBotPlayerId(occupant.playerId)) {
 			const pending = Object.values(state.leavingUntil ?? {});
-			if (pending.length > 0) {
-				await this.ctx.storage.setAlarm(Math.min(...pending));
+			if (pending.length > 0 || state.abandonVote != null) {
+				await this.ctx.storage.setAlarm(
+					Math.min(...pending, state.abandonVote?.deadline ?? Number.POSITIVE_INFINITY),
+				);
 			} else {
 				await this.ctx.storage.deleteAlarm();
 			}
@@ -255,8 +268,9 @@ export default class Room extends DurableObject<RoomBindings> {
 		if (!replace && (await this.ctx.storage.getAlarm()) !== null) return;
 		const botAlarm = Date.now() + botPlayDelayMs();
 		const leavingAlarm = Math.min(...Object.values(state.leavingUntil ?? {}));
+		const abandonAlarm = state.abandonVote?.deadline ?? Number.POSITIVE_INFINITY;
 		await this.ctx.storage.setAlarm(
-			Number.isFinite(leavingAlarm) ? Math.min(botAlarm, leavingAlarm) : botAlarm,
+			Math.min(botAlarm, abandonAlarm, ...(Number.isFinite(leavingAlarm) ? [leavingAlarm] : [])),
 		);
 	}
 

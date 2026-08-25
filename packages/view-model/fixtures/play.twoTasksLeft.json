@@ -245,6 +245,7 @@
 		"canPassDistressCard": false,
 		"canPeekLastTrick": false,
 		"canStart": false,
+		"canStartAbandon": true,
 		"canFillBots": false,
 		"canConfigure": false,
 		"canRetry": false

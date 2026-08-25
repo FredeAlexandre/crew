@@ -398,6 +398,19 @@
 	font-size: 0.88rem;
 }
 
+.abandon {
+	min-height: 32px;
+	padding-inline: 0.45rem;
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+.abandonVote {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+}
+
 .mute[data-on="true"] {
 	color: var(--accent);
 }

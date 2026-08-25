@@ -28,6 +28,8 @@ export type ClientIntent =
 	| { type: "host.retry" }
 	| { type: "host.fillBots" }
 	| { type: "host.kick"; seatId: number }
+	| { type: "abandon.start" }
+	| { type: "abandon.vote"; vote: "yes" | "no" }
 	| { type: "task.take"; taskInstanceId: TaskInstanceId }
 	| { type: "task.pass" }
 	| { type: "distress.skip" }

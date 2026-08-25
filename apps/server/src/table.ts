@@ -1,4 +1,5 @@
 import {
+	abandonMission,
 	apply,
 	createAttempt,
 	type EngineState,
@@ -16,7 +17,13 @@ import {
 	type SnapshotEnvelope,
 } from "@crew/protocol";
 import type { TableView } from "@crew/view-model";
-import { type Occupancy, project, projectFacts, projectLobby } from "@crew/view-model/project";
+import {
+	type AbandonVote,
+	type Occupancy,
+	project,
+	projectFacts,
+	projectLobby,
+} from "@crew/view-model/project";
 
 const DEFAULT_SETUP: TableSetup = {
 	difficulty: DEFAULT_MISSION_DIFFICULTY,
@@ -26,6 +33,7 @@ const DEFAULT_SETUP: TableSetup = {
 };
 const BOT_PLAYER_PREFIX = "bot:";
 const KICK_COOLDOWN_MS = 10_000;
+const ABANDON_VOTE_MS = 13_000;
 
 export type Occupant = {
 	playerId: string;
@@ -61,6 +69,7 @@ export type TableState = {
 	/** Kept after a seat is vacated so repeat kicks lengthen the reconnect delay. */
 	kicks: Record<string, { count: number; blockedUntil: number }>;
 	leavingUntil?: Record<string, number>;
+	abandonVote?: AbandonVote | null;
 };
 
 type TableOk = {
@@ -109,6 +118,7 @@ export function createTable(input: {
 		engine: null,
 		historyFacts: [],
 		kicks: {},
+		abandonVote: null,
 	};
 }
 
@@ -172,6 +182,7 @@ export function viewForSeat(state: TableState, viewerSeat: SeatId): TableView {
 			occupancyOf(state),
 			seatOf(state, state.hostPlayerId),
 			setupOf(state).completedTricksVisible,
+			state.abandonVote,
 		),
 		seq: state.seq,
 	};
@@ -336,7 +347,89 @@ export function handleIntent(
 	if (intent.type === "host.kick") {
 		return kick(state, playerId, intent.seatId, options?.now);
 	}
+	if (intent.type === "abandon.start") {
+		return startAbandon(state, seatId);
+	}
+	if (intent.type === "abandon.vote") {
+		return voteAbandon(state, seatId, intent.vote);
+	}
 	return play(state, seatId, intent);
+}
+
+function startAbandon(state: TableState, seatId: SeatId, now = Date.now()): TableResult {
+	if (
+		state.engine === null ||
+		state.status !== "playing" ||
+		(state.engine.phase !== "play" && state.engine.phase !== "trick")
+	) {
+		return fail(state, "wrongPhase", "the mission is not in progress");
+	}
+	if (state.abandonVote != null)
+		return fail(state, "abandonVoteUnavailable", "an abandon vote is already active");
+	const deadline = now + ABANDON_VOTE_MS;
+	const next: TableState = {
+		...state,
+		abandonVote: { deadline, votes: { [seatId]: "yes" } },
+	};
+	const started = pushFact(next, {
+		type: "abandon.started",
+		attemptId: state.engine.attemptId,
+		deadline,
+		startedBySeat: seatId,
+	});
+	const voted = pushFact(started.state, {
+		type: "abandon.voted",
+		attemptId: state.engine.attemptId,
+		seatId,
+		vote: "yes" as const,
+	});
+	return succeed(voted.state, [started.fact, voted.fact], false);
+}
+
+function voteAbandon(state: TableState, seatId: SeatId, vote: "yes" | "no"): TableResult {
+	const active = state.abandonVote;
+	if (state.engine === null || active == null)
+		return fail(state, "abandonVoteUnavailable", "no abandon vote is active");
+	if (active.votes[seatId] !== undefined)
+		return fail(state, "abandonVoteUnavailable", "you already voted");
+	const nextVote = { ...active.votes, [seatId]: vote };
+	const next = { ...state, abandonVote: { ...active, votes: nextVote } };
+	const pushed = pushFact(next, {
+		type: "abandon.voted",
+		attemptId: state.engine.attemptId,
+		seatId,
+		vote,
+	});
+	if (voteAccepted(next)) return resolveAbandon(pushed.state, true, pushed.fact);
+	if (Object.keys(nextVote).length === state.playerCount)
+		return resolveAbandon(pushed.state, false, pushed.fact);
+	return succeed(pushed.state, [pushed.fact], false);
+}
+
+function voteAccepted(state: TableState): boolean {
+	const yes = Object.values(state.abandonVote?.votes ?? {}).filter((vote) => vote === "yes").length;
+	return yes > state.playerCount / 2;
+}
+
+function resolveAbandon(state: TableState, accepted: boolean, ...priorFacts: Fact[]): TableResult {
+	if (state.engine === null) return succeed(state, priorFacts, false);
+	const resolved = pushFact(
+		{ ...state, abandonVote: null },
+		{
+			type: "abandon.resolved",
+			attemptId: state.engine.attemptId,
+			accepted,
+		},
+	);
+	if (!accepted) return succeed(resolved.state, [...priorFacts, resolved.fact], false);
+	const ended = abandonMission(resolved.state.engine as NonNullable<TableState["engine"]>);
+	const stamped = stampFacts({ ...resolved.state, engine: ended.state }, ended.facts);
+	return succeed(stamped.state, [...priorFacts, resolved.fact, ...stamped.facts], false);
+}
+
+export function resolveExpiredAbandon(state: TableState, now = Date.now()): TableResult | null {
+	if (state.abandonVote == null || state.abandonVote.deadline > now) return null;
+	return resolveAbandon(state, voteAccepted(state));
 }
 
 const LEAVE_DELAY_MS = 2_000;

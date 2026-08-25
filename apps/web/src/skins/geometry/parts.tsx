@@ -1,9 +1,10 @@
 import type { CardId, SonarPosition } from "@crew/protocol";
 import type { HandCard, SeatView, TableView, TaskView } from "@crew/view-model/fixtures";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "react-aria-components";
 import { useSfxMuted } from "../../hooks/use-sfx-muted.ts";
+import type { ClientIntent } from "../../hooks/use-table.ts";
 import { identiconUrl } from "../../lib/avatar.ts";
 import { CardBack, CardFace } from "./Card.tsx";
 import { type LobbySlot, seatIsEmpty, seatName, sonarPositionCopy, turnCopy } from "./copy.ts";
@@ -518,9 +519,24 @@ export function HandStrip({
 	);
 }
 
-export function ChromeLine({ view }: { view: TableView }) {
+export function ChromeLine({
+	view,
+	sendIntent,
+}: {
+	view: TableView;
+	sendIntent?: (intent: ClientIntent) => void;
+}) {
 	const turn = turnCopy(view);
 	const [muted, setMuted] = useSfxMuted();
+	const [seconds, setSeconds] = useState(0);
+	useEffect(() => {
+		if (view.chrome.abandon === null) return;
+		const update = () =>
+			setSeconds(Math.max(0, Math.ceil((view.chrome.abandon?.deadline ?? 0 - Date.now()) / 1000)));
+		update();
+		const timer = window.setInterval(update, 250);
+		return () => window.clearInterval(timer);
+	}, [view.chrome.abandon]);
 	const bits = [
 		view.chrome.missionId ? `Mission ${view.chrome.missionId.replace(/^m/i, "")}` : null,
 		view.chrome.trickId ? `Trick ${view.chrome.trickId}` : null,
@@ -532,6 +548,32 @@ export function ChromeLine({ view }: { view: TableView }) {
 				<span key={bit}>{bit}</span>
 			))}
 			{turn ? <span className={styles.turn}>{turn}</span> : null}
+			{view.affordances.canStartAbandon ? (
+				<Button className={styles.abandon} onPress={() => sendIntent?.({ type: "abandon.start" })}>
+					Abandon
+				</Button>
+			) : null}
+			{view.chrome.abandon ? (
+				<span className={styles.abandonVote}>
+					Abandon {seconds}s · Oui {view.chrome.abandon.yes} / Non {view.chrome.abandon.no}
+					{view.affordances.canVoteAbandon ? (
+						<>
+							<Button
+								className={styles.abandon}
+								onPress={() => sendIntent?.({ type: "abandon.vote", vote: "yes" })}
+							>
+								Oui
+							</Button>
+							<Button
+								className={styles.abandon}
+								onPress={() => sendIntent?.({ type: "abandon.vote", vote: "no" })}
+							>
+								Non
+							</Button>
+						</>
+					) : null}
+				</span>
+			) : null}
 			<Button
 				className={styles.mute}
 				data-on={muted ? "false" : "true"}

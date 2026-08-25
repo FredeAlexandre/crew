@@ -230,6 +230,26 @@ const missionFailedFactSchema = z.object({
 	reason: z.string().min(1),
 });
 
+const abandonStartedFactSchema = z.object({
+	type: z.literal("abandon.started"),
+	...wireMeta,
+	deadline: z.number().int().positive(),
+	startedBySeat: seatIdSchema,
+});
+
+const abandonVotedFactSchema = z.object({
+	type: z.literal("abandon.voted"),
+	...wireMeta,
+	seatId: seatIdSchema,
+	vote: z.enum(["yes", "no"]),
+});
+
+const abandonResolvedFactSchema = z.object({
+	type: z.literal("abandon.resolved"),
+	...wireMeta,
+	accepted: z.boolean(),
+});
+
 export const factSchema = z.discriminatedUnion("type", [
 	echoFactSchema,
 	playerSatFactSchema,
@@ -260,6 +280,9 @@ export const factSchema = z.discriminatedUnion("type", [
 	sonarClearedFactSchema,
 	missionWonFactSchema,
 	missionFailedFactSchema,
+	abandonStartedFactSchema,
+	abandonVotedFactSchema,
+	abandonResolvedFactSchema,
 ]);
 
 export type EchoFact = z.infer<typeof echoFactSchema>;

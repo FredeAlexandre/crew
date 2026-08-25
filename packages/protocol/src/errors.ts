@@ -20,6 +20,7 @@ export const illegalReasonSchema = z.enum([
 	"unknownIntent",
 	"missionOver",
 	"illegalSeat",
+	"abandonVoteUnavailable",
 ]);
 
 export type IllegalReason = z.infer<typeof illegalReasonSchema>;

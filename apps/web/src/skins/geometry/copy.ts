@@ -28,6 +28,7 @@ const ILLEGAL_COPY: Record<IllegalReason, string> = {
 	unknownIntent: "Cannot do that",
 	missionOver: "Mission is over",
 	illegalSeat: "Wrong seat",
+	abandonVoteUnavailable: "Abandon vote unavailable",
 };
 
 export function seatName(seat: SeatView): string {

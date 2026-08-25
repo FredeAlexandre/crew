@@ -4,7 +4,7 @@
  */
 
 export type { AttemptId, CardId, Fact, IllegalReason, Intent, SeatId } from "@crew/protocol";
-
+export { abandonMission } from "./abandon.ts";
 export { apply } from "./apply.ts";
 export type { CreateAttemptConfig } from "./attempt.ts";
 export { createAttempt } from "./attempt.ts";

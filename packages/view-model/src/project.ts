@@ -13,6 +13,7 @@ import {
 	type TaskInstanceId,
 } from "@crew/protocol";
 import {
+	type AbandonView,
 	regionForSeat,
 	relativeSeat,
 	type SeatRegion,
@@ -32,6 +33,11 @@ type OccupancySeat = {
 } | null;
 
 export type Occupancy = readonly OccupancySeat[];
+
+export type AbandonVote = {
+	deadline: number;
+	votes: Partial<Record<SeatId, "yes" | "no">>;
+};
 
 export type LobbySetup = {
 	difficulty: number;
@@ -56,6 +62,7 @@ export function project(
 	occupancy?: Occupancy,
 	hostSeatId?: SeatId | null,
 	completedTricksVisible = false,
+	abandonVote?: AbandonVote | null,
 ): TableView {
 	const playerCount = state.playerCount;
 	const intents = legalIntents(state, viewerSeat);
@@ -224,6 +231,7 @@ export function project(
 				distressDisabled: state.mission?.flags?.distressDisabled === true,
 				completedTricksVisible,
 			},
+			abandon: toAbandonView(abandonVote, viewerSeat),
 		},
 		seats,
 		hand,
@@ -241,6 +249,8 @@ export function project(
 		undealt: { present: playerCount === 3 },
 		sonarCandidates,
 		affordances: {
+			canStartAbandon: (state.phase === "play" || state.phase === "trick") && abandonVote == null,
+			canVoteAbandon: abandonVote != null && abandonVote.votes[viewerSeat] === undefined,
 			canPlay,
 			canSonar,
 			canTakeTask,
@@ -307,6 +317,7 @@ export function projectLobby(
 				distressDisabled: setup.distressDisabled,
 				completedTricksVisible: setup.completedTricksVisible,
 			},
+			abandon: null,
 		},
 		seats,
 		hand: [],
@@ -317,6 +328,8 @@ export function projectLobby(
 		undealt: { present: playerCount === 3 },
 		sonarCandidates: [],
 		affordances: {
+			canStartAbandon: false,
+			canVoteAbandon: false,
 			canPlay: false,
 			canSonar: false,
 			canTakeTask: false,
@@ -425,6 +438,20 @@ function sceneAndOverlay(state: EngineState): Pick<TableView, "scene" | "overlay
 		case "result":
 			return { scene: "result", overlay: "none" };
 	}
+}
+
+function toAbandonView(
+	vote: AbandonVote | null | undefined,
+	viewerSeat: SeatId,
+): AbandonView | null {
+	if (vote == null) return null;
+	let yes = 0;
+	let no = 0;
+	for (const voteValue of Object.values(vote.votes)) {
+		if (voteValue === "yes") yes += 1;
+		if (voteValue === "no") no += 1;
+	}
+	return { deadline: vote.deadline, yes, no, myVote: vote.votes[viewerSeat] ?? null };
 }
 
 function toTaskView(
