@@ -4,6 +4,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useRef } from "react";
 import { Button } from "react-aria-components";
 import { useSfxMuted } from "../../hooks/use-sfx-muted.ts";
+import { identiconUrl } from "../../lib/avatar.ts";
 import { CardBack, CardFace } from "./Card.tsx";
 import { type LobbySlot, seatIsEmpty, seatName, sonarPositionCopy, turnCopy } from "./copy.ts";
 import { cardIndexFromRects } from "./hand-layout.ts";
@@ -34,17 +35,6 @@ function CrownIcon() {
 	);
 }
 
-function seatInitial(seat: SeatView): string {
-	if (seatIsEmpty(seat)) {
-		return "";
-	}
-	const name = seatName(seat).trim();
-	if (name.length === 0) {
-		return "?";
-	}
-	return name.charAt(0).toUpperCase();
-}
-
 export function SeatAvatar({
 	seat,
 	self = false,
@@ -62,6 +52,8 @@ export function SeatAvatar({
 			className={compact ? styles.avatarWrapCompact : styles.avatarWrap}
 			data-turn={seat.isTurn ? "true" : "false"}
 			data-captain={seat.isCaptain ? "true" : "false"}
+			data-connected={seat.connected ? "true" : "false"}
+			data-leaving={seat.leaving ? "true" : "false"}
 		>
 			{seat.isCaptain ? <CrownIcon /> : <span className={styles.crownHole} aria-hidden="true" />}
 			{seat.isCaptain ? <span className={styles.srOnly}>Captain</span> : null}
@@ -72,12 +64,23 @@ export function SeatAvatar({
 				data-self={self ? "true" : "false"}
 				aria-hidden="true"
 			>
-				{seat.image ? (
-					<img className={styles.avatarPhoto} src={seat.image} alt="" />
-				) : (
-					seatInitial(seat)
+				{empty ? null : (
+					<img
+						className={styles.avatarPhoto}
+						src={seat.image ?? identiconUrl(seat.avatarSeed ?? seatName(seat))}
+						alt=""
+					/>
 				)}
 			</span>
+			{!empty && !seat.connected ? (
+				<span
+					className={styles.connectionDots}
+					role="img"
+					aria-label={seat.leaving ? "Leaving" : "Reconnecting"}
+				>
+					•••
+				</span>
+			) : null}
 			{showName ? <span className={styles.pipName}>{empty ? "Empty" : seatName(seat)}</span> : null}
 		</div>
 	);

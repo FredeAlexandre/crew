@@ -32,6 +32,7 @@ export type Occupant = {
 	displayName: string;
 	image?: string | null;
 	connected: boolean;
+	leaving?: boolean;
 	ready: boolean;
 };
 
@@ -59,6 +60,7 @@ export type TableState = {
 	historyStartedAt?: number;
 	/** Kept after a seat is vacated so repeat kicks lengthen the reconnect delay. */
 	kicks: Record<string, { count: number; blockedUntil: number }>;
+	leavingUntil?: Record<string, number>;
 };
 
 type TableOk = {
@@ -147,6 +149,7 @@ function occupancyOf(state: TableState): Occupancy {
 					displayName: seat.displayName,
 					...(seat.image ? { image: seat.image } : {}),
 					connected: seat.connected,
+					...(seat.leaving === true ? { leaving: true } : {}),
 					ready: seat.ready,
 				},
 	);
@@ -214,7 +217,10 @@ export function connect(
 			occupant.image = image;
 		}
 		occupant.connected = true;
-		const next = { ...state, seats };
+		delete occupant.leaving;
+		const leavingUntil = { ...(state.leavingUntil ?? {}) };
+		delete leavingUntil[playerId];
+		const next = { ...state, seats, leavingUntil };
 		if (!wasDisconnected) {
 			return succeed(next, [], true);
 		}
@@ -302,6 +308,9 @@ export function handleIntent(
 	if (intent.type === "player.ready") {
 		return setReady(state, seatId, intent.ready);
 	}
+	if (intent.type === "player.leave") {
+		return leave(state, playerId);
+	}
 	if (intent.type === "player.rename") {
 		return renamePlayer(state, seatId, intent.displayName);
 	}
@@ -328,6 +337,51 @@ export function handleIntent(
 		return kick(state, playerId, intent.seatId, options?.now);
 	}
 	return play(state, seatId, intent);
+}
+
+const LEAVE_DELAY_MS = 2_000;
+
+function leave(state: TableState, playerId: string, now = Date.now()): TableResult {
+	const seatId = seatOf(state, playerId);
+	if (seatId === null) return succeed(state, [], false);
+	const occupant = state.seats[seatId];
+	if (occupant === null || occupant === undefined || !occupant.connected) {
+		return succeed(state, [], false);
+	}
+	const seats = cloneSeats(state);
+	const nextOccupant = seats[seatId];
+	if (nextOccupant === null || nextOccupant === undefined) return succeed(state, [], false);
+	nextOccupant.connected = false;
+	nextOccupant.leaving = true;
+	return succeed(
+		{
+			...state,
+			seats,
+			seq: state.seq + 1,
+			leavingUntil: { ...(state.leavingUntil ?? {}), [playerId]: now + LEAVE_DELAY_MS },
+		},
+		[],
+		false,
+	);
+}
+
+export function removeLeaving(state: TableState, now = Date.now()): TableState {
+	const leavingUntil = state.leavingUntil ?? {};
+	const seats = cloneSeats(state);
+	const nextLeaving = { ...leavingUntil };
+	let changed = false;
+	for (const [playerId, until] of Object.entries(leavingUntil)) {
+		if (until > now) continue;
+		const seatId = seatOf(state, playerId);
+		if (seatId !== null && seats[seatId]?.leaving === true) {
+			seats[seatId] = null;
+			changed = true;
+		}
+		delete nextLeaving[playerId];
+	}
+	if (!changed && Object.keys(nextLeaving).length === Object.keys(leavingUntil).length)
+		return state;
+	return { ...state, seats, leavingUntil: nextLeaving, seq: state.seq + 1 };
 }
 
 function kick(state: TableState, playerId: string, seatId: SeatId, now = Date.now()): TableResult {

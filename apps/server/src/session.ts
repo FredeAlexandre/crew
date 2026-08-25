@@ -58,7 +58,7 @@ export async function requireAuthenticatedPlayer(
 	}
 	if (player.isAnonymous) {
 		return c.json(
-			errorPayload("accountRequired", "Create an account or sign in to upload a photo."),
+			errorPayload("accountRequired", "Create an account or sign in to view mission history."),
 			403,
 		);
 	}

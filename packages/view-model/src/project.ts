@@ -27,6 +27,7 @@ type OccupancySeat = {
 	displayName: string | null;
 	image?: string | null;
 	connected: boolean;
+	leaving?: boolean;
 	ready: boolean;
 } | null;
 
@@ -374,18 +375,23 @@ function lobbyCanConfigure(
 function occupancyFields(
 	occupancy: Occupancy | undefined,
 	seatId: SeatId,
-): Pick<TableView["seats"][number], "displayName" | "image" | "connected" | "ready"> {
+): Pick<
+	TableView["seats"][number],
+	"displayName" | "image" | "avatarSeed" | "connected" | "leaving" | "ready"
+> {
 	if (occupancy === undefined) {
-		return { displayName: null, connected: true, ready: true };
+		return { displayName: null, connected: true, leaving: false, ready: true };
 	}
 	const slot = occupancy[seatId];
 	if (slot === undefined || slot === null) {
-		return { displayName: null, connected: false, ready: false };
+		return { displayName: null, connected: false, leaving: false, ready: false };
 	}
 	return {
 		displayName: slot.displayName,
 		...(slot.image ? { image: slot.image } : {}),
+		avatarSeed: slot.playerId,
 		connected: slot.connected,
+		leaving: slot.leaving === true,
 		ready: slot.ready,
 	};
 }

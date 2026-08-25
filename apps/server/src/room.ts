@@ -15,6 +15,7 @@ import {
 	playBotTurn,
 	type RoomSummary,
 	reconnectBlockedUntil,
+	removeLeaving,
 	seatOf,
 	snapshotMessage,
 	summary,
@@ -98,6 +99,27 @@ export default class Room extends DurableObject<RoomBindings> {
 		return new Response(null, { status: 101, webSocket: client });
 	}
 
+	async alarm() {
+		const loaded = await this.load();
+		if (loaded === null) return;
+		let next = removeLeaving(loaded);
+		if (next !== loaded) {
+			await this.save(next);
+			this.fanout(next, [], null);
+		}
+		const result = playBotTurn(next);
+		if (result.ok) {
+			const previous = next;
+			next = appendHistoryFacts(previous, result.state, result.facts);
+			await this.save(next);
+			if (previous.engine?.phase !== "result" && next.engine?.phase === "result") {
+				await recordPlayerHistory(createDb(this.env.DB), next);
+			}
+			this.fanout(next, result.facts, null);
+		}
+		await this.scheduleBotTurn(next, true);
+	}
+
 	async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer) {
 		const playerId = this.playerIdOf(socket);
 		if (playerId === null) {
@@ -130,6 +152,9 @@ export default class Room extends DurableObject<RoomBindings> {
 		}
 		const next = appendHistoryFacts(loaded, result.state, result.facts);
 		await this.save(next);
+		if (parsed.data.type === "player.leave") {
+			await this.ctx.storage.setAlarm(Date.now() + 2_000);
+		}
 		if (parsed.data.type === "host.kick") {
 			const removed = loaded.seats[parsed.data.seatId];
 			if (removed !== null && removed !== undefined) {
@@ -155,25 +180,6 @@ export default class Room extends DurableObject<RoomBindings> {
 		}
 		this.fanout(next, result.facts, null);
 		await this.scheduleBotTurn(next);
-	}
-
-	async alarm() {
-		const loaded = await this.load();
-		if (loaded === null) {
-			return;
-		}
-		const result = playBotTurn(loaded);
-		if (!result.ok) {
-			await this.scheduleBotTurn(loaded, true);
-			return;
-		}
-		const next = appendHistoryFacts(loaded, result.state, result.facts);
-		await this.save(next);
-		if (loaded.engine?.phase !== "result" && next.engine?.phase === "result") {
-			await recordPlayerHistory(createDb(this.env.DB), next);
-		}
-		this.fanout(next, result.facts, null);
-		await this.scheduleBotTurn(next, true);
 	}
 
 	async webSocketClose(ws: WebSocket, code: number, reason: string) {
@@ -238,13 +244,20 @@ export default class Room extends DurableObject<RoomBindings> {
 		const seat = state.engine?.currentSeat;
 		const occupant = seat === null || seat === undefined ? null : state.seats[seat];
 		if (occupant === null || occupant === undefined || !isBotPlayerId(occupant.playerId)) {
-			await this.ctx.storage.deleteAlarm();
+			const pending = Object.values(state.leavingUntil ?? {});
+			if (pending.length > 0) {
+				await this.ctx.storage.setAlarm(Math.min(...pending));
+			} else {
+				await this.ctx.storage.deleteAlarm();
+			}
 			return;
 		}
-		if (!replace && (await this.ctx.storage.getAlarm()) !== null) {
-			return;
-		}
-		await this.ctx.storage.setAlarm(Date.now() + botPlayDelayMs());
+		if (!replace && (await this.ctx.storage.getAlarm()) !== null) return;
+		const botAlarm = Date.now() + botPlayDelayMs();
+		const leavingAlarm = Math.min(...Object.values(state.leavingUntil ?? {}));
+		await this.ctx.storage.setAlarm(
+			Number.isFinite(leavingAlarm) ? Math.min(botAlarm, leavingAlarm) : botAlarm,
+		);
 	}
 
 	private playerIdOf(socket: WebSocket): string | null {

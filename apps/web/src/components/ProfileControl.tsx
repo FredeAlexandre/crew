@@ -3,7 +3,6 @@ import {
 	Button,
 	Dialog,
 	DialogTrigger,
-	FileTrigger,
 	Heading,
 	Input,
 	Label,
@@ -18,11 +17,10 @@ import {
 	convertAnonymousAccount,
 	MAX_PASSWORD_LENGTH,
 	MIN_PASSWORD_LENGTH,
-	removeAccountPhoto,
 	signInAccount,
 	signOutAccount,
-	uploadAccountPhoto,
 } from "../lib/account.ts";
+import { identiconUrl } from "../lib/avatar.ts";
 import {
 	createDebouncedAction,
 	DISPLAY_NAME_DEBOUNCE_MS,
@@ -144,11 +142,11 @@ export function ProfileControl() {
 				data-account={isAnonymous ? "guest" : "real"}
 				isDisabled={!identity.ready && identity.sessionError === null}
 			>
-				{user?.image ? (
-					<img className={styles.photo} src={user.image} alt="" />
-				) : identity.initials.length > 0 ? (
-					<span className={styles.initials}>{identity.initials}</span>
-				) : null}
+				<img
+					className={styles.photo}
+					src={user?.image ?? identiconUrl(user?.id ?? "guest")}
+					alt=""
+				/>
 			</Button>
 			<ModalOverlay className={styles.scrim} isDismissable={!busy}>
 				<Modal className={styles.sheet}>
@@ -229,42 +227,6 @@ export function ProfileControl() {
 												<p className={styles.hint}>{t("changeEmailLater")}</p>
 											</>
 										)}
-										{!isAnonymous ? (
-											<div className={styles.photoRow}>
-												<span className={styles.label}>{t("photo")}</span>
-												<div className={styles.photoActions}>
-													<FileTrigger
-														acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}
-														onSelect={(files: FileList | null) => {
-															const file = files?.item(0);
-															if (file === null || file === undefined) {
-																return;
-															}
-															void run(async () => {
-																await uploadAccountPhoto(file);
-															});
-														}}
-													>
-														<Button className={styles.ghost} isDisabled={busy || !identity.ready}>
-															{user?.image ? t("replace") : t("choose")}
-														</Button>
-													</FileTrigger>
-													{user?.image ? (
-														<Button
-															className={styles.ghost}
-															isDisabled={busy}
-															onPress={() => {
-																void run(async () => {
-																	await removeAccountPhoto();
-																});
-															}}
-														>
-															{t("remove")}
-														</Button>
-													) : null}
-												</div>
-											</div>
-										) : null}
 										<fieldset className={styles.stubs} disabled>
 											<legend className={styles.legend}>{t("tableFeel")}</legend>
 											<p className={styles.hint}>{t("comingLater")}</p>

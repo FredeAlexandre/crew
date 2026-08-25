@@ -95,6 +95,7 @@
 
 .avatar,
 .avatarCompact {
+	position: relative;
 	display: grid;
 	place-items: center;
 	border-radius: 50%;
@@ -111,6 +112,46 @@
 	height: 100%;
 	border-radius: inherit;
 	object-fit: cover;
+}
+
+.connectionDots {
+	position: absolute;
+	top: 2.7rem;
+	color: var(--muted);
+	font-size: 0.8rem;
+	letter-spacing: 0.16em;
+	line-height: 1;
+	animation: connectionPulse 1.1s steps(3, end) infinite;
+}
+
+.avatarWrap[data-leaving="true"] .avatar,
+.avatarWrapCompact[data-leaving="true"] .avatarCompact {
+	filter: grayscale(1);
+}
+
+.avatarWrap[data-connected="false"] .avatar,
+.avatarWrapCompact[data-connected="false"] .avatarCompact {
+	filter: grayscale(1);
+	opacity: 0.62;
+}
+
+.avatarWrap[data-leaving="true"] .avatar::after,
+.avatarWrapCompact[data-leaving="true"] .avatarCompact::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: rgb(190 62 62 / 72%);
+}
+
+@keyframes connectionPulse {
+	0%,
+	100% {
+		opacity: 0.35;
+	}
+	50% {
+		opacity: 1;
+	}
 }
 
 .avatar {
