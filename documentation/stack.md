@@ -112,7 +112,7 @@ from `packages/db/src/migrations` during deploy / `alchemy dev`.
 | Profile photo | web | DiceBear seeded Bottts avatar; external `user.image` if present |
 | Room code, host, occupancy | server | DO + D1 index for join |
 | Connection dim/reconnect | server | DO, ephemeral |
-| Campaign / logbook | later | D1 |
+| Completed game history | signed-in players only | D1 (`game_history`, `game_history_events`, `player_history`) |
 
 v1 D1 tables: Better Auth tables + `players` + `rooms` (code, host,
 status). Auth is **Better Auth** anonymous/guest plus email/password.

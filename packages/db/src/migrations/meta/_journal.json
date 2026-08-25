@@ -15,6 +15,20 @@
       "when": 1774300000000,
       "tag": "0001_player_count",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776700000000,
+      "tag": "0002_player_history",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776800000000,
+      "tag": "0003_game_history",
+      "breakpoints": true
     }
   ]
 }

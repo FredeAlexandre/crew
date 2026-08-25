@@ -91,6 +91,54 @@ CREATE INDEX \`rooms_code_idx\` ON \`rooms\` (\`code\`);
 export const PLAYER_COUNT_SQL = `ALTER TABLE \`rooms\` ADD \`player_count\` integer DEFAULT 4 NOT NULL;
 `;
 
+export const PLAYER_HISTORY_SQL = `CREATE TABLE \`player_history\` (
+	\`id\` text PRIMARY KEY NOT NULL,
+	\`user_id\` text NOT NULL,
+	\`mission_id\` text NOT NULL,
+	\`attempt_id\` text NOT NULL,
+	\`result\` text NOT NULL,
+	\`room_code\` text NOT NULL,
+	\`player_count\` integer NOT NULL,
+	\`completed_at\` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	FOREIGN KEY (\`user_id\`) REFERENCES \`user\`(\`id\`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE INDEX \`player_history_userId_idx\` ON \`player_history\` (\`user_id\`);
+--> statement-breakpoint
+CREATE UNIQUE INDEX \`player_history_user_attempt_unique\` ON \`player_history\` (\`user_id\`, \`attempt_id\`);
+`;
+
+export const GAME_HISTORY_SQL = `CREATE TABLE \`game_history\` (
+	\`attempt_id\` text PRIMARY KEY NOT NULL,
+	\`room_code\` text NOT NULL,
+	\`mission_id\` text NOT NULL,
+	\`result\` text NOT NULL,
+	\`fail_reason\` text,
+	\`difficulty\` integer NOT NULL,
+	\`player_count\` integer NOT NULL,
+	\`participants\` text NOT NULL,
+	\`setup\` text NOT NULL,
+	\`final_state\` text NOT NULL,
+	\`started_at\` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	\`completed_at\` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL
+);
+--> statement-breakpoint
+CREATE INDEX \`game_history_roomCode_idx\` ON \`game_history\` (\`room_code\`);
+--> statement-breakpoint
+CREATE TABLE \`game_history_events\` (
+	\`id\` text PRIMARY KEY NOT NULL,
+	\`attempt_id\` text NOT NULL,
+	\`seq\` integer NOT NULL,
+	\`type\` text NOT NULL,
+	\`payload\` text NOT NULL,
+	FOREIGN KEY (\`attempt_id\`) REFERENCES \`game_history\`(\`attempt_id\`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE INDEX \`game_history_events_attempt_idx\` ON \`game_history_events\` (\`attempt_id\`);
+--> statement-breakpoint
+CREATE UNIQUE INDEX \`game_history_events_attempt_seq_unique\` ON \`game_history_events\` (\`attempt_id\`, \`seq\`);
+`;
+
 export function toExecSql(sql: string): string {
 	return sql.replace(/\s*-->\s*statement-breakpoint\s*/g, "\n");
 }
@@ -115,6 +163,22 @@ export async function ensureMigrated(d1: D1Database): Promise<void> {
 		if (!columns.results.some((column) => column.name === "player_count")) {
 			await d1.exec(PLAYER_COUNT_SQL);
 		}
+	}
+	const history = await d1
+		.prepare(
+			"SELECT 1 AS ok FROM sqlite_master WHERE type = 'table' AND name = 'player_history' LIMIT 1",
+		)
+		.first();
+	if (history === null) {
+		await d1.exec(toExecSql(PLAYER_HISTORY_SQL));
+	}
+	const games = await d1
+		.prepare(
+			"SELECT 1 AS ok FROM sqlite_master WHERE type = 'table' AND name = 'game_history' LIMIT 1",
+		)
+		.first();
+	if (games === null) {
+		await d1.exec(toExecSql(GAME_HISTORY_SQL));
 	}
 	applied = true;
 }

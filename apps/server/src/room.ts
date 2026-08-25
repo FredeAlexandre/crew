@@ -3,6 +3,7 @@ import { createDb, rooms } from "@crew/db";
 import { type Fact, intentSchema, type RoomErrorCode } from "@crew/protocol";
 import { eq } from "drizzle-orm";
 import { botPlayDelayMs } from "./bot-delay.ts";
+import { recordPlayerHistory } from "./history.ts";
 import { readPlayerHeaders } from "./player-headers.ts";
 import {
 	connect,
@@ -108,8 +109,12 @@ export default class Room extends DurableObject<RoomBindings> {
 		}
 		const result = playBotTurn(next);
 		if (result.ok) {
-			next = result.state;
+			const previous = next;
+			next = appendHistoryFacts(previous, result.state, result.facts);
 			await this.save(next);
+			if (previous.engine?.phase !== "result" && next.engine?.phase === "result") {
+				await recordPlayerHistory(createDb(this.env.DB), next);
+			}
 			this.fanout(next, result.facts, null);
 		}
 		await this.scheduleBotTurn(next, true);
@@ -145,7 +150,8 @@ export default class Room extends DurableObject<RoomBindings> {
 			this.sendError(socket, result.code, result.message);
 			return;
 		}
-		await this.save(result.state);
+		const next = appendHistoryFacts(loaded, result.state, result.facts);
+		await this.save(next);
 		if (parsed.data.type === "player.leave") {
 			await this.ctx.storage.setAlarm(Date.now() + 2_000);
 		}
@@ -169,8 +175,11 @@ export default class Room extends DurableObject<RoomBindings> {
 				seq: result.state.seq,
 			});
 		}
-		this.fanout(result.state, result.facts, null);
-		await this.scheduleBotTurn(result.state);
+		if (loaded.engine?.phase !== "result" && next.engine?.phase === "result") {
+			await recordPlayerHistory(createDb(this.env.DB), next);
+		}
+		this.fanout(next, result.facts, null);
+		await this.scheduleBotTurn(next);
 	}
 
 	async webSocketClose(ws: WebSocket, code: number, reason: string) {
@@ -285,4 +294,16 @@ function statusFor(code: RoomErrorCode): number {
 		return 404;
 	}
 	return 409;
+}
+
+function appendHistoryFacts(previous: TableState, next: TableState, facts: Fact[]): TableState {
+	if (next.engine === null || facts.length === 0) {
+		return next;
+	}
+	const sameAttempt = previous.engine?.attemptId === next.engine.attemptId;
+	return {
+		...next,
+		historyFacts: [...(sameAttempt ? (previous.historyFacts ?? []) : []), ...facts],
+		historyStartedAt: sameAttempt ? previous.historyStartedAt : Date.now(),
+	};
 }

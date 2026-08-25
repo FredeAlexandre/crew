@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { user } from "./auth.ts";
 
 export const players = sqliteTable(
@@ -36,4 +36,66 @@ export const rooms = sqliteTable(
 			.notNull(),
 	},
 	(table) => [index("rooms_code_idx").on(table.code)],
+);
+
+export const playerHistory = sqliteTable(
+	"player_history",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		missionId: text("mission_id").notNull(),
+		attemptId: text("attempt_id").notNull(),
+		result: text("result", { enum: ["won", "failed"] }).notNull(),
+		roomCode: text("room_code").notNull(),
+		playerCount: integer("player_count").notNull(),
+		completedAt: integer("completed_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+	},
+	(table) => [
+		index("player_history_userId_idx").on(table.userId),
+		uniqueIndex("player_history_user_attempt_unique").on(table.userId, table.attemptId),
+	],
+);
+
+export const gameHistory = sqliteTable(
+	"game_history",
+	{
+		attemptId: text("attempt_id").primaryKey(),
+		roomCode: text("room_code").notNull(),
+		missionId: text("mission_id").notNull(),
+		result: text("result", { enum: ["won", "failed"] }).notNull(),
+		failReason: text("fail_reason"),
+		difficulty: integer("difficulty").notNull(),
+		playerCount: integer("player_count").notNull(),
+		participants: text("participants").notNull(),
+		setup: text("setup").notNull(),
+		finalState: text("final_state").notNull(),
+		startedAt: integer("started_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+		completedAt: integer("completed_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+	},
+	(table) => [index("game_history_roomCode_idx").on(table.roomCode)],
+);
+
+export const gameHistoryEvents = sqliteTable(
+	"game_history_events",
+	{
+		id: text("id").primaryKey(),
+		attemptId: text("attempt_id")
+			.notNull()
+			.references(() => gameHistory.attemptId, { onDelete: "cascade" }),
+		seq: integer("seq").notNull(),
+		type: text("type").notNull(),
+		payload: text("payload").notNull(),
+	},
+	(table) => [
+		index("game_history_events_attempt_idx").on(table.attemptId),
+		uniqueIndex("game_history_events_attempt_seq_unique").on(table.attemptId, table.seq),
+	],
 );

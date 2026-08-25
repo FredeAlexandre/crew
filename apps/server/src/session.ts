@@ -49,6 +49,22 @@ export async function requirePlayer(
 		: { playerId: userId, displayName, isAnonymous: session.user.isAnonymous === true };
 }
 
+export async function requireAuthenticatedPlayer(
+	c: Context<{ Bindings: Env }>,
+): Promise<SessionPlayer | Response> {
+	const player = await requirePlayer(c);
+	if (player instanceof Response) {
+		return player;
+	}
+	if (player.isAnonymous) {
+		return c.json(
+			errorPayload("accountRequired", "Create an account or sign in to view mission history."),
+			403,
+		);
+	}
+	return player;
+}
+
 export function withPlayerHeaders(request: Request, player: SessionPlayer): Request {
 	const headers = new Headers(request.headers);
 	headers.set(PLAYER_ID_HEADER, player.playerId);
