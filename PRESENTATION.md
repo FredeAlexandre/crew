@@ -1,7 +1,7 @@
 # Presentation Contract
 
 **Status:** draft 0.1 — decisions, not assets  
-**Pair document:** `GAME.md` (rules). If this file and `GAME.md` disagree about *what is legal*, `GAME.md` wins. If they disagree about *what the screen shows*, this file wins.
+**Pair document:** `packages/engine` (rules). If this file and the engine disagree about *what is legal*, the engine wins. If they disagree about *what the screen shows*, this file wins. Unimplemented official rules: [issues under #7](https://github.com/FredeAlexandre/crew/issues/7).
 
 This is the shared language between the technical track (engine, rooms, sync) and the aesthetic track (skin, motion, sound). Either side may change internals. Neither side changes names, regions, or event shapes without updating this document.
 
@@ -490,9 +490,9 @@ The engine team owns fixture *validity* (a snapshot must be a possible view mode
 
 **Explicitly later (do not block v1)**
 
-- Two-player Tonoja (needs extra regions: face-up/down columns)
+- Two-player Tonoja (needs extra regions: face-up/down columns) — [#61](https://github.com/FredeAlexandre/crew/issues/61)
 - Spectators
-- Campaign logbook as a beautiful scene (a simple list is enough at first)
+- Campaign logbook as a beautiful scene (a simple list is enough at first) — [#60](https://github.com/FredeAlexandre/crew/issues/60)
 - Illustrated card faces, Lottie/WebM heroes, table atmosphere
 - Expert tap-to-play, animation skip default
 - Voice/video (out of product taste: this game wants table silence)

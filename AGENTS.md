@@ -1,9 +1,13 @@
 # Crew
 
-Digital *The Crew: Mission Deep Sea*. Read `GAME.md` for rules,
-`PRESENTATION.md` for the screen contract, `FEATURES.md` for shipped
-player-facing behavior to keep working, `documentation/stack.md` for
-where code lives.
+Digital *The Crew: Mission Deep Sea*. Engine + tests
+(`packages/engine`) are the rules oracle. `PRESENTATION.md` is the
+screen contract, `FEATURES.md` is shipped player-facing behavior to
+keep working, `documentation/stack.md` is where code lives.
+
+Unimplemented official rules are GitHub issues under
+[#7](https://github.com/FredeAlexandre/crew/issues/7). Do not recreate
+a rulebook file.
 
 ## Commands
 
