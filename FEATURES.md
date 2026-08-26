@@ -2,7 +2,7 @@
 
 What a person sitting at the table should be able to do today. Use this as a walkthrough: if a line no longer matches the product, either restore the behavior or rewrite the line.
 
-This is not a technical changelog. The engine is the rulebook. `PRESENTATION.md` is the screen contract. This file is the **intended result** of shipped work. Unimplemented official rules live in [issues under #7](https://github.com/FredeAlexandre/crew/issues/7).
+This is not a technical changelog. The engine is the rulebook. This file is the **intended result** of shipped work. Unimplemented official rules live in [issues under #7](https://github.com/FredeAlexandre/crew/issues/7).
 
 ---
 
