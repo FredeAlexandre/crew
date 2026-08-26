@@ -1,7 +1,8 @@
 # Crew
 
 A playable digital *The Crew: Mission Deep Sea*. Rules in `GAME.md`,
-screen contract in `PRESENTATION.md`, stack in `documentation/stack.md`.
+screen contract in `PRESENTATION.md`, shipped player behavior in
+`FEATURES.md`, stack in `documentation/stack.md`.
 
 ## Setup
 

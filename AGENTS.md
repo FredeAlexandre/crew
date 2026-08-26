@@ -1,7 +1,8 @@
 # Crew
 
 Digital *The Crew: Mission Deep Sea*. Read `GAME.md` for rules,
-`PRESENTATION.md` for the screen contract, `documentation/stack.md` for
+`PRESENTATION.md` for the screen contract, `FEATURES.md` for shipped
+player-facing behavior to keep working, `documentation/stack.md` for
 where code lives.
 
 ## Commands
@@ -19,3 +20,5 @@ Engine code must run in Vitest, Node, and Cloudflare Workers — no `node:fs`,
 no DOM. `apps/web` must not import `@crew/engine`.
 
 Do not recreate `plan/` or a task board. Intent stays with the human.
+When player-visible behavior changes, update `FEATURES.md` in the same
+voice (result, not implementation).
