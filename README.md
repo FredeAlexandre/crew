@@ -1,7 +1,9 @@
 # Crew
 
-A playable digital *The Crew: Mission Deep Sea*. Rules in `GAME.md`,
-screen contract in `PRESENTATION.md`, stack in `documentation/stack.md`.
+A playable digital *The Crew: Mission Deep Sea*. Engine + tests are the
+rules oracle (`packages/engine`). Shipped player behavior in
+`FEATURES.md`. Remaining official rules:
+[issues under #7](https://github.com/FredeAlexandre/crew/issues/7).
 
 ## Setup
 
