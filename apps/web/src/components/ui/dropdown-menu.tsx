@@ -7,6 +7,7 @@ import {
 	Header as HeaderPrimitive,
 	MenuItem as MenuItemPrimitive,
 	type MenuItemProps as MenuItemPrimitiveProps,
+	type MenuItemRenderProps,
 	Menu as MenuPrimitive,
 	MenuSection as MenuSectionPrimitive,
 	type MenuSectionProps as MenuSectionPrimitiveProps,
@@ -154,8 +155,12 @@ function DropdownMenuSubTrigger({
 			)}
 			{...props}
 		>
-			{children}
-			<ChevronRightIcon className="ml-auto size-4" />
+			{(values: MenuItemRenderProps & { defaultChildren: React.ReactNode | undefined }) => (
+				<>
+					{typeof children === "function" ? children(values) : children}
+					<ChevronRightIcon className="ml-auto size-4" />
+				</>
+			)}
 		</MenuItemPrimitive>
 	);
 }
