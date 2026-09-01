@@ -1,116 +1,159 @@
-import { type CardId, splitCardId, type TaskPublic } from "@crew/protocol";
+import { type CardId, type Suit, splitCardId, type TaskPublic } from "@crew/protocol";
+import type { Translate } from "../../lib/i18n.tsx";
 
-function formatCard(cardId: CardId): string {
-	const { suit, value } = splitCardId(cardId);
-	if (suit === "submarine") {
-		return `submarine ${value}`;
+function suitName(suit: Suit, t: Translate): string {
+	if (suit === "pink") {
+		return t("suitPink");
 	}
-	return `${suit} ${value}`;
+	if (suit === "yellow") {
+		return t("suitYellow");
+	}
+	if (suit === "green") {
+		return t("suitGreen");
+	}
+	if (suit === "blue") {
+		return t("suitBlue");
+	}
+	return t("suitSubmarine");
 }
 
-function formatCards(cards: readonly CardId[]): string {
+function formatCard(cardId: CardId, t: Translate): string {
+	const { suit, value } = splitCardId(cardId);
+	return t("cardName", { suit: suitName(suit, t), value });
+}
+
+function formatCards(cards: readonly CardId[], t: Translate): string {
 	if (cards.length === 0) {
 		return "";
 	}
 	const [first, second, ...rest] = cards;
 	if (rest.length === 0 && second === undefined) {
-		return formatCard(first);
+		return formatCard(first, t);
 	}
 	if (rest.length === 0 && second !== undefined) {
-		return `${formatCard(first)} and ${formatCard(second)}`;
+		return t("cardsAnd", { a: formatCard(first, t), b: formatCard(second, t) });
 	}
 	const last = cards.at(-1);
 	if (last === undefined) {
-		return cards.map(formatCard).join(", ");
+		return cards.map((card) => formatCard(card, t)).join(", ");
 	}
-	return `${cards.slice(0, -1).map(formatCard).join(", ")}, and ${formatCard(last)}`;
+	return t("cardsListEnd", {
+		list: cards
+			.slice(0, -1)
+			.map((card) => formatCard(card, t))
+			.join(", "),
+		last: formatCard(last, t),
+	});
 }
 
-export function taskCatalogLabel(spec: TaskPublic): string {
+function countKey(count: number, one: string, many: string): string {
+	return count === 1 ? one : many;
+}
+
+export function taskCatalogLabel(spec: TaskPublic, t: Translate): string {
 	switch (spec.kind) {
 		case "winCards":
-			return `Win ${formatCards(spec.cards)}`;
+			return t("taskWinCards", { cards: formatCards(spec.cards, t) });
 		case "winColor":
-			return `Win ${spec.count} ${spec.suit} trick${spec.count === 1 ? "" : "s"}`;
+			return t(countKey(spec.count, "taskWinColorOne", "taskWinColorMany"), {
+				count: spec.count,
+				suit: suitName(spec.suit, t),
+			});
 		case "winValue":
-			return `Win ${spec.count} trick${spec.count === 1 ? "" : "s"} with a ${spec.value}`;
+			return t(countKey(spec.count, "taskWinValueOne", "taskWinValueMany"), {
+				count: spec.count,
+				value: spec.value,
+			});
 		case "winSubmarines":
-			return `Win ${spec.count} submarine trick${spec.count === 1 ? "" : "s"}`;
+			return t(countKey(spec.count, "taskWinSubOne", "taskWinSubMany"), { count: spec.count });
 		case "winWith": {
 			if (spec.card) {
-				return `Win a trick with ${formatCard(spec.card)}`;
+				return t("taskWinWithCard", { card: formatCard(spec.card, t) });
 			}
 			if (spec.suit && spec.value !== undefined) {
-				return `Win a trick with ${spec.suit} ${spec.value}`;
+				return t("taskWinWithSuitValue", { suit: suitName(spec.suit, t), value: spec.value });
 			}
 			if (spec.suit) {
-				return `Win a trick with ${spec.suit}`;
+				return t("taskWinWithSuit", { suit: suitName(spec.suit, t) });
 			}
 			if (spec.value !== undefined) {
-				return `Win a trick with a ${spec.value}`;
+				return t("taskWinWithValue", { value: spec.value });
 			}
-			return "Win with a card";
+			return t("taskWinWithAny");
 		}
 		case "avoid": {
 			if (spec.submarines) {
-				return "Win no submarine tricks";
+				return t("taskAvoidSub");
 			}
 			if (spec.suit) {
-				return `Win no ${spec.suit} tricks`;
+				return t("taskAvoidSuit", { suit: suitName(spec.suit, t) });
 			}
 			if (spec.value !== undefined) {
-				return `Win no tricks with a ${spec.value}`;
+				return t("taskAvoidValue", { value: spec.value });
 			}
 			if (spec.cards) {
-				return `Win none of ${formatCards(spec.cards)}`;
+				return t("taskAvoidCards", { cards: formatCards(spec.cards, t) });
 			}
-			return "Avoid winning";
+			return t("taskAvoid");
 		}
 		case "trickCount":
 			if (spec.op === "exact") {
-				return `Win exactly ${spec.count} trick${spec.count === 1 ? "" : "s"}`;
+				return t(countKey(spec.count, "taskTrickCountExactOne", "taskTrickCountExactMany"), {
+					count: spec.count,
+				});
 			}
 			if (spec.op === "atLeast") {
-				return `Win at least ${spec.count} trick${spec.count === 1 ? "" : "s"}`;
+				return t(countKey(spec.count, "taskTrickCountAtLeastOne", "taskTrickCountAtLeastMany"), {
+					count: spec.count,
+				});
 			}
-			return `Win at most ${spec.count} trick${spec.count === 1 ? "" : "s"}`;
+			return t(countKey(spec.count, "taskTrickCountAtMostOne", "taskTrickCountAtMostMany"), {
+				count: spec.count,
+			});
 		case "consecutiveTricks":
-			return `Win ${spec.count} tricks in a row`;
+			return t("taskConsecutive", { count: spec.count });
 		case "nthTrick":
-			return spec.n === 0 ? "Win the last trick" : `Win trick ${spec.n}`;
+			return spec.n === 0 ? t("taskLastTrick") : t("taskNthTrick", { n: spec.n });
 		case "compareTricks": {
-			const target = spec.vs === "captain" ? "the captain" : "each other player";
+			const target = spec.vs === "captain" ? t("theCaptain") : t("eachOtherPlayer");
 			if (spec.op === "moreThan") {
-				return `Win more tricks than ${target}`;
+				return t("taskMoreThan", { target });
 			}
 			if (spec.op === "fewerThan") {
-				return `Win fewer tricks than ${target}`;
+				return t("taskFewerThan", { target });
 			}
-			return `Win the same number of tricks as ${target}`;
+			return t("taskSameAs", { target });
 		}
 		case "trickSum": {
-			const relation = spec.op === "gt" ? "over" : spec.op === "lt" ? "under" : "exactly";
-			const subNote = spec.noSubmarines ? ", no submarines" : "";
-			return `Win a trick summing ${relation} ${spec.target}${subNote}`;
+			const key = spec.op === "gt" ? "taskSumGt" : spec.op === "lt" ? "taskSumLt" : "taskSumEq";
+			const subNote = spec.noSubmarines ? t("taskNoSubmarines") : "";
+			return `${t(key, { target: spec.target })}${subNote}`;
 		}
 		case "trickFilter": {
-			const subNote = spec.noSubmarines ? ", no submarines" : "";
+			const subNote = spec.noSubmarines ? t("taskNoSubmarines") : "";
 			if (spec.filter === "allGt" && spec.bound !== undefined) {
-				return `Win a trick where every card is above ${spec.bound}${subNote}`;
+				return `${t("taskFilterGt", { bound: spec.bound })}${subNote}`;
 			}
 			if (spec.filter === "allLt" && spec.bound !== undefined) {
-				return `Win a trick where every card is below ${spec.bound}${subNote}`;
+				return `${t("taskFilterLt", { bound: spec.bound })}${subNote}`;
 			}
 			if (spec.filter === "allOdd") {
-				return `Win a trick where every card is odd${subNote}`;
+				return `${t("taskFilterOdd")}${subNote}`;
 			}
-			return `Win a trick where every card is even${subNote}`;
+			return `${t("taskFilterEven")}${subNote}`;
 		}
 		case "collectAllColors":
-			return "Win at least one card of every color";
+			return t("taskCollectAllColors");
 		case "collectAllOfOneColor":
-			return "Win every card of one color";
+			return t("taskCollectAllOfOneColor");
 		case "collectMoreColor":
-			return `Win more ${spec.more} than ${spec.less}`;
+			return t("taskCollectMore", {
+				more: suitName(spec.more, t),
+				less: suitName(spec.less, t),
+			});
 	}
+}
+
+export function cardLabel(cardId: CardId, t: Translate): string {
+	return formatCard(cardId, t);
 }

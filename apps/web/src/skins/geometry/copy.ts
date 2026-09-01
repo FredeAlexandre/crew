@@ -1,5 +1,6 @@
 import type { IllegalReason } from "@crew/protocol";
 import type { SeatView, TableView } from "@crew/view-model/fixtures";
+import type { Translate } from "../../lib/i18n.tsx";
 
 const OPPONENT_NAMES: Record<string, string> = {
 	"seat.1": "Alex",
@@ -8,77 +9,59 @@ const OPPONENT_NAMES: Record<string, string> = {
 	"seat.4": "Kim",
 };
 
-const ILLEGAL_COPY: Record<IllegalReason, string> = {
-	notYourTurn: "Not your turn",
-	wrongPhase: "Not now",
-	wrongAttempt: "Stale table",
-	mustFollowSuit: "Must follow suit",
-	cardNotInHand: "Not in hand",
-	sonarAlreadyUsed: "Sonar already used",
-	sonarDisabled: "Sonar is off",
-	sonarSubmarine: "Cannot communicate a submarine",
-	sonarNotExtreme: "Not your highest, lowest, or only of that color",
-	sonarDuringTrick: "Not during a trick",
-	cannotPassTask: "Cannot pass",
-	cannotTakeTask: "Cannot take this task",
-	captainMayNotSelect: "Captain may not take this",
-	taskNotAvailable: "That task is gone",
-	cannotPassSubmarine: "Cannot pass a submarine",
-	alreadyPassedCard: "Already passed",
-	unknownIntent: "Cannot do that",
-	missionOver: "Mission is over",
-	illegalSeat: "Wrong seat",
-};
-
-export function seatName(seat: SeatView): string {
+export function seatName(seat: SeatView, t: Translate): string {
 	if (seat.displayName) {
 		return seat.displayName;
 	}
 	if (seat.region === "seat.self") {
-		return "You";
+		return t("you");
 	}
 	if (!seat.connected) {
-		return "Empty";
+		return t("empty");
 	}
-	return OPPONENT_NAMES[seat.region] ?? "Crew";
+	return OPPONENT_NAMES[seat.region] ?? t("crew");
+}
+
+export function seatIdenticonSeed(seat: SeatView): string {
+	return seat.avatarSeed ?? seat.displayName ?? seat.region;
 }
 
 export function seatIsEmpty(seat: SeatView): boolean {
 	return seat.displayName === null && !seat.connected;
 }
 
-export function missionHeading(missionId: string | null): string {
+export function missionHeading(missionId: string | null, t: Translate): string {
 	if (missionId === null) {
-		return "Mission";
+		return t("missionPlain");
 	}
-	return `Mission ${missionId.replace(/^m/i, "")}`;
+	return t("mission", { number: missionId.replace(/^m/i, "") });
 }
 
-export function turnCopy(view: TableView): string | null {
+export function turnCopy(view: TableView, t: Translate): string | null {
 	const region = view.chrome.turnRegion;
 	if (region === null) {
 		return null;
 	}
 	if (region === "seat.self") {
-		return "Your turn";
+		return t("yourTurn");
 	}
 	const seat = view.seats.find((entry) => entry.region === region);
-	return seat ? `${seatName(seat)}'s turn` : "Turn";
+	return seat ? t("turnOf", { name: seatName(seat, t) }) : t("turnLabel");
 }
 
-export function illegalCopy(reason: IllegalReason | null): string | null {
+export function illegalCopy(reason: IllegalReason | null, t: Translate): string | null {
 	if (reason === null) {
 		return null;
 	}
-	return ILLEGAL_COPY[reason];
+	return t(reason);
 }
 
-export function resultCopy(reason: string | null): string | null {
+export function resultCopy(reason: string | null, t: Translate): string | null {
 	if (reason === "taskImpossible") {
-		return "A task became impossible to complete.";
+		return t("failTaskImpossible");
 	}
 	if (reason === "cardsExhausted") {
-		return "The crew ran out of cards before every task was complete.";
+		return t("failCardsExhausted");
 	}
 	return reason;
 }
@@ -113,14 +96,14 @@ export function lobbySlot(region: SeatView["region"], playerCount: number): Lobb
 	return "east";
 }
 
-export function sonarPositionCopy(position: "highest" | "only" | "lowest"): string {
+export function sonarPositionCopy(position: "highest" | "only" | "lowest", t: Translate): string {
 	if (position === "highest") {
-		return "Highest of this color";
+		return t("sonarHighestOfColor");
 	}
 	if (position === "only") {
-		return "Only card of this color";
+		return t("sonarOnlyOfColor");
 	}
-	return "Lowest of this color";
+	return t("sonarLowestOfColor");
 }
 
 export function trickSlot(

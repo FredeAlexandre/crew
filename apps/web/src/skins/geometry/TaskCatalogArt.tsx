@@ -1,5 +1,6 @@
 import { type CardId, COLOR_SUITS, type ColorSuit, type TaskPublic } from "@crew/protocol";
 import type { CSSProperties, ReactNode } from "react";
+import { useI18n } from "../../lib/i18n.tsx";
 import { MiniCard } from "./MiniCard.tsx";
 import { SuitMark } from "./SuitMark.tsx";
 import styles from "./task-catalog-art.module.css";
@@ -157,6 +158,7 @@ function FilterArt({ spec }: { spec: Extract<TaskPublic, { kind: "trickFilter" }
 }
 
 export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
+	const { t } = useI18n();
 	switch (spec.kind) {
 		case "winCards":
 			return (
@@ -244,7 +246,7 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 				<div className={styles.art}>
 					<div className={styles.timeline}>
 						<TrickStacks count={4} highlightIndex={slot} />
-						{spec.n === 0 ? <span className={styles.badge}>last</span> : null}
+						{spec.n === 0 ? <span className={styles.badge}>{t("artLast")}</span> : null}
 					</div>
 				</div>
 			);
@@ -254,7 +256,7 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 				<div className={styles.art}>
 					<div className={styles.compare}>
 						<div className={styles.compareCol}>
-							<span className={styles.compareLabel}>You</span>
+							<span className={styles.compareLabel}>{t("artYou")}</span>
 							<div className={styles.compareStacks}>
 								<TrickPile highlight />
 								<TrickPile highlight />
@@ -263,7 +265,7 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 						<CompareOp op={spec.op} />
 						<div className={styles.compareCol}>
 							<span className={styles.compareLabel}>
-								{spec.vs === "captain" ? "Capt." : "Each"}
+								{spec.vs === "captain" ? t("artCaptain") : t("artEach")}
 							</span>
 							<div className={styles.compareStacks}>
 								<TrickPile />
@@ -288,7 +290,7 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 							<SumOp op={spec.op} />
 							<span className={styles.count}>{spec.target}</span>
 						</div>
-						{spec.noSubmarines ? <span className={styles.badge}>no sub</span> : null}
+						{spec.noSubmarines ? <span className={styles.badge}>{t("artNoSub")}</span> : null}
 					</div>
 				</div>
 			);

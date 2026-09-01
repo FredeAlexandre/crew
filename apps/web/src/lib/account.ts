@@ -1,5 +1,6 @@
 import { env } from "@crew/env/web";
 import { authClient } from "./auth-client.ts";
+import type { Translate } from "./i18n.tsx";
 import { ensureGuestSession } from "./rooms.ts";
 
 export const MIN_PASSWORD_LENGTH = 8;
@@ -44,7 +45,7 @@ export async function convertAnonymousAccount(email: string, password: string): 
 		body: JSON.stringify({ email, password }),
 	});
 	if (!response.ok) {
-		throw await readAuthError(response, "Could not create the account.");
+		throw await readAuthError(response, "createAccountFailed");
 	}
 	await authClient.getSession();
 }
@@ -54,7 +55,7 @@ export async function signInAccount(email: string, password: string): Promise<vo
 	if (result.error) {
 		throw new AccountError(
 			result.error.code ?? "unexpected",
-			result.error.message ?? "Could not sign in.",
+			result.error.message ?? "signInFailed",
 		);
 	}
 	await authClient.getSession();
@@ -78,14 +79,23 @@ export async function changeAccountPassword(
 	if (result.error) {
 		throw new AccountError(
 			result.error.code ?? "unexpected",
-			result.error.message ?? "Could not change the password.",
+			result.error.message ?? "passwordChangeFailed",
 		);
 	}
 }
 
-export function accountErrorCopy(error: unknown): string {
+export function accountErrorCopy(error: unknown, t: Translate): string {
 	if (error instanceof AccountError) {
-		return error.message;
+		if (error.message === "createAccountFailed") {
+			return t("createAccountFailed");
+		}
+		if (error.message === "signInFailed") {
+			return t("signInFailed");
+		}
+		if (error.message === "passwordChangeFailed") {
+			return t("passwordChangeFailed");
+		}
+		return t("accountUpdateFailed");
 	}
-	return "Could not update the account. Try again.";
+	return t("accountUpdateFailed");
 }

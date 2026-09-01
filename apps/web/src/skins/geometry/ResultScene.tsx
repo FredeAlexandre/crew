@@ -21,18 +21,18 @@ export function ResultScene({
 	const [fresh] = useState(enter);
 	const outcome = view.result?.outcome ?? "failed";
 	const tasks = view.seats.flatMap((seat) =>
-		seat.tasks.map((task) => ({ task, owner: seatName(seat) })),
+		seat.tasks.map((task) => ({ task, owner: seatName(seat, t) })),
 	);
 	const failed = tasks.filter(({ task }) => task.status === "failed");
 	const incomplete = tasks.filter(({ task }) => task.status !== "completed");
 	const completed = tasks.length - incomplete.length;
-	const reason = resultCopy(view.result?.reason ?? null);
+	const reason = resultCopy(view.result?.reason ?? null, t);
 	const mission = view.chrome.missionId
 		? t("mission", { number: view.chrome.missionId.replace(/^m/i, "") })
 		: t("missionPlain");
 	const winnerName = (seatId: number) => {
 		const seat = view.seats.find((entry) => entry.seatId === seatId);
-		return seat ? seatName(seat) : t("crew");
+		return seat ? seatName(seat, t) : t("crew");
 	};
 
 	useEffect(() => {
