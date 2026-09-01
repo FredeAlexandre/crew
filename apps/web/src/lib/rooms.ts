@@ -11,6 +11,8 @@ import { authClient } from "./auth-client.ts";
 import { normalizeDisplayName } from "./display-name.ts";
 import type { Translate } from "./i18n.tsx";
 
+export type TableError = { code: RoomErrorCode; seconds?: number };
+
 class RoomHttpError extends Error {
 	readonly code: RoomErrorCode | "unexpected";
 
@@ -92,11 +94,8 @@ export async function joinRoom(code: string): Promise<RoomTicket> {
 	return readTicket(response);
 }
 
-export function roomErrorCopy(error: unknown, t: Translate): string {
-	if (!(error instanceof RoomHttpError)) {
-		return t("roomNetwork");
-	}
-	switch (error.code) {
+function errorFromCode(code: RoomErrorCode, t: Translate, seconds?: number): string {
+	switch (code) {
 		case "unauthenticated":
 			return t("guestSession");
 		case "unknownRoom":
@@ -105,11 +104,33 @@ export function roomErrorCopy(error: unknown, t: Translate): string {
 			return t("roomFull");
 		case "alreadyStarted":
 			return t("alreadyStarted");
+		case "notSeated":
+			return t("notSeated");
+		case "notHost":
+			return t("notHost");
+		case "notReady":
+			return t("notReady");
 		case "reconnectBlocked":
-			return error.message;
+			return seconds === undefined ? t("reconnectWaitSoon") : t("reconnectWait", { seconds });
 		case "illegalIntent":
-			return t("openRoomFailed");
+			return t("unknownIntent");
 		default:
-			return error.message;
+			return t(code);
 	}
+}
+
+export function roomErrorCopy(error: unknown, t: Translate): string {
+	if (!(error instanceof RoomHttpError)) {
+		return t("roomNetwork");
+	}
+	if (error.code === "unexpected") {
+		return t("openRoomFailed");
+	}
+	const seconds =
+		error.code === "reconnectBlocked" ? Number(error.message.match(/\d+/)?.[0]) : Number.NaN;
+	return errorFromCode(error.code, t, Number.isFinite(seconds) ? seconds : undefined);
+}
+
+export function tableErrorCopy(error: TableError, t: Translate): string {
+	return errorFromCode(error.code, t, error.seconds);
 }

@@ -7,8 +7,16 @@ import { Button } from "../../components/ui/button.tsx";
 import { Toggle } from "../../components/ui/toggle.tsx";
 import { useSfxMuted } from "../../hooks/use-sfx-muted.ts";
 import { identiconUrl } from "../../lib/avatar.ts";
+import { useI18n } from "../../lib/i18n.tsx";
 import { CardBack, CardFace } from "./Card.tsx";
-import { type LobbySlot, seatIsEmpty, seatName, sonarPositionCopy, turnCopy } from "./copy.ts";
+import {
+	type LobbySlot,
+	seatIdenticonSeed,
+	seatIsEmpty,
+	seatName,
+	sonarPositionCopy,
+	turnCopy,
+} from "./copy.ts";
 import { cardIndexFromRects } from "./hand-layout.ts";
 import styles from "./parts.module.css";
 import { type TaskCardSize, TaskCatalogCard } from "./TaskCatalogCard.tsx";
@@ -48,6 +56,7 @@ export function SeatAvatar({
 	compact?: boolean;
 	showName?: boolean;
 }) {
+	const { t } = useI18n();
 	const empty = seatIsEmpty(seat);
 	return (
 		<div
@@ -58,8 +67,8 @@ export function SeatAvatar({
 			data-leaving={seat.leaving ? "true" : "false"}
 		>
 			{seat.isCaptain ? <CrownIcon /> : <span className={styles.crownHole} aria-hidden="true" />}
-			{seat.isCaptain ? <span className={styles.srOnly}>Captain</span> : null}
-			{seat.isTurn ? <span className={styles.srOnly}>Their turn</span> : null}
+			{seat.isCaptain ? <span className={styles.srOnly}>{t("captain")}</span> : null}
+			{seat.isTurn ? <span className={styles.srOnly}>{t("theirTurn")}</span> : null}
 			<span
 				className={compact ? styles.avatarCompact : styles.avatar}
 				data-empty={empty ? "true" : "false"}
@@ -69,7 +78,7 @@ export function SeatAvatar({
 				{empty ? null : (
 					<img
 						className={styles.avatarPhoto}
-						src={seat.image ?? identiconUrl(seat.avatarSeed ?? seatName(seat))}
+						src={seat.image ?? identiconUrl(seatIdenticonSeed(seat))}
 						alt=""
 					/>
 				)}
@@ -78,17 +87,20 @@ export function SeatAvatar({
 				<span
 					className={styles.connectionDots}
 					role="img"
-					aria-label={seat.leaving ? "Leaving" : "Reconnecting"}
+					aria-label={seat.leaving ? t("leaving") : t("reconnecting")}
 				>
 					•••
 				</span>
 			) : null}
-			{showName ? <span className={styles.pipName}>{empty ? "Empty" : seatName(seat)}</span> : null}
+			{showName ? (
+				<span className={styles.pipName}>{empty ? t("empty") : seatName(seat, t)}</span>
+			) : null}
 		</div>
 	);
 }
 
 function WonTrickPile({ count, onPeek }: { count: number; onPeek?: () => void }) {
+	const { t } = useI18n();
 	const body = (
 		<>
 			<span className={styles.wonStack} aria-hidden="true">
@@ -99,13 +111,13 @@ function WonTrickPile({ count, onPeek }: { count: number; onPeek?: () => void })
 			<span className={styles.wonCount}>{count}</span>
 		</>
 	);
-	const label = count === 1 ? "1 trick won" : `${count} tricks won`;
+	const label = t(count === 1 ? "tricksWonOne" : "tricksWonMany", { count });
 	if (onPeek) {
 		return (
 			<Pressable
 				className={styles.wonPile}
 				onPress={onPeek}
-				aria-label={`${label}. Peek last trick.`}
+				aria-label={`${label}. ${t("peekLastTrick")}`}
 			>
 				{body}
 			</Pressable>
@@ -125,6 +137,7 @@ function SonarTokenButton({
 	state: SeatView["sonar"]["state"];
 	onPress?: () => void;
 }) {
+	const { t } = useI18n();
 	const available = state === "available";
 	const body = (
 		<span className={styles.sonarToken} data-state={state}>
@@ -136,7 +149,7 @@ function SonarTokenButton({
 			<Pressable
 				className={styles.sonarTokenBtn}
 				onPress={onPress}
-				aria-label={available ? "Sonar available" : "Sonar used"}
+				aria-label={available ? t("sonarAvailable") : t("sonarUsed")}
 			>
 				{body}
 			</Pressable>
@@ -162,9 +175,10 @@ function CommunicatedSlot({
 			</span>
 		</span>
 	);
+	const { t } = useI18n();
 	if (onPress) {
 		return (
-			<Pressable className={styles.commSlotBtn} onPress={onPress} aria-label="Sonar clue">
+			<Pressable className={styles.commSlotBtn} onPress={onPress} aria-label={t("sonarClue")}>
 				{body}
 			</Pressable>
 		);
@@ -195,6 +209,7 @@ export function PlaySeat({
 	onPass?: () => void;
 	chairClassName?: string;
 }) {
+	const { t } = useI18n();
 	const empty = seatIsEmpty(seat);
 	const self = seat.region === "seat.self";
 	const communication = seat.sonar.communication;
@@ -243,12 +258,12 @@ export function PlaySeat({
 					<div className={styles.seatActions}>
 						{canSonar && onSonar ? (
 							<Button variant="outline" size="sm" onPress={onSonar}>
-								Sonar
+								{t("sonar")}
 							</Button>
 						) : null}
 						{canPass && onPass ? (
 							<Button variant="outline" size="sm" onPress={onPass}>
-								Pass
+								{t("pass")}
 							</Button>
 						) : null}
 					</div>
@@ -259,22 +274,21 @@ export function PlaySeat({
 }
 
 export function SonarDetailBody({ seat }: { seat: SeatView }) {
+	const { t } = useI18n();
 	const communication = seat.sonar.communication;
 	return (
 		<>
-			<p className={styles.detailTitle}>{seatName(seat)} — Sonar</p>
+			<p className={styles.detailTitle}>{t("sonarNamed", { name: seatName(seat, t) })}</p>
 			{communication ? (
 				<>
 					<CommunicatedSlot cardId={communication.cardId} position={communication.position} />
-					<p className={styles.detailCopy}>{sonarPositionCopy(communication.position)}</p>
+					<p className={styles.detailCopy}>{sonarPositionCopy(communication.position, t)}</p>
 				</>
 			) : (
 				<>
 					<SonarTokenButton state={seat.sonar.state} />
 					<p className={styles.detailCopy}>
-						{seat.sonar.state === "available"
-							? "Sonar is available. This player has not communicated yet."
-							: "Sonar has already been used this mission."}
+						{seat.sonar.state === "available" ? t("sonarAvailableCopy") : t("sonarUsedCopy")}
 					</p>
 				</>
 			)}
@@ -291,12 +305,13 @@ function WonCount({
 	onPeek?: () => void;
 	hole?: boolean;
 }) {
+	const { t } = useI18n();
 	if (count <= 0) {
 		return hole ? <span className={styles.wonHole} /> : null;
 	}
 	if (onPeek) {
 		return (
-			<Pressable className={styles.wonPeek} onPress={onPeek} aria-label="Last trick">
+			<Pressable className={styles.wonPeek} onPress={onPeek} aria-label={t("lastTrick")}>
 				{count}
 			</Pressable>
 		);
@@ -525,12 +540,15 @@ export function HandStrip({
 }
 
 export function ChromeLine({ view }: { view: TableView }) {
-	const turn = turnCopy(view);
+	const { t } = useI18n();
+	const turn = turnCopy(view, t);
 	const [muted, setMuted] = useSfxMuted();
 	const bits = [
-		view.chrome.missionId ? `Mission ${view.chrome.missionId.replace(/^m/i, "")}` : null,
-		view.chrome.trickId ? `Trick ${view.chrome.trickId}` : null,
-		view.chrome.distress.active ? "Distress" : null,
+		view.chrome.missionId
+			? t("mission", { number: view.chrome.missionId.replace(/^m/i, "") })
+			: null,
+		view.chrome.trickId ? t("trick", { number: view.chrome.trickId }) : null,
+		view.chrome.distress.active ? t("distress") : null,
 	].filter((bit): bit is string => bit !== null);
 	return (
 		<div className={styles.chrome} data-region="chrome">
@@ -540,10 +558,10 @@ export function ChromeLine({ view }: { view: TableView }) {
 			{turn ? <span className={styles.turn}>{turn}</span> : null}
 			<Toggle
 				isSelected={!muted}
-				aria-label={muted ? "Sound off" : "Sound on"}
+				aria-label={muted ? t("soundOff") : t("soundOn")}
 				onChange={(selected) => setMuted(!selected)}
 			>
-				{muted ? "Muted" : "Sound"}
+				{muted ? t("muted") : t("sound")}
 			</Toggle>
 		</div>
 	);

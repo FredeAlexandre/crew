@@ -1,7 +1,9 @@
 import { type CardId, splitCardId } from "@crew/protocol";
 import { Button } from "react-aria-components";
+import { useI18n } from "../../lib/i18n.tsx";
 import styles from "./card.module.css";
 import { SuitMark } from "./SuitMark.tsx";
+import { cardLabel } from "./task-label.ts";
 
 type CardSize = "hand" | "trick" | "token";
 
@@ -28,6 +30,7 @@ export function CardFace({
 	revealed = true,
 	onPress,
 }: CardFaceProps) {
+	const { t } = useI18n();
 	const { suit, value } = splitCardId(cardId);
 	const className = [
 		styles.card,
@@ -63,21 +66,17 @@ export function CardFace({
 			</>
 		);
 
+	const name = cardLabel(cardId, t);
 	if (onPress) {
 		return (
-			<Button
-				className={className}
-				data-suit={suit}
-				onPress={onPress}
-				aria-label={`${suit} ${value}`}
-			>
+			<Button className={className} data-suit={suit} onPress={onPress} aria-label={name}>
 				{body}
 			</Button>
 		);
 	}
 
 	return (
-		<div className={className} data-suit={suit} title={`${suit} ${value}`}>
+		<div className={className} data-suit={suit} title={name}>
 			{body}
 		</div>
 	);

@@ -65,7 +65,7 @@ export function HomeLanding() {
 	return (
 		<section className={styles.stage}>
 			<div className={styles.backdrop} aria-hidden="true" />
-			<h1 className="sr-only">Crew</h1>
+			<h1 className="sr-only">{t("siteTitle")}</h1>
 			<div className={styles.layer}>
 				<CrewMark />
 			</div>

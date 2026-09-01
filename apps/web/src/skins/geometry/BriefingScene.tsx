@@ -8,15 +8,17 @@ export function BriefingScene({ view }: { view: TableView }) {
 	return (
 		<div className={styles.logbook} data-scene="briefing">
 			<p className={styles.kicker}>{t("logbook")}</p>
-			<h1 className={styles.mission}>{missionHeading(view.chrome.missionId)}</h1>
+			<h1 className={styles.mission}>{missionHeading(view.chrome.missionId, t)}</h1>
 			{view.chrome.difficulty !== null ? (
-				<p className={styles.difficulty}>Difficulty {view.chrome.difficulty}</p>
+				<p className={styles.difficulty}>
+					{t("difficultyValue", { difficulty: view.chrome.difficulty })}
+				</p>
 			) : null}
 			<p className={styles.lede}>{t("briefing")}</p>
 			<ul className={styles.crewLine}>
 				{view.seats.map((seat) => (
 					<li key={seat.region} data-region={seat.region}>
-						{seatName(seat)}
+						{seatName(seat, t)}
 					</li>
 				))}
 			</ul>

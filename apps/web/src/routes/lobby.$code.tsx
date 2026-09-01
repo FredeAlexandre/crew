@@ -7,7 +7,7 @@ import { useTable } from "../hooks/use-table.ts";
 import { normalizeDisplayName } from "../lib/display-name.ts";
 import { useI18n } from "../lib/i18n.tsx";
 import { lobbyShareUrl } from "../lib/lobby-code.ts";
-import { joinRoom, roomErrorCopy } from "../lib/rooms.ts";
+import { joinRoom, roomErrorCopy, tableErrorCopy } from "../lib/rooms.ts";
 import { GeometryTable } from "../skins/geometry/Table.tsx";
 
 export const Route = createFileRoute("/lobby/$code")({
@@ -29,7 +29,7 @@ function placeholderLobby(playerCount: PlayerCount): TableView {
 			...blank,
 			region: SEAT_REGIONS[index] ?? "seat.4",
 			seatId: index as 0 | 1 | 2 | 3 | 4,
-			displayName: index === 0 ? "You" : null,
+			displayName: null,
 			connected: index === 0,
 			ready: false,
 		})),
@@ -106,7 +106,7 @@ function LobbyRoute() {
 						roomCode: code,
 						copied,
 						statusNote,
-						alert: error ?? table.error,
+						alert: error ?? (table.error ? tableErrorCopy(table.error, t) : null),
 						name: displayName.name,
 						onNameChange:
 							table.view === null

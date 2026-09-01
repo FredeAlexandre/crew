@@ -9,6 +9,7 @@ import {
 } from "@crew/protocol";
 import type { TableView } from "@crew/view-model/fixtures";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { TableError } from "../lib/rooms.ts";
 import { parseServerFrame } from "./parse-server-frame.ts";
 
 const RECONNECT_MS = 400;
@@ -39,11 +40,11 @@ export type ClientIntent =
 
 export function useTable(code: string | null): {
 	view: TableView | null;
-	error: string | null;
+	error: TableError | null;
 	sendIntent: (intent: ClientIntent) => void;
 } {
 	const [view, setView] = useState<TableView | null>(null);
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<TableError | null>(null);
 	const viewRef = useRef<TableView | null>(null);
 	const socketRef = useRef<WebSocket | null>(null);
 
@@ -76,7 +77,12 @@ export function useTable(code: string | null): {
 					return;
 				}
 				if (parsed.kind === "error") {
-					setError(parsed.message);
+					const seconds = Number(parsed.message.match(/\d+/)?.[0]);
+					setError({
+						code: parsed.code,
+						seconds:
+							parsed.code === "reconnectBlocked" && Number.isFinite(seconds) ? seconds : undefined,
+					});
 					return;
 				}
 				viewRef.current = parsed.view;

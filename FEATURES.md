@@ -18,7 +18,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Language
 
 - [ ] Switch **FR / ES / EN** from the flag. The choice survives a reload.
-- [ ] Home, lobby, play overlays (distress, sonar, reminders), profile, and result copy follow that language.
+- [ ] The whole site follows that language: home, lobby, table (tasks, illegal plays, turn, play/pass, trick hold, sonar, sound), result, profile, and Browse assets.
 
 ## Profile
 

@@ -261,7 +261,7 @@ function Chair({
 			) : null}
 			{!self && !empty && onKick ? (
 				<Button variant="ghost" size="sm" onPress={() => onKick(seat.seatId)}>
-					Remove
+					{t("remove")}
 				</Button>
 			) : null}
 		</div>
@@ -284,5 +284,5 @@ function captainPickLabel(seat: SeatView, t: ReturnType<typeof useI18n>["t"]): s
 	if (seatIsEmpty(seat)) {
 		return `${t("seat")} ${seat.seatId + 1}`;
 	}
-	return seatName(seat);
+	return seatName(seat, t);
 }

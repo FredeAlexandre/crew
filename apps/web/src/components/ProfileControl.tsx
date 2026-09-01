@@ -82,7 +82,7 @@ export function ProfileControl() {
 	const skipHomeResetRef = useRef(false);
 	const user = identity.user;
 	const isAnonymous = user?.isAnonymous !== false;
-	const shownError = error ?? identity.sessionError;
+	const shownError = error ?? (identity.sessionError ? t(identity.sessionError) : null);
 	const openLabel = isAnonymous
 		? identity.displayName.length > 0
 			? t("guestProfileNamed", { name: identity.displayName })
@@ -123,7 +123,7 @@ export function ProfileControl() {
 			setCurrentPassword("");
 			setNewPassword("");
 		} catch (caught) {
-			setError(accountErrorCopy(caught));
+			setError(accountErrorCopy(caught, t));
 		} finally {
 			setBusy(false);
 		}
@@ -163,6 +163,7 @@ export function ProfileControl() {
 			<Dialog
 				isDismissable={!busy}
 				showCloseButton={false}
+				aria-label={t("close")}
 				className="max-h-[min(90svh,40rem)] overflow-auto"
 			>
 				<DialogHeader>
