@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { TextField } from "react-aria-components";
 import { useIdentity } from "../hooks/use-identity.ts";
@@ -253,6 +254,13 @@ export function ProfileControl() {
 								<span>{t("onOff")}</span>
 							</p>
 						</FieldSet>
+						<Link
+							className="inline-flex min-h-11 items-center text-sm text-muted-foreground no-underline hover:text-primary"
+							to="/assets"
+							onClick={() => setOpen(false)}
+						>
+							{t("browseAssets")}
+						</Link>
 						{!isAnonymous ? <PlayerHistory history={history} loading={historyLoading} /> : null}
 					</FieldGroup>
 				) : null}

@@ -1,0 +1,73 @@
+.stage {
+	position: relative;
+	display: grid;
+	align-content: space-between;
+	justify-items: center;
+	min-height: 100dvh;
+	width: 100%;
+	overflow: hidden;
+	padding: max(5.5rem, env(safe-area-inset-top, 0px)) 1.35rem
+		max(2rem, env(safe-area-inset-bottom, 0px));
+	color: var(--ink);
+}
+
+.backdrop {
+	pointer-events: none;
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	background:
+		radial-gradient(
+			120% 80% at 50% -10%,
+			color-mix(in oklch, var(--gold), transparent 78%) 0%,
+			transparent 46%
+		),
+		radial-gradient(
+			90% 50% at 50% 110%,
+			color-mix(in oklch, var(--suit-blue), transparent 70%) 0%,
+			transparent 55%
+		),
+		linear-gradient(180deg, #071018 0%, #0c1410 48%, #05080a 100%);
+}
+
+.backdrop::before {
+	content: "";
+	position: absolute;
+	inset: -20% 10% auto;
+	height: 70%;
+	background: repeating-linear-gradient(
+		-18deg,
+		transparent 0 18px,
+		color-mix(in oklch, var(--gold), transparent 92%) 18px 19px
+	);
+	mask-image: radial-gradient(closest-side, black 20%, transparent 78%);
+	opacity: 0.85;
+}
+
+.layer,
+.actions,
+.error {
+	position: relative;
+	z-index: 1;
+}
+
+.actions {
+	display: grid;
+	gap: 0.75rem;
+	width: min(100%, 22rem);
+}
+
+.codeField {
+	display: grid;
+	gap: 0.45rem;
+}
+
+.error {
+	width: min(100%, 22rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.backdrop::before {
+		opacity: 0.45;
+	}
+}
