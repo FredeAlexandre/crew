@@ -1,6 +1,6 @@
 import type { Fact, Intent } from "@crew/protocol";
 import { activateDistress, passDistressCard, skipDistress } from "./distress.ts";
-import { passTask, takeTask } from "./draft.ts";
+import { passTask, predictTask, takeTask } from "./draft.ts";
 import { playCard } from "./play.ts";
 import { useSonar } from "./sonar.ts";
 import { type ApplyResult, cloneState, type EngineState, isPlayIntent } from "./state.ts";
@@ -29,6 +29,9 @@ export function apply(state: EngineState, intent: Intent): ApplyResult {
 			break;
 		case "task.pass":
 			error = passTask(next, intent.seatId, facts);
+			break;
+		case "task.predict":
+			error = predictTask(next, intent.seatId, intent.count, facts);
 			break;
 		case "distress.skip":
 			error = skipDistress(next, facts);

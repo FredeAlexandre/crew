@@ -170,6 +170,7 @@ describe("play", () => {
 						difficulty: { 3: 1, 4: 1, 5: 1 },
 						captainMaySelect: true,
 					},
+					prediction: null,
 				},
 			],
 		});
@@ -202,6 +203,7 @@ describe("catalog", () => {
 			new Set([
 				"winCards",
 				"winColor",
+				"winColors",
 				"winValue",
 				"winSubmarines",
 				"winWith",
@@ -209,15 +211,25 @@ describe("catalog", () => {
 				"trickCount",
 				"consecutiveTricks",
 				"nthTrick",
+				"skipFirstTricks",
 				"compareTricks",
 				"trickSum",
 				"trickFilter",
 				"collectAllColors",
 				"collectAllOfOneColor",
 				"collectMoreColor",
+				"collectEqualColor",
+				"noLead",
+				"predictTricks",
 			]),
 		);
-		expect(TASK_CATALOG.length).toBeGreaterThanOrEqual(80);
+		expect(TASK_CATALOG).toHaveLength(96);
 		expect(new Set(TASK_CATALOG.map((spec) => spec.id)).size).toBe(TASK_CATALOG.length);
+		expect(
+			TASK_CATALOG.some(
+				(spec) =>
+					spec.difficulty[3] !== spec.difficulty[4] || spec.difficulty[4] !== spec.difficulty[5],
+			),
+		).toBe(true);
 	});
 });

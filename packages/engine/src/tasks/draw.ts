@@ -54,8 +54,18 @@ function uniqueCardTargets(spec: TaskPublic): string[] {
 	if (spec.kind === "winCards") {
 		return [...spec.cards];
 	}
-	if (spec.kind === "winWith" && spec.card !== undefined) {
-		return [spec.card];
+	if (spec.kind === "winWith") {
+		const ids: string[] = [];
+		if (spec.card !== undefined) {
+			ids.push(spec.card);
+		}
+		if (spec.captureCard !== undefined) {
+			ids.push(spec.captureCard);
+		}
+		return ids;
+	}
+	if (spec.kind === "winSubmarines" && spec.onlyCard !== undefined) {
+		return [spec.onlyCard];
 	}
 	return [];
 }
@@ -74,7 +84,7 @@ export function structurallyImpossible(tasks: readonly TaskPublic[]): boolean {
 		if (spec.kind === "nthTrick" && spec.n === 1) {
 			firstTricks += 1;
 		}
-		if (spec.kind === "nthTrick" && spec.n === 0) {
+		if (spec.kind === "nthTrick" && (spec.n === 0 || spec.alsoLast === true)) {
 			lastTricks += 1;
 		}
 	}

@@ -62,6 +62,7 @@ describe("tableViewSchema", () => {
 				canSkipDistress: false,
 				canActivateDistress: false,
 				canPassDistressCard: false,
+				canPredict: false,
 				canPeekLastTrick: false,
 				canStart: false,
 				canFillBots: false,

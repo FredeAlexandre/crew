@@ -410,14 +410,23 @@ describe("occupancy", () => {
 });
 
 function cardsInTask(spec: TaskPublic): CardId[] {
+	const ids: CardId[] = [];
 	if (spec.kind === "winCards") {
-		return [...spec.cards];
+		ids.push(...spec.cards);
 	}
-	if (spec.kind === "winWith" && spec.card !== undefined) {
-		return [spec.card];
+	if (spec.kind === "winWith") {
+		if (spec.card !== undefined) {
+			ids.push(spec.card);
+		}
+		if (spec.captureCard !== undefined) {
+			ids.push(spec.captureCard);
+		}
 	}
 	if (spec.kind === "avoid" && spec.cards !== undefined) {
-		return [...spec.cards];
+		ids.push(...spec.cards);
 	}
-	return [];
+	if (spec.kind === "winSubmarines" && spec.onlyCard !== undefined) {
+		ids.push(spec.onlyCard);
+	}
+	return ids;
 }

@@ -6,13 +6,17 @@ import { TaskCatalogCard } from "../skins/geometry/TaskCatalogCard.tsx";
 const TASK_KIND_KEYS: Record<TaskKind, { label: string; lede: string }> = {
 	winCards: { label: "taskKindWinCards", lede: "taskKindWinCardsLede" },
 	winColor: { label: "taskKindWinColor", lede: "taskKindWinColorLede" },
+	winColors: { label: "taskKindWinColors", lede: "taskKindWinColorsLede" },
 	winValue: { label: "taskKindWinValue", lede: "taskKindWinValueLede" },
 	winSubmarines: { label: "taskKindWinSubmarines", lede: "taskKindWinSubmarinesLede" },
 	winWith: { label: "taskKindWinWith", lede: "taskKindWinWithLede" },
 	avoid: { label: "taskKindAvoid", lede: "taskKindAvoidLede" },
+	noLead: { label: "taskKindNoLead", lede: "taskKindNoLeadLede" },
 	trickCount: { label: "taskKindTrickCount", lede: "taskKindTrickCountLede" },
+	predictTricks: { label: "taskKindPredictTricks", lede: "taskKindPredictTricksLede" },
 	consecutiveTricks: { label: "taskKindConsecutiveTricks", lede: "taskKindConsecutiveTricksLede" },
 	nthTrick: { label: "taskKindNthTrick", lede: "taskKindNthTrickLede" },
+	skipFirstTricks: { label: "taskKindSkipFirstTricks", lede: "taskKindSkipFirstTricksLede" },
 	compareTricks: { label: "taskKindCompareTricks", lede: "taskKindCompareTricksLede" },
 	trickSum: { label: "taskKindTrickSum", lede: "taskKindTrickSumLede" },
 	trickFilter: { label: "taskKindTrickFilter", lede: "taskKindTrickFilterLede" },
@@ -22,6 +26,7 @@ const TASK_KIND_KEYS: Record<TaskKind, { label: string; lede: string }> = {
 		lede: "taskKindCollectAllOfOneColorLede",
 	},
 	collectMoreColor: { label: "taskKindCollectMoreColor", lede: "taskKindCollectMoreColorLede" },
+	collectEqualColor: { label: "taskKindCollectEqualColor", lede: "taskKindCollectEqualColorLede" },
 };
 
 export const Route = createFileRoute("/assets/missions")({

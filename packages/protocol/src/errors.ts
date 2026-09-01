@@ -14,6 +14,8 @@ export const illegalReasonSchema = z.enum([
 	"cannotPassTask",
 	"cannotTakeTask",
 	"captainMayNotSelect",
+	"predictionRequired",
+	"invalidPrediction",
 	"taskNotAvailable",
 	"cannotPassSubmarine",
 	"alreadyPassedCard",

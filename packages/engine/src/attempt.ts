@@ -1,9 +1,9 @@
 import type { AttemptId, Fact, SeatId } from "@crew/protocol";
-import { dealHands, giveCardToSeat, seatWithCard } from "./deal.ts";
+import { dealHands, giveCardToSeat, handForcesRedeal, seatWithCard } from "./deal.ts";
 import { DECK, seats } from "./deck.ts";
 import { replaceImpossibleTasks } from "./draft.ts";
 import { emit } from "./emit.ts";
-import { createRng, shuffle } from "./rng.ts";
+import { createRng, type Rng, shuffle } from "./rng.ts";
 import type { ApplyOk, EngineState, MissionDef, PlayerCount } from "./state.ts";
 import { TASK_BY_ID } from "./tasks/catalog.ts";
 import { drawTasks } from "./tasks/draw.ts";
@@ -15,6 +15,26 @@ export type CreateAttemptConfig = {
 	seed: number;
 	captainSeat?: SeatId | null;
 };
+
+function dealPlayingCards(
+	state: EngineState,
+	rng: Rng,
+	playerCount: PlayerCount,
+	captainSeat: SeatId | null | undefined,
+): void {
+	state.hands = dealHands(shuffle(DECK, rng), playerCount);
+	if (captainSeat !== undefined && captainSeat !== null) {
+		giveCardToSeat(state.hands, "submarine-4", captainSeat);
+	}
+	state.captainSeat = seatWithCard(state.hands, "submarine-4");
+}
+
+function needsOfficialRedeal(state: EngineState): boolean {
+	return state.tasks.some((task) => {
+		const condition = task.spec.redealIf;
+		return condition !== undefined && handForcesRedeal(state.hands, condition);
+	});
+}
 
 export function createAttempt(config: CreateAttemptConfig): ApplyOk {
 	const facts: Fact[] = [];
@@ -53,12 +73,7 @@ export function createAttempt(config: CreateAttemptConfig): ApplyOk {
 		failReason: null,
 	};
 
-	const shuffled = shuffle(DECK, rng);
-	state.hands = dealHands(shuffled, config.playerCount);
-	if (config.captainSeat !== undefined && config.captainSeat !== null) {
-		giveCardToSeat(state.hands, "submarine-4", config.captainSeat);
-	}
-	state.captainSeat = seatWithCard(state.hands, "submarine-4");
+	dealPlayingCards(state, rng, config.playerCount, config.captainSeat);
 	state.tricksWon = seats(config.playerCount).map(() => []);
 	state.completedTricks = seats(config.playerCount).map(() => []);
 	state.captured = seats(config.playerCount).map(() => []);
@@ -68,6 +83,30 @@ export function createAttempt(config: CreateAttemptConfig): ApplyOk {
 		communication: null,
 	}));
 	state.distressPassed = seats(config.playerCount).map(() => null);
+
+	const drawn = drawTasks(rng, config.playerCount, config.mission.difficulty);
+	state.taskDrawPile = drawn.remaining;
+	state.nextInstance = 0;
+	for (const spec of drawn.drawn) {
+		const instanceId = `${config.attemptId}:${state.nextInstance}`;
+		state.nextInstance += 1;
+		state.tasks.push({
+			instanceId,
+			ownerSeat: null,
+			status: "open",
+			progress: 0,
+			spec: TASK_BY_ID[spec.id] ?? spec,
+			prediction: null,
+		});
+		state.centerTaskIds.push(instanceId);
+	}
+
+	replaceImpossibleTasks(state, facts);
+	let redeals = 0;
+	while (needsOfficialRedeal(state) && redeals < 32) {
+		dealPlayingCards(state, rng, config.playerCount, config.captainSeat);
+		redeals += 1;
+	}
 
 	for (const seat of seats(config.playerCount)) {
 		const hand = state.hands[seat] ?? [];
@@ -90,23 +129,6 @@ export function createAttempt(config: CreateAttemptConfig): ApplyOk {
 		emit(state, facts, { type: "captain.revealed", seatId: state.captainSeat });
 	}
 
-	const drawn = drawTasks(rng, config.playerCount, config.mission.difficulty);
-	state.taskDrawPile = drawn.remaining;
-	state.nextInstance = 0;
-	for (const spec of drawn.drawn) {
-		const instanceId = `${config.attemptId}:${state.nextInstance}`;
-		state.nextInstance += 1;
-		state.tasks.push({
-			instanceId,
-			ownerSeat: null,
-			status: "open",
-			progress: 0,
-			spec: TASK_BY_ID[spec.id] ?? spec,
-		});
-		state.centerTaskIds.push(instanceId);
-	}
-
-	replaceImpossibleTasks(state, facts);
 	emit(state, facts, {
 		type: "tasks.drawn",
 		tasks: state.tasks.map((task) => ({

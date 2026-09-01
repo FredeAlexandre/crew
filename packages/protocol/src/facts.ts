@@ -120,6 +120,15 @@ const taskPassedFactSchema = z.object({
 	seatId: seatIdSchema,
 });
 
+const taskPredictedFactSchema = z.object({
+	type: z.literal("task.predicted"),
+	...wireMeta,
+	taskInstanceId: taskInstanceIdSchema,
+	seatId: seatIdSchema,
+	count: z.number().int().nonnegative(),
+	hidden: z.boolean(),
+});
+
 const taskReplacedFactSchema = z.object({
 	type: z.literal("task.replaced"),
 	...wireMeta,
@@ -244,6 +253,7 @@ export const factSchema = z.discriminatedUnion("type", [
 	taskOfferedTurnFactSchema,
 	taskTakenFactSchema,
 	taskPassedFactSchema,
+	taskPredictedFactSchema,
 	taskReplacedFactSchema,
 	draftCompletedFactSchema,
 	distressOfferedFactSchema,

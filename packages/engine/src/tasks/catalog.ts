@@ -1,14 +1,15 @@
-import type { CardId, ColorSuit, DifficultyByPlayers, TaskId, TaskPublic } from "@crew/protocol";
-import { COLOR_SUITS } from "../deck.ts";
+import type { DifficultyByPlayers, TaskId, TaskPublic } from "@crew/protocol";
 
 export type TaskSpec = TaskPublic;
 
-type TaskInput = {
-	[K in TaskSpec as K["kind"]]: Omit<K, "id">;
-}[TaskSpec["kind"]];
+type TaskInput = TaskSpec extends infer T
+	? T extends { id: TaskId }
+		? Omit<T, "id">
+		: never
+	: never;
 
-function d(n: number): DifficultyByPlayers {
-	return { 3: n, 4: n, 5: n };
+function d(three: number, four: number, five: number): DifficultyByPlayers {
+	return { 3: three, 4: four, 5: five };
 }
 
 function id(n: number): TaskId {
@@ -16,337 +17,683 @@ function id(n: number): TaskId {
 }
 
 const catalog: TaskSpec[] = [];
-let nextId = 1;
 
 function push(spec: TaskInput): void {
-	catalog.push({ ...spec, id: id(nextId) } as TaskSpec);
-	nextId += 1;
+	catalog.push({ ...spec, id: id(catalog.length + 1) } as TaskSpec);
 }
 
-for (const suit of COLOR_SUITS) {
-	for (const value of [1, 2, 5, 8, 9] as const) {
-		const card = `${suit}-${value}` as CardId;
-		push({
-			kind: "winCards",
-			cards: [card],
-			difficulty: d(value <= 2 ? 1 : value === 5 ? 2 : 3),
-			captainMaySelect: true,
-		});
-	}
-}
-
-const pairs: [CardId, CardId][] = [
-	["pink-1", "pink-9"],
-	["yellow-1", "yellow-9"],
-	["green-4", "green-5"],
-	["blue-8", "blue-9"],
-	["pink-3", "yellow-3"],
-	["green-7", "blue-7"],
-	["pink-9", "submarine-1"],
-	["yellow-5", "green-5"],
-];
-for (const cards of pairs) {
-	push({
-		kind: "winCards",
-		cards,
-		difficulty: d(3),
-		captainMaySelect: true,
-	});
-}
-
-for (const suit of COLOR_SUITS) {
-	push({
-		kind: "winColor",
-		suit,
-		count: 1,
-		difficulty: d(1),
-		captainMaySelect: true,
-	});
-}
-
-push({
-	kind: "winColor",
-	suit: "pink",
-	count: 3,
-	difficulty: d(3),
-	captainMaySelect: true,
-});
-push({
-	kind: "winColor",
-	suit: "blue",
-	count: 4,
-	difficulty: d(4),
-	captainMaySelect: true,
-});
-
-for (const value of [1, 5, 9] as const) {
-	push({
-		kind: "winValue",
-		value,
-		count: 1,
-		difficulty: d(value === 9 ? 2 : 1),
-		captainMaySelect: true,
-	});
-}
-
-push({
-	kind: "winSubmarines",
-	count: 1,
-	difficulty: d(2),
-	captainMaySelect: true,
-});
-push({
-	kind: "winSubmarines",
-	count: 2,
-	difficulty: d(4),
-	captainMaySelect: true,
-});
-
-push({
-	kind: "winWith",
-	value: 1,
-	difficulty: d(2),
-	captainMaySelect: true,
-});
-push({
-	kind: "winWith",
-	value: 9,
-	difficulty: d(3),
-	captainMaySelect: true,
-});
-push({
-	kind: "winWith",
-	suit: "submarine",
-	difficulty: d(3),
-	captainMaySelect: true,
-});
-push({
-	kind: "winWith",
-	card: "pink-9",
-	difficulty: d(3),
-	captainMaySelect: true,
-});
-push({
-	kind: "winWith",
-	suit: "green",
-	value: 1,
-	difficulty: d(2),
-	captainMaySelect: true,
-});
-push({
-	kind: "winWith",
-	suit: "yellow",
-	difficulty: d(2),
-	captainMaySelect: true,
-});
-
-for (const suit of COLOR_SUITS) {
-	push({
-		kind: "avoid",
-		suit,
-		difficulty: d(2),
-		captainMaySelect: true,
-	});
-}
-push({
-	kind: "avoid",
-	value: 9,
-	difficulty: d(2),
-	captainMaySelect: true,
-});
-push({
-	kind: "avoid",
-	submarines: true,
-	difficulty: d(3),
-	captainMaySelect: true,
-});
-
-for (const count of [0, 1, 2, 3] as const) {
-	push({
-		kind: "trickCount",
-		op: "exact",
-		count,
-		difficulty: d(count === 0 ? 3 : count),
-		captainMaySelect: true,
-	});
-}
-for (const count of [1, 2, 3] as const) {
-	push({
-		kind: "trickCount",
-		op: "atLeast",
-		count,
-		difficulty: d(count),
-		captainMaySelect: true,
-	});
-}
-push({
-	kind: "trickCount",
-	op: "atMost",
-	count: 1,
-	difficulty: d(2),
-	captainMaySelect: true,
-});
-
-push({
-	kind: "consecutiveTricks",
-	count: 2,
-	difficulty: d(2),
-	captainMaySelect: true,
-});
-push({
-	kind: "consecutiveTricks",
-	count: 3,
-	difficulty: d(4),
-	captainMaySelect: true,
-});
-
-push({
-	kind: "nthTrick",
-	n: 1,
-	difficulty: d(1),
-	captainMaySelect: true,
-});
-push({
-	kind: "nthTrick",
-	n: 0,
-	difficulty: d(2),
-	captainMaySelect: true,
-});
-push({
-	kind: "nthTrick",
-	n: 2,
-	difficulty: d(2),
-	captainMaySelect: true,
-});
-push({
-	kind: "nthTrick",
-	n: 3,
-	difficulty: d(2),
-	captainMaySelect: true,
-});
+const yes = true;
+const no = false;
 
 push({
 	kind: "compareTricks",
 	op: "moreThan",
+	vs: "eachOther",
+	difficulty: d(2, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "compareTricks",
+	op: "moreThan",
+	vs: "othersCombined",
+	difficulty: d(3, 4, 5),
+	captainMaySelect: yes,
+});
+push({
+	kind: "compareTricks",
+	op: "fewerThan",
+	vs: "eachOther",
+	difficulty: d(2, 2, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "compareTricks",
+	op: "moreThan",
 	vs: "captain",
-	difficulty: d(3),
-	captainMaySelect: false,
+	difficulty: d(2, 2, 3),
+	captainMaySelect: no,
 });
 push({
 	kind: "compareTricks",
 	op: "fewerThan",
 	vs: "captain",
-	difficulty: d(3),
-	captainMaySelect: false,
+	difficulty: d(2, 2, 2),
+	captainMaySelect: no,
 });
 push({
 	kind: "compareTricks",
 	op: "equalTo",
 	vs: "captain",
-	difficulty: d(2),
-	captainMaySelect: false,
-});
-push({
-	kind: "compareTricks",
-	op: "moreThan",
-	vs: "eachOther",
-	difficulty: d(4),
-	captainMaySelect: true,
-});
-push({
-	kind: "compareTricks",
-	op: "fewerThan",
-	vs: "eachOther",
-	difficulty: d(3),
-	captainMaySelect: true,
+	difficulty: d(4, 3, 3),
+	captainMaySelect: no,
 });
 
-for (const spec of [
-	{ op: "gt" as const, target: 20, noSubmarines: true, difficulty: d(3) },
-	{ op: "lt" as const, target: 12, noSubmarines: true, difficulty: d(3) },
-	{ op: "eq" as const, target: 15, noSubmarines: false, difficulty: d(4) },
-	{ op: "gt" as const, target: 16, noSubmarines: false, difficulty: d(2) },
-	{ op: "lt" as const, target: 10, noSubmarines: false, difficulty: d(2) },
-	{ op: "eq" as const, target: 21, noSubmarines: true, difficulty: d(4) },
-]) {
-	push({
-		kind: "trickSum",
-		...spec,
-		captainMaySelect: true,
-	});
-}
-
-push({
-	kind: "trickFilter",
-	filter: "allGt",
-	bound: 4,
-	noSubmarines: true,
-	difficulty: d(3),
-	captainMaySelect: true,
-});
 push({
 	kind: "trickFilter",
 	filter: "allLt",
-	bound: 5,
-	noSubmarines: true,
-	difficulty: d(3),
-	captainMaySelect: true,
-});
-push({
-	kind: "trickFilter",
-	filter: "allOdd",
-	noSubmarines: true,
-	difficulty: d(3),
-	captainMaySelect: true,
-});
-push({
-	kind: "trickFilter",
-	filter: "allEven",
-	noSubmarines: true,
-	difficulty: d(3),
-	captainMaySelect: true,
+	bound: 7,
+	noSubmarines: yes,
+	difficulty: d(2, 3, 3),
+	captainMaySelect: yes,
 });
 push({
 	kind: "trickFilter",
 	filter: "allGt",
-	bound: 6,
-	noSubmarines: false,
-	difficulty: d(4),
-	captainMaySelect: true,
+	bound: 5,
+	noSubmarines: no,
+	difficulty: d(2, 3, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winWith",
+	value: 6,
+	difficulty: d(2, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winWith",
+	value: 5,
+	difficulty: d(2, 3, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winWith",
+	value: 3,
+	difficulty: d(3, 4, 5),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winWith",
+	value: 7,
+	captureValue: 5,
+	difficulty: d(1, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winWith",
+	value: 4,
+	captureValue: 8,
+	difficulty: d(3, 4, 5),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winWith",
+	value: 6,
+	captureValue: 6,
+	difficulty: d(2, 3, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winWith",
+	value: 2,
+	difficulty: d(3, 4, 5),
+	captainMaySelect: yes,
+});
+
+push({
+	kind: "winCards",
+	cards: ["pink-3"],
+	difficulty: d(1, 1, 1),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["yellow-1"],
+	difficulty: d(1, 1, 1),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["blue-4"],
+	difficulty: d(1, 1, 1),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["green-6"],
+	difficulty: d(1, 1, 1),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winValue",
+	value: 3,
+	count: 4,
+	op: "exact",
+	difficulty: d(3, 4, 5),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winValue",
+	value: 5,
+	count: 3,
+	op: "atLeast",
+	difficulty: d(3, 4, 5),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winValue",
+	value: 9,
+	count: 3,
+	op: "atLeast",
+	difficulty: d(3, 4, 5),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winValue",
+	value: 7,
+	count: 2,
+	op: "atLeast",
+	difficulty: d(2, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winValue",
+	value: 9,
+	count: 4,
+	op: "exact",
+	difficulty: d(4, 5, 6),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winValue",
+	value: 6,
+	count: 3,
+	op: "exact",
+	difficulty: d(3, 4, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winValue",
+	value: 9,
+	count: 2,
+	op: "exact",
+	difficulty: d(2, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["blue-1", "blue-2", "blue-3"],
+	difficulty: d(2, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["blue-6", "yellow-7"],
+	difficulty: d(2, 2, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["pink-5", "yellow-6"],
+	difficulty: d(2, 2, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["green-5", "blue-8"],
+	difficulty: d(2, 2, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["blue-5", "pink-8"],
+	difficulty: d(2, 2, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["pink-9", "yellow-8"],
+	difficulty: d(2, 2, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["pink-1", "green-7"],
+	difficulty: d(2, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["yellow-9", "blue-7"],
+	difficulty: d(2, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["green-3", "yellow-4", "yellow-5"],
+	difficulty: d(3, 4, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["green-2"],
+	inTrick: 0,
+	difficulty: d(3, 4, 5),
+	captainMaySelect: yes,
+});
+
+push({
+	kind: "winColors",
+	parts: [
+		{ suit: "pink", count: 1, op: "exact" },
+		{ suit: "green", count: 1, op: "exact" },
+	],
+	difficulty: d(4, 4, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winColor",
+	suit: "yellow",
+	count: 7,
+	op: "atLeast",
+	difficulty: d(3, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winColor",
+	suit: "pink",
+	count: 5,
+	op: "atLeast",
+	difficulty: d(2, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winColor",
+	suit: "green",
+	count: 2,
+	op: "exact",
+	difficulty: d(3, 4, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winColor",
+	suit: "blue",
+	count: 2,
+	op: "exact",
+	difficulty: d(3, 4, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winColor",
+	suit: "pink",
+	count: 1,
+	op: "exact",
+	difficulty: d(3, 3, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "avoid",
+	suit: "pink",
+	difficulty: d(2, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "collectAllColors",
+	difficulty: d(2, 3, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "collectAllOfOneColor",
+	difficulty: d(3, 4, 5),
+	captainMaySelect: yes,
+});
+
+push({
+	kind: "trickFilter",
+	filter: "allEven",
+	noSubmarines: yes,
+	difficulty: d(2, 5, 6),
+	captainMaySelect: yes,
 });
 push({
 	kind: "trickFilter",
 	filter: "allOdd",
-	noSubmarines: false,
-	difficulty: d(4),
-	captainMaySelect: true,
+	noSubmarines: yes,
+	difficulty: d(2, 4, 5),
+	captainMaySelect: yes,
 });
 
 push({
-	kind: "collectAllColors",
-	difficulty: d(3),
-	captainMaySelect: true,
+	kind: "trickSum",
+	op: "gt",
+	target: d(23, 28, 31),
+	noSubmarines: yes,
+	difficulty: d(3, 3, 4),
+	captainMaySelect: yes,
 });
 push({
-	kind: "collectAllOfOneColor",
-	difficulty: d(4),
-	captainMaySelect: true,
+	kind: "trickSum",
+	op: "lt",
+	target: d(8, 12, 16),
+	noSubmarines: yes,
+	difficulty: d(3, 3, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "trickSum",
+	op: "eq",
+	targets: [22, 23],
+	noSubmarines: no,
+	difficulty: d(3, 3, 4),
+	captainMaySelect: yes,
 });
 
-const morePairs: [ColorSuit, ColorSuit][] = [
-	["pink", "yellow"],
-	["green", "blue"],
-	["blue", "pink"],
-];
-for (const [more, less] of morePairs) {
-	push({
-		kind: "collectMoreColor",
-		more,
-		less,
-		difficulty: d(2),
-		captainMaySelect: true,
-	});
-}
+push({
+	kind: "winSubmarines",
+	count: 1,
+	op: "exact",
+	redealIf: "allSubmarines",
+	difficulty: d(3, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winSubmarines",
+	count: 1,
+	op: "exact",
+	onlyCard: "submarine-1",
+	redealIf: "sub1and4or123",
+	difficulty: d(3, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winSubmarines",
+	count: 1,
+	op: "exact",
+	onlyCard: "submarine-2",
+	redealIf: "sub2and4or123",
+	difficulty: d(3, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winCards",
+	cards: ["submarine-3"],
+	difficulty: d(1, 1, 1),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winSubmarines",
+	count: 2,
+	op: "exact",
+	redealIf: "sub234",
+	difficulty: d(3, 3, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winSubmarines",
+	count: 3,
+	op: "exact",
+	redealIf: "allSubmarines",
+	difficulty: d(3, 4, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "avoid",
+	submarines: yes,
+	difficulty: d(1, 1, 1),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winWith",
+	suit: "submarine",
+	captureCard: "pink-7",
+	difficulty: d(3, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "winWith",
+	suit: "submarine",
+	captureCard: "green-9",
+	difficulty: d(3, 3, 3),
+	captainMaySelect: yes,
+});
+
+push({
+	kind: "noLead",
+	suits: ["pink", "yellow", "blue"],
+	difficulty: d(4, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "noLead",
+	suits: ["pink", "green"],
+	difficulty: d(2, 1, 1),
+	captainMaySelect: yes,
+});
+
+push({
+	kind: "avoid",
+	suit: "green",
+	difficulty: d(2, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "avoid",
+	suit: "yellow",
+	difficulty: d(2, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "avoid",
+	suits: ["pink", "blue"],
+	difficulty: d(3, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "avoid",
+	suits: ["yellow", "green"],
+	difficulty: d(3, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "avoid",
+	values: [8, 9],
+	difficulty: d(3, 3, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "avoid",
+	value: 9,
+	difficulty: d(1, 1, 1),
+	captainMaySelect: yes,
+});
+push({
+	kind: "avoid",
+	value: 5,
+	difficulty: d(1, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "avoid",
+	value: 1,
+	difficulty: d(2, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "avoid",
+	values: [1, 2, 3],
+	difficulty: d(3, 3, 3),
+	captainMaySelect: yes,
+});
+
+push({
+	kind: "skipFirstTricks",
+	count: 4,
+	difficulty: d(1, 2, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "skipFirstTricks",
+	count: 3,
+	difficulty: d(1, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "skipFirstTricks",
+	count: 5,
+	difficulty: d(2, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "trickCount",
+	op: "exact",
+	count: 0,
+	difficulty: d(4, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "consecutiveTricks",
+	count: 2,
+	op: "none",
+	difficulty: d(3, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "nthTrick",
+	n: 0,
+	difficulty: d(2, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "nthTrick",
+	n: 1,
+	count: 3,
+	difficulty: d(2, 3, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "nthTrick",
+	n: 1,
+	count: 2,
+	difficulty: d(1, 1, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "nthTrick",
+	n: 1,
+	difficulty: d(1, 1, 1),
+	captainMaySelect: yes,
+});
+push({
+	kind: "nthTrick",
+	n: 1,
+	alsoLast: yes,
+	difficulty: d(3, 4, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "nthTrick",
+	n: 0,
+	only: yes,
+	difficulty: d(4, 4, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "nthTrick",
+	n: 1,
+	only: yes,
+	difficulty: d(4, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "trickCount",
+	op: "exact",
+	count: 1,
+	difficulty: d(3, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "trickCount",
+	op: "exact",
+	count: 2,
+	difficulty: d(2, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "consecutiveTricks",
+	count: 2,
+	op: "atLeast",
+	difficulty: d(1, 1, 1),
+	captainMaySelect: yes,
+});
+push({
+	kind: "consecutiveTricks",
+	count: 3,
+	op: "atLeast",
+	difficulty: d(2, 3, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "trickCount",
+	op: "exact",
+	count: 4,
+	difficulty: d(2, 3, 5),
+	captainMaySelect: yes,
+});
+push({
+	kind: "consecutiveTricks",
+	count: 3,
+	op: "exact",
+	difficulty: d(3, 3, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "consecutiveTricks",
+	count: 2,
+	op: "exact",
+	difficulty: d(3, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "predictTricks",
+	reveal: "open",
+	difficulty: d(3, 2, 2),
+	captainMaySelect: yes,
+});
+push({
+	kind: "predictTricks",
+	reveal: "hidden",
+	difficulty: d(4, 3, 3),
+	captainMaySelect: yes,
+});
+
+push({
+	kind: "collectEqualColor",
+	a: "pink",
+	b: "yellow",
+	inTrick: no,
+	difficulty: d(4, 4, 4),
+	captainMaySelect: yes,
+});
+push({
+	kind: "collectEqualColor",
+	a: "green",
+	b: "yellow",
+	inTrick: yes,
+	difficulty: d(2, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "collectEqualColor",
+	a: "pink",
+	b: "blue",
+	inTrick: yes,
+	difficulty: d(2, 3, 3),
+	captainMaySelect: yes,
+});
+push({
+	kind: "collectMoreColor",
+	more: "yellow",
+	less: "blue",
+	difficulty: d(1, 1, 1),
+	captainMaySelect: yes,
+});
+push({
+	kind: "collectMoreColor",
+	more: "pink",
+	less: "green",
+	difficulty: d(1, 1, 1),
+	captainMaySelect: yes,
+});
 
 export const TASK_CATALOG: readonly TaskSpec[] = catalog;
 

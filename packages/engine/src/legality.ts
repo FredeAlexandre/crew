@@ -1,6 +1,6 @@
 import type { Intent, SeatId } from "@crew/protocol";
 import { legalDistressPassCards } from "./distress.ts";
-import { canPass, legalDraftInstanceIds } from "./draft.ts";
+import { canPass, legalDraftInstanceIds, maxPredictCount, pendingPredictionTask } from "./draft.ts";
 import { legalSonarUses } from "./sonar.ts";
 import type { EngineState } from "./state.ts";
 import { legalCards } from "./trick.ts";
@@ -20,6 +20,14 @@ export function legalIntents(state: EngineState, seat: SeatId): Intent[] {
 	const intents: Intent[] = [];
 
 	if (state.phase === "taskDraft" && state.currentSeat === seat) {
+		const pending = pendingPredictionTask(state, seat);
+		if (pending !== undefined) {
+			const max = maxPredictCount(state);
+			for (let count = 0; count <= max; count += 1) {
+				intents.push({ type: "task.predict", ...base, count });
+			}
+			return intents;
+		}
 		for (const taskInstanceId of legalDraftInstanceIds(state, seat)) {
 			intents.push({ type: "task.take", ...base, taskInstanceId });
 		}
