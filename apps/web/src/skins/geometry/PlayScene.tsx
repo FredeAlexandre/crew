@@ -7,11 +7,10 @@ import { useI18n } from "../../lib/i18n.tsx";
 import { playCue } from "../../lib/sfx.ts";
 import { trickCardKey, trickJuice } from "../../lib/trick-juice.ts";
 import { CardBack, CardFace } from "./Card.tsx";
-import { illegalCopy, lobbySlot, trickSlot, turnCopy } from "./copy.ts";
+import { illegalCopy, playLeadRegion, seatsInPlayOrder, turnCopy } from "./copy.ts";
 import { sortHand } from "./hand-sort.ts";
 import { ChromeLine, HandStrip, PlaySeat, SonarDetailBody, TaskCard } from "./parts.tsx";
 import styles from "./play.module.css";
-import sceneStyles from "./scenes.module.css";
 import { TaskCatalogCard } from "./TaskCatalogCard.tsx";
 
 type QueuedSonar = { cardId: CardId; position: SonarPosition };
@@ -96,6 +95,7 @@ export function PlayScene({
 		heldCards === null
 			? view.trick.leadRegion
 			: (heldCards.find((card) => card.order === 1)?.region ?? null);
+	const orderedSeats = seatsInPlayOrder(shownSeats, playLeadRegion(view, shownLeadRegion));
 	const landKeySet = new Set(heldCards === null ? landKeys : []);
 
 	useEffect(() => {
@@ -371,45 +371,43 @@ export function PlayScene({
 					</div>
 				</div>
 			) : null}
-			<div
-				className={`${sceneStyles.ring} ${styles.playRing}`}
-				data-count={String(view.playerCount)}
-			>
-				{shownSeats.map((seat) => {
-					const isSelf = seat.region === "seat.self";
-					return (
-						<PlaySeat
-							key={seat.region}
-							seat={seat}
-							slot={lobbySlot(seat.region, view.playerCount)}
-							chairClassName={`${sceneStyles.chair} ${styles.playChair}`}
-							onPeekLastTrick={
-								canInspectCompletedTricks && seat.completedTricks.length > 0
-									? () => inspectCompletedTricks(seat)
-									: undefined
-							}
-							onSonarDetail={() => openSonarDetail(seat.region)}
-							onInspectTask={inspectTask}
-							canSonar={isSelf && sonarEnabled && !sonarOpen}
-							canPass={isSelf && isDraft && view.affordances.canPassTask}
-							onSonar={
-								isSelf
-									? () => {
-											setSonarDetailRegion(null);
-											setInspectedTask(null);
-											setInspectedCompletedTricks(null);
-											if (queuedSonar !== null) {
-												setSelected(queuedSonar.cardId);
+			<div className={styles.playBoard} data-count={String(view.playerCount)}>
+				<div className={styles.heads} data-count={String(view.playerCount)}>
+					{orderedSeats.map((seat) => {
+						const isSelf = seat.region === "seat.self";
+						return (
+							<PlaySeat
+								key={seat.region}
+								seat={seat}
+								chairClassName={styles.playChair}
+								onPeekLastTrick={
+									canInspectCompletedTricks && seat.completedTricks.length > 0
+										? () => inspectCompletedTricks(seat)
+										: undefined
+								}
+								onSonarDetail={() => openSonarDetail(seat.region)}
+								onInspectTask={inspectTask}
+								canSonar={isSelf && sonarEnabled && !sonarOpen}
+								canPass={isSelf && isDraft && view.affordances.canPassTask}
+								onSonar={
+									isSelf
+										? () => {
+												setSonarDetailRegion(null);
+												setInspectedTask(null);
+												setInspectedCompletedTricks(null);
+												if (queuedSonar !== null) {
+													setSelected(queuedSonar.cardId);
+												}
+												setSonarOpen(true);
 											}
-											setSonarOpen(true);
-										}
-									: undefined
-							}
-							onPass={isSelf && isDraft ? passTask : undefined}
-						/>
-					);
-				})}
-				<div className={`${sceneStyles.lobbyWell} ${styles.playWell}`}>
+										: undefined
+								}
+								onPass={isSelf && isDraft ? passTask : undefined}
+							/>
+						);
+					})}
+				</div>
+				<div className={styles.playWell}>
 					<ChromeLine view={view} />
 					<Well
 						view={view}
@@ -510,25 +508,18 @@ function Well({
 	return (
 		<div className={styles.trickStage}>
 			<div className={styles.trick} data-region="trick">
-				{(["top", "left", "right", "bottom"] as const).map((slot) => {
-					const cards = trickCards.filter(
-						(card) => trickSlot(card.region, view.playerCount) === slot,
-					);
-					return (
-						<div key={slot} className={styles.slot} data-slot={slot}>
-							{cards.map((card) => (
-								<div
-									key={`${card.seatId}-${card.order}`}
-									className={styles.trickCard}
-									data-land={landKeys.has(trickCardKey(card)) ? "true" : "false"}
-									data-win={winnerRegion === card.region ? "true" : "false"}
-								>
-									<CardFace cardId={card.cardId} size="trick" lead={leadRegion === card.region} />
-								</div>
-							))}
+				{[...trickCards]
+					.sort((a, b) => a.order - b.order)
+					.map((card) => (
+						<div
+							key={`${card.seatId}-${card.order}`}
+							className={styles.trickCard}
+							data-land={landKeys.has(trickCardKey(card)) ? "true" : "false"}
+							data-win={winnerRegion === card.region ? "true" : "false"}
+						>
+							<CardFace cardId={card.cardId} size="trick" lead={leadRegion === card.region} />
 						</div>
-					);
-				})}
+					))}
 			</div>
 			{trickTransition ? (
 				<TrickTransitionControl transition={trickTransition} onToggle={onToggleTrickTransition} />

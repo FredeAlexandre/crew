@@ -47,8 +47,9 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Table layout (lobby and play)
 
 - [ ] The table stays on the phone screen (no page scroll off the well). Safe areas keep taps above the home indicator. **Play** sits at the bottom of the screen (not under the browser chrome) and stays disabled while chairs are empty.
-- [ ] At ~360×640 with five players, chairs stay around the well; the Settings button stays in the center; Play stays on the bottom edge; east/west seats do not cover the trick.
-- [ ] On a wider frame, opponents sit around the well. You stay at the bottom.
+- [ ] At ~360×640 with five players in the lobby, chairs stay around the well; the Settings button stays in the center; Play stays on the bottom edge; east/west seats do not cover the well.
+- [ ] On a wider frame in the lobby, opponents sit around the well. You stay at the bottom.
+- [ ] During play, every player’s head sits in one row at the top of the board, for 3, 4, or 5 players. The player who leads the trick is on the far left; the rest follow in play order to their right. Your cards stay at the bottom.
 - [ ] Long names ellipsize instead of overflowing.
 
 ## Presence
@@ -96,7 +97,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Tricks
 
 - [ ] Each seat shows whose turn it is, a won-trick count, tasks, and sonar.
-- [ ] Newly played cards land in the well. The led card is marked.
+- [ ] Newly played cards land in a single centered row, left to right in the order they were played, so every face stays visible. The led card is marked.
 - [ ] When the last card of a trick is down, the cards **stay in the well about two seconds**, the winner pulses, and a **progress bar** counts down to the next trick.
 - [ ] During that countdown: **Keep trick visible** pauses the bar and leaves the cards. The button becomes **Start next trick**, which clears the well immediately.
 - [ ] If you do nothing, the well clears on its own when the bar finishes.

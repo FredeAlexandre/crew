@@ -13,80 +13,50 @@
 	container-type: size;
 }
 
-.playRing {
+.playBoard {
+	display: grid;
+	grid-template-rows: auto minmax(0, 1fr);
 	width: 100%;
 	min-width: 0;
 	min-height: 0;
 	height: 100%;
+	gap: 0.25rem;
 	justify-self: center;
 	position: relative;
 	z-index: 2;
 }
 
-.playRing[data-count="3"] {
-	grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
-	grid-template-rows: minmax(0, 1fr) auto;
-	grid-template-areas:
-		"west well east"
-		"self self self";
+.heads {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: center;
+	align-items: flex-start;
+	gap: 0.15rem 0.35rem;
+	min-width: 0;
+	width: 100%;
 }
 
-.playRing[data-count="4"] {
-	grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
-	grid-template-rows: auto minmax(0, 1fr) auto;
-	grid-template-areas:
-		". north ."
-		"west well east"
-		"self self self";
+.playChair {
+	flex: 1 1 0;
+	min-width: 0;
+	max-width: 7.25rem;
+}
+
+.heads[data-count="5"] .playChair {
+	max-width: 5.6rem;
 }
 
 .playWell {
 	position: relative;
+	display: grid;
+	justify-items: center;
+	align-content: center;
+	gap: 0.45rem;
+	min-width: 0;
 	min-height: 0;
-}
-
-.playRing[data-count="5"] {
-	display: block;
-	position: relative;
-	min-height: 0;
-}
-
-.playRing[data-count="5"] .playWell,
-.playRing[data-count="5"] .playChair {
-	position: absolute;
-	transform: translate(-50%, -50%);
-}
-
-.playRing[data-count="5"] .playWell {
-	left: 50%;
-	top: 44%;
-}
-
-.playRing[data-count="5"] .playChair[data-slot="self"] {
-	left: 50%;
-	top: auto;
-	bottom: 0;
-	transform: translate(-50%, 0);
-}
-
-.playRing[data-count="5"] .playChair[data-slot="west"] {
-	left: 10%;
-	top: 58%;
-}
-
-.playRing[data-count="5"] .playChair[data-slot="east"] {
-	left: 90%;
-	top: 58%;
-}
-
-.playRing[data-count="5"] .playChair[data-slot="northwest"] {
-	left: 22%;
-	top: 12%;
-}
-
-.playRing[data-count="5"] .playChair[data-slot="northeast"] {
-	left: 78%;
-	top: 12%;
+	max-width: 100%;
+	padding: 0.15rem;
 }
 
 .handWrap {
@@ -125,16 +95,16 @@
 }
 
 .trick {
-	--trick-w: min(4.65rem, 24cqi);
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-	grid-template-rows: auto auto auto;
+	--trick-w: min(4.65rem, 22cqi);
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
 	align-items: center;
-	justify-items: center;
-	gap: 0.2rem 0.3rem;
-	min-height: 0;
-	width: min(22rem, 100%);
-	max-height: 100%;
+	justify-content: center;
+	gap: 0.35rem;
+	min-height: calc(var(--trick-w) * 5.2 / 3.7);
+	width: min(28rem, 100%);
+	max-width: 100%;
 }
 
 .trickStage {
@@ -179,32 +149,9 @@
 	white-space: nowrap;
 }
 
-.slot[data-slot="top"] {
-	grid-column: 2;
-	grid-row: 1;
-	display: flex;
-	gap: 0.35rem;
-}
-
-.slot[data-slot="left"] {
-	grid-column: 1;
-	grid-row: 2;
-	justify-self: end;
-}
-
-.slot[data-slot="right"] {
-	grid-column: 3;
-	grid-row: 2;
-	justify-self: start;
-}
-
-.slot[data-slot="bottom"] {
-	grid-column: 2;
-	grid-row: 3;
-}
-
 .trickCard {
 	display: grid;
+	flex: 0 0 auto;
 	transform-origin: center center;
 }
 
@@ -390,129 +337,25 @@
 	justify-self: center;
 }
 
-/* Play keeps the lobby ring on phones; lobby flex-collapse hides seat panels. */
 @container (max-width: 40rem) {
 	.table {
 		padding: 0.15rem 0.15rem 0.55rem;
 		gap: 0.15rem;
 	}
 
-	.playRing.ring,
-	.playRing[data-count="3"],
-	.playRing[data-count="4"] {
-		display: grid;
-		width: 100%;
-		height: 100%;
-		min-height: 0;
-		gap: 0.18rem 0.28rem;
-		position: relative;
+	.heads {
+		gap: 0.1rem 0.2rem;
 	}
 
-	.playRing[data-count="5"] {
-		display: block;
-		width: 100%;
-		height: 100%;
-		min-height: 10.5rem;
-		position: relative;
-		gap: unset;
-	}
-
-	.playRing[data-count="5"] .playWell,
-	.playRing[data-count="5"] .playChair {
-		position: absolute;
-		transform: translate(-50%, -50%);
-	}
-
-	.playRing[data-count="5"] .playWell {
-		left: 50%;
-		top: 44%;
-	}
-
-	.playRing[data-count="5"] .playChair[data-slot="self"] {
-		left: 50%;
-		top: auto;
-		bottom: 0;
-		transform: translate(-50%, 0);
-	}
-
-	.playRing[data-count="5"] .playChair[data-slot="west"] {
-		left: 10%;
-		top: 60%;
-	}
-
-	.playRing[data-count="5"] .playChair[data-slot="east"] {
-		left: 90%;
-		top: 60%;
-	}
-
-	.playRing[data-count="5"] .playChair[data-slot="northwest"] {
-		left: 22%;
-		top: 10%;
-	}
-
-	.playRing[data-count="5"] .playChair[data-slot="northeast"] {
-		left: 78%;
-		top: 10%;
-	}
-
-	/* Keep the trick unobstructed: five-player opponents are compact markers
-	 * around it, while the hand and current cards retain their readable size. */
-	.playRing[data-count="5"] .playChair:not([data-slot="self"]) {
-		width: 4.3rem;
-	}
-
-	.playRing[data-count="5"] .playChair:not([data-slot="self"]) .playSeat {
-		/* The full seat payload stays available (task, sonar and won tricks),
-		 * but occupies a small, predictable perimeter marker on a phone. */
-		width: 5.15rem;
-		transform: scale(0.8);
-		transform-origin: top center;
-	}
-
-	.playRing[data-count="5"] .playWell {
-		width: min(70%, 18rem);
-	}
-
-	@container (max-width: 24rem) {
-		.playRing[data-count="5"] .playChair[data-slot="west"] {
-			left: 11%;
-		}
-
-		.playRing[data-count="5"] .playChair[data-slot="east"] {
-			left: 89%;
-		}
-
-		.playRing[data-count="5"] .playChair:not([data-slot="self"]) .playSeat {
-			transform: scale(0.72);
-		}
-
-		.playRing[data-count="5"] .playWell {
-			width: min(72%, 16rem);
-		}
-	}
-
-	.playRing .playChair {
-		flex: unset;
-		min-width: 0;
-		max-width: 100%;
-		order: unset;
-	}
-
-	.playRing .playChair[data-slot="self"] {
-		flex: unset;
-		align-self: end;
-		justify-self: stretch;
-	}
-
-	.playRing .playWell {
-		flex: unset;
-		order: unset;
-		min-height: 0;
+	.playChair,
+	.heads[data-count="5"] .playChair {
+		max-width: 4.6rem;
 	}
 
 	.trick {
-		--trick-w: min(3.35rem, 22cqi);
-		width: min(16rem, 100%);
+		--trick-w: min(3.35rem, 18cqi);
+		gap: 0.28rem;
+		width: min(20rem, 100%);
 	}
 
 	.overlayLayer {
@@ -527,14 +370,6 @@
 
 	.taskRow {
 		gap: 0.35rem 0.45rem;
-	}
-}
-
-@media (max-width: 40rem) {
-	.playRing.ring,
-	.playRing[data-count="3"],
-	.playRing[data-count="4"] {
-		display: grid;
 	}
 }
 

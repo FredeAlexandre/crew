@@ -9,14 +9,7 @@ import { useSfxMuted } from "../../hooks/use-sfx-muted.ts";
 import { identiconUrl } from "../../lib/avatar.ts";
 import { useI18n } from "../../lib/i18n.tsx";
 import { CardBack, CardFace } from "./Card.tsx";
-import {
-	type LobbySlot,
-	seatIdenticonSeed,
-	seatIsEmpty,
-	seatName,
-	sonarPositionCopy,
-	turnCopy,
-} from "./copy.ts";
+import { seatIdenticonSeed, seatIsEmpty, seatName, sonarPositionCopy, turnCopy } from "./copy.ts";
 import { cardIndexFromRects } from "./hand-layout.ts";
 import styles from "./parts.module.css";
 import { type TaskCardSize, TaskCatalogCard } from "./TaskCatalogCard.tsx";
@@ -188,7 +181,6 @@ function CommunicatedSlot({
 
 export function PlaySeat({
 	seat,
-	slot,
 	onPeekLastTrick,
 	onSonarDetail,
 	onInspectTask,
@@ -199,7 +191,6 @@ export function PlaySeat({
 	chairClassName,
 }: {
 	seat: SeatView;
-	slot: LobbySlot;
 	onPeekLastTrick?: () => void;
 	onSonarDetail?: () => void;
 	onInspectTask?: (task: TaskView) => void;
@@ -217,12 +208,11 @@ export function PlaySeat({
 		<div
 			className={chairClassName}
 			data-region={seat.region}
-			data-slot={slot}
 			data-turn={seat.isTurn ? "true" : "false"}
 			data-empty={empty ? "true" : "false"}
 			data-self={self ? "true" : "false"}
 		>
-			<div className={styles.playSeat} data-slot={slot}>
+			<div className={styles.playSeat} data-self={self ? "true" : "false"}>
 				<div className={styles.seatHead}>
 					<SeatAvatar seat={seat} self={self} />
 				</div>
@@ -234,7 +224,7 @@ export function PlaySeat({
 								<TaskMark
 									key={task.instanceId}
 									task={task}
-									size={self ? "self" : "compact"}
+									size="compact"
 									onInspect={onInspectTask}
 								/>
 							))
