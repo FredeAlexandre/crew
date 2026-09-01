@@ -26,7 +26,14 @@ export const sceneSchema = z.enum([
 ]);
 export type Scene = z.infer<typeof sceneSchema>;
 
-export const overlaySchema = z.enum(["none", "distress", "sonar", "lastTrick", "reminder"]);
+export const overlaySchema = z.enum([
+	"none",
+	"distress",
+	"sonar",
+	"lastTrick",
+	"reminder",
+	"predict",
+]);
 export type Overlay = z.infer<typeof overlaySchema>;
 
 export const seatRegionSchema = z.enum(["seat.self", "seat.1", "seat.2", "seat.3", "seat.4"]);
@@ -59,6 +66,8 @@ export const taskViewSchema = z.object({
 	region: taskRegionSchema,
 	ownerSeatId: seatIdSchema.nullable(),
 	takeable: z.boolean(),
+	prediction: z.number().int().nonnegative().nullable().optional(),
+	needsPrediction: z.boolean().optional(),
 });
 export type TaskView = z.infer<typeof taskViewSchema>;
 
@@ -133,6 +142,7 @@ export const affordancesSchema = z.object({
 	canSkipDistress: z.boolean(),
 	canActivateDistress: z.boolean(),
 	canPassDistressCard: z.boolean(),
+	canPredict: z.boolean(),
 	canPeekLastTrick: z.boolean(),
 	canStart: z.boolean(),
 	canFillBots: z.boolean(),
@@ -151,6 +161,7 @@ export const chromeSchema = z.object({
 		direction: distressDirectionSchema.nullable(),
 	}),
 	sonarAvailable: z.boolean(),
+	maxTricks: z.number().int().nonnegative().optional(),
 	flags: z.object({
 		sonarDisabled: z.boolean(),
 		discussionAllowed: z.boolean(),

@@ -31,6 +31,7 @@ export type ClientIntent =
 	| { type: "host.kick"; seatId: number }
 	| { type: "task.take"; taskInstanceId: TaskInstanceId }
 	| { type: "task.pass" }
+	| { type: "task.predict"; count: number }
 	| { type: "distress.skip" }
 	| { type: "distress.activate"; direction: DistressDirection }
 	| { type: "distress.passCard"; cardId: CardId }

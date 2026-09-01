@@ -15,10 +15,12 @@
 			"direction": null
 		},
 		"sonarAvailable": true,
+		"maxTricks": 10,
 		"flags": {
 			"sonarDisabled": false,
 			"discussionAllowed": false,
-			"distressDisabled": false
+			"distressDisabled": false,
+			"completedTricksVisible": false
 		}
 	},
 	"seats": [
@@ -27,6 +29,7 @@
 			"seatId": 2,
 			"displayName": null,
 			"connected": true,
+			"leaving": false,
 			"ready": true,
 			"isCaptain": true,
 			"sonar": {
@@ -35,6 +38,7 @@
 			},
 			"handCount": 10,
 			"wonTrickCount": 0,
+			"completedTricks": [],
 			"isTurn": true,
 			"isLastTrickWinner": false,
 			"tasks": []
@@ -44,6 +48,7 @@
 			"seatId": 3,
 			"displayName": null,
 			"connected": true,
+			"leaving": false,
 			"ready": true,
 			"isCaptain": false,
 			"sonar": {
@@ -52,6 +57,7 @@
 			},
 			"handCount": 10,
 			"wonTrickCount": 0,
+			"completedTricks": [],
 			"isTurn": false,
 			"isLastTrickWinner": false,
 			"tasks": []
@@ -61,6 +67,7 @@
 			"seatId": 0,
 			"displayName": null,
 			"connected": true,
+			"leaving": false,
 			"ready": true,
 			"isCaptain": false,
 			"sonar": {
@@ -69,6 +76,7 @@
 			},
 			"handCount": 10,
 			"wonTrickCount": 0,
+			"completedTricks": [],
 			"isTurn": false,
 			"isLastTrickWinner": false,
 			"tasks": []
@@ -78,6 +86,7 @@
 			"seatId": 1,
 			"displayName": null,
 			"connected": true,
+			"leaving": false,
 			"ready": true,
 			"isCaptain": false,
 			"sonar": {
@@ -86,6 +95,7 @@
 			},
 			"handCount": 10,
 			"wonTrickCount": 0,
+			"completedTricks": [],
 			"isTurn": false,
 			"isLastTrickWinner": false,
 			"tasks": []
@@ -163,25 +173,27 @@
 		{
 			"instanceId": "a1:0",
 			"spec": {
-				"kind": "winColor",
-				"suit": "blue",
-				"count": 1,
+				"kind": "winCards",
+				"cards": ["pink-3"],
 				"difficulty": {
 					"3": 1,
 					"4": 1,
 					"5": 1
 				},
 				"captainMaySelect": true,
-				"id": "t32"
+				"id": "t16"
 			},
 			"status": "open",
 			"progress": 0,
 			"region": "tasks.center",
 			"ownerSeatId": null,
-			"takeable": true
+			"takeable": true,
+			"prediction": null,
+			"needsPrediction": false
 		}
 	],
 	"lastTrick": null,
+	"history": [],
 	"undealt": {
 		"present": false
 	},
@@ -194,6 +206,7 @@
 		"canSkipDistress": false,
 		"canActivateDistress": false,
 		"canPassDistressCard": false,
+		"canPredict": false,
 		"canPeekLastTrick": false,
 		"canStart": false,
 		"canFillBots": false,

@@ -14,13 +14,14 @@ function DifficultyPips({ difficulty }: { difficulty: TaskPublic["difficulty"] }
 		{ label: "4", value: difficulty[4] },
 		{ label: "5", value: difficulty[5] },
 	] as const;
+	const pips = Math.max(4, ...groups.map((group) => group.value));
 
 	return (
 		<div className={styles.difficulty}>
 			{groups.map(({ label, value }) => (
 				<span key={label} className={styles.difficultyGroup}>
 					<span className={styles.playerLabel}>{label}</span>
-					{Array.from({ length: 4 }, (_, index) => (
+					{Array.from({ length: pips }, (_, index) => (
 						<span
 							key={index}
 							className={styles.pip}
@@ -55,6 +56,7 @@ export function TaskCatalogCard({
 	takeable = false,
 	showMeta,
 	region,
+	prediction,
 	onPress,
 }: {
 	task: TaskPublic;
@@ -63,10 +65,13 @@ export function TaskCatalogCard({
 	takeable?: boolean;
 	showMeta?: boolean;
 	region?: TaskView["region"];
+	prediction?: number | null;
 	onPress?: () => void;
 }) {
 	const { t } = useI18n();
-	const caption = taskCatalogLabel(task, t);
+	const base = taskCatalogLabel(task, t);
+	const caption =
+		prediction !== undefined && prediction !== null ? `${base} (${prediction})` : base;
 	const chrome = showMeta ?? size === "catalog";
 	const label = taskAriaLabel(caption, status, t);
 	const inner = (

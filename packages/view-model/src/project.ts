@@ -59,7 +59,7 @@ export function project(
 ): TableView {
 	const playerCount = state.playerCount;
 	const intents = legalIntents(state, viewerSeat);
-	const { scene, overlay } = sceneAndOverlay(state);
+	const { scene, overlay } = sceneAndOverlay(state, viewerSeat);
 
 	const takeable = new Set<TaskInstanceId>();
 	const legalPlay = new Set<CardId>();
@@ -71,6 +71,7 @@ export function project(
 	let canSkipDistress = false;
 	let canActivateDistress = false;
 	let canPassDistressCard = false;
+	let canPredict = false;
 
 	for (const intent of intents) {
 		switch (intent.type) {
@@ -97,6 +98,9 @@ export function project(
 			case "distress.passCard":
 				canPassDistressCard = true;
 				legalPass.add(intent.cardId);
+				break;
+			case "task.predict":
+				canPredict = true;
 				break;
 			default:
 				break;
@@ -218,6 +222,7 @@ export function project(
 				direction: state.distressDirection,
 			},
 			sonarAvailable: state.sonar[viewerSeat]?.available === true,
+			maxTricks: state.hands.length === 0 ? 0 : Math.min(...state.hands.map((hand) => hand.length)),
 			flags: {
 				sonarDisabled: state.mission?.flags?.sonarDisabled === true,
 				discussionAllowed: state.mission?.flags?.discussionAllowed === true,
@@ -248,6 +253,7 @@ export function project(
 			canSkipDistress,
 			canActivateDistress,
 			canPassDistressCard,
+			canPredict,
 			canPeekLastTrick: completedTricksVisible && lastTrick !== null,
 			canStart: false,
 			canFillBots: false,
@@ -259,7 +265,12 @@ export function project(
 }
 
 export function projectFacts(facts: readonly Fact[], viewerSeat: SeatId): Fact[] {
-	return facts.map((fact) => redactFact(fact, viewerSeat));
+	return facts.flatMap((fact) => {
+		if (fact.type === "task.predicted" && fact.hidden && fact.seatId !== viewerSeat) {
+			return [];
+		}
+		return [redactFact(fact, viewerSeat)];
+	});
 }
 
 export function projectLobby(
@@ -324,6 +335,7 @@ export function projectLobby(
 			canSkipDistress: false,
 			canActivateDistress: false,
 			canPassDistressCard: false,
+			canPredict: false,
 			canPeekLastTrick: false,
 			canStart: lobbyCanStart(occupancy, viewerSeat, hostSeatId),
 			canFillBots: lobbyCanFillBots(occupancy, viewerSeat, hostSeatId),
@@ -412,10 +424,20 @@ function omitCardId(fact: Fact & { cardId?: CardId }): Fact {
 	return next;
 }
 
-function sceneAndOverlay(state: EngineState): Pick<TableView, "scene" | "overlay"> {
+function sceneAndOverlay(
+	state: EngineState,
+	viewerSeat: SeatId,
+): Pick<TableView, "scene" | "overlay"> {
 	switch (state.phase) {
-		case "taskDraft":
-			return { scene: "taskDraft", overlay: "none" };
+		case "taskDraft": {
+			const predicting = state.tasks.some(
+				(task) =>
+					task.ownerSeat === viewerSeat &&
+					task.spec.kind === "predictTricks" &&
+					task.prediction === null,
+			);
+			return { scene: "taskDraft", overlay: predicting ? "predict" : "none" };
+		}
 		case "distressOffer":
 		case "distressPass":
 			return { scene: "play", overlay: "distress" };
@@ -437,6 +459,10 @@ function toTaskView(
 		task.ownerSeat === null
 			? "tasks.center"
 			: taskRegionAt(relativeSeat(task.ownerSeat, viewerSeat, playerCount));
+	const hidePrediction =
+		task.spec.kind === "predictTricks" &&
+		task.spec.reveal === "hidden" &&
+		task.ownerSeat !== viewerSeat;
 	return {
 		instanceId: task.instanceId,
 		spec: task.spec,
@@ -445,6 +471,11 @@ function toTaskView(
 		region,
 		ownerSeatId: task.ownerSeat,
 		takeable: takeable.has(task.instanceId),
+		prediction: hidePrediction ? null : task.prediction,
+		needsPrediction:
+			task.spec.kind === "predictTricks" &&
+			task.prediction === null &&
+			task.ownerSeat === viewerSeat,
 	};
 }
 

@@ -74,6 +74,7 @@ export type {
 	PlayIntent,
 	SonarUseIntent,
 	TaskPassIntent,
+	TaskPredictIntent,
 	TaskTakeIntent,
 } from "./intents.ts";
 export {
@@ -93,6 +94,7 @@ export {
 	playerRenameIntentSchema,
 	sonarUseIntentSchema,
 	taskPassIntentSchema,
+	taskPredictIntentSchema,
 	taskTakeIntentSchema,
 } from "./intents.ts";
 export type { PlayerCount, RoomTicket } from "./rooms.ts";
@@ -108,8 +110,20 @@ export {
 	roomCodeSchema,
 	roomTicketSchema,
 } from "./rooms.ts";
-export type { DifficultyByPlayers, TaskPublic } from "./tasks.ts";
-export { difficultyByPlayersSchema, taskPublicSchema } from "./tasks.ts";
+export type {
+	CardCountOp,
+	ConsecutiveOp,
+	DifficultyByPlayers,
+	RedealIf,
+	TaskPublic,
+} from "./tasks.ts";
+export {
+	cardCountOpSchema,
+	consecutiveOpSchema,
+	difficultyByPlayersSchema,
+	redealIfSchema,
+	taskPublicSchema,
+} from "./tasks.ts";
 
 export const snapshotEnvelopeSchema = z.object({
 	type: z.literal("room.snapshot"),

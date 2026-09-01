@@ -69,22 +69,27 @@ button.card {
 
 .card[data-kind="winCards"],
 .card[data-kind="winColor"],
+.card[data-kind="winColors"],
 .card[data-kind="winValue"],
 .card[data-kind="winSubmarines"],
 .card[data-kind="winWith"],
 .card[data-kind="collectAllColors"],
 .card[data-kind="collectAllOfOneColor"],
-.card[data-kind="collectMoreColor"] {
+.card[data-kind="collectMoreColor"],
+.card[data-kind="collectEqualColor"] {
 	--kind-accent: var(--gold);
 }
 
-.card[data-kind="avoid"] {
+.card[data-kind="avoid"],
+.card[data-kind="noLead"] {
 	--kind-accent: #c44b4b;
 }
 
 .card[data-kind="trickCount"],
+.card[data-kind="predictTricks"],
 .card[data-kind="consecutiveTricks"],
 .card[data-kind="nthTrick"],
+.card[data-kind="skipFirstTricks"],
 .card[data-kind="compareTricks"],
 .card[data-kind="trickSum"],
 .card[data-kind="trickFilter"] {

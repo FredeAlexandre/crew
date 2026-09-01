@@ -72,6 +72,12 @@ export const taskPassIntentSchema = z.object({
 	...playMeta,
 });
 
+export const taskPredictIntentSchema = z.object({
+	type: z.literal("task.predict"),
+	...playMeta,
+	count: z.number().int().nonnegative(),
+});
+
 export const distressSkipIntentSchema = z.object({
 	type: z.literal("distress.skip"),
 	...playMeta,
@@ -114,6 +120,7 @@ export const intentSchema = z.discriminatedUnion("type", [
 	hostKickIntentSchema,
 	taskTakeIntentSchema,
 	taskPassIntentSchema,
+	taskPredictIntentSchema,
 	distressSkipIntentSchema,
 	distressActivateIntentSchema,
 	distressPassCardIntentSchema,
@@ -132,6 +139,7 @@ export type HostFillBotsIntent = z.infer<typeof hostFillBotsIntentSchema>;
 export type HostKickIntent = z.infer<typeof hostKickIntentSchema>;
 export type TaskTakeIntent = z.infer<typeof taskTakeIntentSchema>;
 export type TaskPassIntent = z.infer<typeof taskPassIntentSchema>;
+export type TaskPredictIntent = z.infer<typeof taskPredictIntentSchema>;
 export type DistressSkipIntent = z.infer<typeof distressSkipIntentSchema>;
 export type DistressActivateIntent = z.infer<typeof distressActivateIntentSchema>;
 export type DistressPassCardIntent = z.infer<typeof distressPassCardIntentSchema>;

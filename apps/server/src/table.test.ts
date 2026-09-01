@@ -348,9 +348,13 @@ describe("table play", () => {
 		expect(view1.hand.map((card) => card.cardId)).toEqual(engine.hands[1]);
 		const dumped1 = JSON.stringify(view1);
 		for (const cardId of engine.hands[0] ?? []) {
-			if (!(engine.hands[1] ?? []).includes(cardId)) {
-				expect(dumped1.includes(cardId)).toBe(false);
+			if ((engine.hands[1] ?? []).includes(cardId)) {
+				continue;
 			}
+			if (engine.tasks.some((task) => JSON.stringify(task.spec).includes(cardId))) {
+				continue;
+			}
+			expect(dumped1.includes(cardId)).toBe(false);
 		}
 		const snap0 = snapshotMessage(started.state, 0);
 		expect(snap0.type).toBe("room.snapshot");

@@ -55,6 +55,7 @@ export type TaskInstance = {
 	status: TaskStatus;
 	progress: number;
 	spec: TaskPublic;
+	prediction: number | null;
 };
 
 export type EngineState = {
