@@ -34,7 +34,7 @@ export function useIdentity(): {
 			})
 			.catch(() => {
 				if (!cancelled) {
-					setSessionError("Could not start a guest session. Try again.");
+					setSessionError("guestSession");
 				}
 			});
 		return () => {

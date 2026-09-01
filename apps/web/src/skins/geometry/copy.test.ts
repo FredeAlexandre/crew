@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { lobbySlot } from "./copy.ts";
+import { translate } from "../../lib/i18n.tsx";
+import { illegalCopy, lobbySlot, missionHeading, sonarPositionCopy } from "./copy.ts";
+
+const tEn = (key: string, values?: Record<string, string | number>) => translate("en", key, values);
+const tFr = (key: string, values?: Record<string, string | number>) => translate("fr", key, values);
 
 describe("lobbySlot", () => {
 	it("keeps self at the bottom for every crew size", () => {
@@ -24,5 +28,15 @@ describe("lobbySlot", () => {
 		expect(lobbySlot("seat.2", 5)).toBe("northwest");
 		expect(lobbySlot("seat.3", 5)).toBe("northeast");
 		expect(lobbySlot("seat.4", 5)).toBe("east");
+	});
+});
+
+describe("translated table copy", () => {
+	it("renders mission headings and illegal reasons in the active language", () => {
+		expect(missionHeading("m4", tEn)).toBe("Mission 4");
+		expect(missionHeading("m4", tFr)).toBe("Mission 4");
+		expect(illegalCopy("mustFollowSuit", tEn)).toBe("Must follow suit");
+		expect(illegalCopy("mustFollowSuit", tFr)).toBe("Vous devez suivre");
+		expect(sonarPositionCopy("highest", tFr)).toBe("La plus haute de cette couleur");
 	});
 });

@@ -54,8 +54,10 @@ export function PlayScene({
 					: sonarDetailRegion !== null || inspectedTask !== null
 						? "reminder"
 						: "none";
+	const { t } = useI18n();
 	const selectedCard = view.hand.find((card) => card.cardId === selected);
-	const hint = selectedCard && !selectedCard.legal ? illegalCopy(selectedCard.illegalReason) : null;
+	const hint =
+		selectedCard && !selectedCard.legal ? illegalCopy(selectedCard.illegalReason, t) : null;
 	const canPlaySelected = Boolean(view.affordances.canPlay && selectedCard?.legal && !sonarOpen);
 	const canPassSelected = Boolean(view.affordances.canPassDistressCard && selectedCard?.legal);
 	const confirmRail = Boolean(
@@ -88,7 +90,7 @@ export function PlayScene({
 		!sonarOpen;
 	const isDraft = view.scene === "taskDraft";
 	const quietHand = isDraft || view.scene === "deal";
-	const turn = isDraft ? turnCopy(view) : null;
+	const turn = isDraft ? turnCopy(view, t) : null;
 	const shownTrickCards = heldCards ?? view.trick.cards;
 	const shownLeadRegion =
 		heldCards === null
@@ -434,8 +436,8 @@ export function PlayScene({
 				/>
 				{confirmRail ? (
 					<div className={styles.handConfirm}>
-						{canPassSelected ? <Button onPress={passDistressCard}>Pass</Button> : null}
-						{canPlaySelected ? <Button onPress={playCard}>Play</Button> : null}
+						{canPassSelected ? <Button onPress={passDistressCard}>{t("pass")}</Button> : null}
+						{canPlaySelected ? <Button onPress={playCard}>{t("play")}</Button> : null}
 					</div>
 				) : null}
 			</div>
@@ -464,10 +466,15 @@ function Well({
 	onToggleTrickTransition: () => void;
 	onTake?: (task: TaskView) => void;
 }) {
+	const { t } = useI18n();
 	if (view.scene === "taskDraft") {
 		return (
 			<div className={styles.draftWell} data-region="tasks.center">
-				{turn ? <p className={styles.draftPrompt}>{turn}. Take a task.</p> : null}
+				{turn ? (
+					<p className={styles.draftPrompt}>
+						{turn}. {t("takeTask")}
+					</p>
+				) : null}
 				<div className={styles.taskRow}>
 					{view.centerTasks.map((task) => (
 						<TaskCard key={task.instanceId} task={task} onTake={onTake} />
@@ -484,7 +491,7 @@ function Well({
 					<CardBack />
 					<CardBack />
 				</span>
-				<p className={styles.stockLabel}>Dealing</p>
+				<p className={styles.stockLabel}>{t("dealing")}</p>
 			</div>
 		);
 	}
@@ -532,13 +539,14 @@ function TrickTransitionControl({
 	transition: TrickTransition;
 	onToggle: () => void;
 }) {
+	const { t } = useI18n();
 	const percent = Math.round((transition.remaining / TRICK_TRANSITION_MS) * 100);
 	return (
 		<div className={styles.trickTransition}>
 			<div
 				className={styles.trickProgress}
 				role="progressbar"
-				aria-label="Time until the next trick"
+				aria-label={t("nextTrickProgress")}
 				aria-valuemin={0}
 				aria-valuemax={100}
 				aria-valuenow={percent}
@@ -546,7 +554,7 @@ function TrickTransitionControl({
 				<span style={{ transform: `scaleX(${percent / 100})` }} />
 			</div>
 			<Button variant="outline" size="sm" onPress={onToggle}>
-				{transition.paused ? "Start next trick" : "Keep trick visible"}
+				{transition.paused ? t("startNextTrick") : t("keepTrickVisible")}
 			</Button>
 		</div>
 	);
@@ -641,11 +649,15 @@ function OverlayBody({
 	if (overlay === "lastTrick" && inspectedCompletedTricks) {
 		return (
 			<>
-				<p className={styles.overlayTitle}>{inspectedCompletedTricks.displayName} — tricks won</p>
+				<p className={styles.overlayTitle}>
+					{t("tricksWonNamed", { name: inspectedCompletedTricks.displayName ?? t("crew") })}
+				</p>
 				<div className={styles.completedTricks}>
 					{inspectedCompletedTricks.completedTricks.map((trick) => (
 						<div key={trick.trickId} className={styles.lastTrick}>
-							<span className={styles.completedTrickLabel}>Trick {trick.trickId}</span>
+							<span className={styles.completedTrickLabel}>
+								{t("trick", { number: trick.trickId })}
+							</span>
 							{trick.cards.map((card) => (
 								<CardFace
 									key={`${trick.trickId}-${card.seatId}-${card.order}`}

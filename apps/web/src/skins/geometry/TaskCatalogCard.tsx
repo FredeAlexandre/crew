@@ -1,6 +1,7 @@
 import type { TaskPublic } from "@crew/protocol";
 import type { TaskView } from "@crew/view-model/fixtures";
 import { Button } from "react-aria-components";
+import { useI18n } from "../../lib/i18n.tsx";
 import { TaskCatalogArt } from "./TaskCatalogArt.tsx";
 import styles from "./task-catalog-card.module.css";
 import { taskCatalogLabel } from "./task-label.ts";
@@ -33,12 +34,16 @@ function DifficultyPips({ difficulty }: { difficulty: TaskPublic["difficulty"] }
 	);
 }
 
-function taskAriaLabel(caption: string, status: TaskView["status"] | undefined): string {
+function taskAriaLabel(
+	caption: string,
+	status: TaskView["status"] | undefined,
+	t: ReturnType<typeof useI18n>["t"],
+): string {
 	if (status === "completed") {
-		return `${caption}, complete`;
+		return t("taskStatusComplete", { caption });
 	}
 	if (status === "failed") {
-		return `${caption}, failed`;
+		return t("taskStatusFailed", { caption });
 	}
 	return caption;
 }
@@ -60,16 +65,17 @@ export function TaskCatalogCard({
 	region?: TaskView["region"];
 	onPress?: () => void;
 }) {
-	const caption = taskCatalogLabel(task);
+	const { t } = useI18n();
+	const caption = taskCatalogLabel(task, t);
 	const chrome = showMeta ?? size === "catalog";
-	const label = taskAriaLabel(caption, status);
+	const label = taskAriaLabel(caption, status, t);
 	const inner = (
 		<>
 			{chrome ? (
 				<div className={styles.top}>
 					{size === "catalog" ? <span className={styles.id}>{task.id}</span> : <span />}
 					{task.captainMaySelect ? (
-						<span className={styles.captain} title="Captain may select">
+						<span className={styles.captain} title={t("captainMaySelect")}>
 							C
 						</span>
 					) : null}

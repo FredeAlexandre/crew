@@ -44,7 +44,7 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 	return (
 		<div className={`${styles.board} ${styles.lobby}`} data-scene={view.scene}>
 			<header className={styles.lobbyHead}>
-				<p className={styles.kicker}>Crew</p>
+				<p className={styles.kicker}>{t("siteTitle")}</p>
 				<Button
 					variant="ghost"
 					className="font-heading h-auto px-0 text-2xl font-semibold tracking-widest uppercase"
@@ -246,7 +246,7 @@ function Chair({
 			) : null}
 			{!self && !empty && onKick ? (
 				<Button variant="ghost" size="sm" onPress={() => onKick(seat.seatId)}>
-					Remove
+					{t("remove")}
 				</Button>
 			) : null}
 		</div>
@@ -276,5 +276,5 @@ function captainPickLabel(seat: SeatView, t: ReturnType<typeof useI18n>["t"]): s
 	if (seatIsEmpty(seat)) {
 		return `${t("seat")} ${seat.seatId + 1}`;
 	}
-	return seatName(seat);
+	return seatName(seat, t);
 }
