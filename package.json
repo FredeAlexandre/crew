@@ -41,7 +41,6 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.5.3",
 		"@cloudflare/workers-types": "catalog:",
-		"@crew/config": "workspace:*",
 		"@types/node": "catalog:",
 		"dependency-cruiser": "^17.3.6",
 		"knip": "^5.80.0",
