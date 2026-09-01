@@ -18,7 +18,8 @@
 		"flags": {
 			"sonarDisabled": false,
 			"discussionAllowed": false,
-			"distressDisabled": false
+			"distressDisabled": true,
+			"completedTricksVisible": true
 		}
 	},
 	"seats": [

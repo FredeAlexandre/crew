@@ -30,6 +30,10 @@ export function seatIsEmpty(seat: SeatView): boolean {
 	return seat.displayName === null && !seat.connected;
 }
 
+export function seatIsBot(seat: SeatView): boolean {
+	return seat.avatarSeed?.startsWith("bot:") === true;
+}
+
 export function missionHeading(missionId: string | null, t: Translate): string {
 	if (missionId === null) {
 		return t("missionPlain");

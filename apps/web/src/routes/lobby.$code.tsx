@@ -123,11 +123,11 @@ function LobbyRoute() {
 									},
 						onCopyCode: isRoomCode(code) ? () => void copyCode() : undefined,
 						onReady: (ready) => table.sendIntent({ type: "player.ready", ready }),
-						onFillBots: view.affordances.canFillBots
-							? () => table.sendIntent({ type: "host.fillBots" })
-							: undefined,
 						onKick: view.affordances.canConfigure
 							? (seatId) => table.sendIntent({ type: "host.kick", seatId })
+							: undefined,
+						onFillBot: view.affordances.canFillBots
+							? (seatId) => table.sendIntent({ type: "host.fillBots", seatId })
 							: undefined,
 						onConfigure: view.affordances.canConfigure
 							? (setup) => table.sendIntent({ type: "host.configure", ...setup })

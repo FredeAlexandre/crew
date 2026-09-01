@@ -43,8 +43,8 @@ export type LobbySetup = {
 const DEFAULT_LOBBY_SETUP: LobbySetup = {
 	difficulty: DEFAULT_MISSION_DIFFICULTY,
 	captainSeat: null,
-	distressDisabled: false,
-	completedTricksVisible: false,
+	distressDisabled: true,
+	completedTricksVisible: true,
 };
 
 /**

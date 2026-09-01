@@ -378,7 +378,8 @@ describe("occupancy", () => {
 		expect(projectLobby(hostOnly, 1, 1, 0).affordances.canConfigure).toBe(false);
 		expect(projectLobby([null, null, null], 0, 0, 0).affordances.canConfigure).toBe(false);
 		expect(projectLobby(hostOnly, 0, 1, 0).chrome.difficulty).toBe(4);
-		expect(projectLobby(hostOnly, 0, 1, 0).chrome.flags.distressDisabled).toBe(false);
+		expect(projectLobby(hostOnly, 0, 1, 0).chrome.flags.distressDisabled).toBe(true);
+		expect(projectLobby(hostOnly, 0, 1, 0).chrome.flags.completedTricksVisible).toBe(true);
 	});
 
 	it("keeps occupancy names after a deal", () => {

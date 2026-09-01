@@ -83,7 +83,7 @@ function RootShell() {
 								to="/"
 								onClick={() => window.dispatchEvent(new Event("crew:leave-table"))}
 							>
-								{t("table")}
+								{t("siteTitle")}
 							</Link>
 						) : atHome ? null : (
 							<span />

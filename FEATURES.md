@@ -34,27 +34,27 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] You always sit at the **bottom**. Others sit clockwise: 3 players left and right; 4 with one across; 5 around the well (west, northwest, northeast, east).
 - [ ] Empty chairs stay visible until someone sits.
 - [ ] Each chair shows that player’s face and name. Your chair has an editable name field; changing it updates every seat.
-- [ ] Tap **Sit ready**. Others see a ready mark. Only the host can **Start**, and only when every chair is filled and ready.
+- [ ] Tap **Sit ready**. Others see a ready mark. Only the host can **Play**, and only when every chair is filled and ready.
 - [ ] Tap the lobby code to copy a **full invite URL**.
-- [ ] Host-only setup in the well (guests see the current choices, not the controls):
+- [ ] Host-only setup lives behind a **Settings** button in the well (opens a drawer from the bottom). Guests can open it to read the current choices, not change them:
   - **Difficulty** 1–16 (default 4).
-  - **Captain**: random, or a specific chair. That chair is dealt submarine 4. Captain is still “who holds submarine 4.”
-  - **Distress** on (default) or off. Off skips the distress step after the draft.
-  - **Completed tricks** off (default) or on. Off: each seat still shows how many tricks it won, but the pile is not tappable. On: tap a pile to see every trick that player won.
-- [ ] Host can **Fill empty seats** with dummy teammates. The button is gone when the table is full. Guests cannot fill seats.
+  - **Captain**: random, or a specific chair (a selector, not a row of buttons). That chair is dealt submarine 4. Captain is still “who holds submarine 4.”
+  - **Distress** off (default) or on. Off skips the distress step after the draft.
+- [ ] Completed tricks are always on: tap a pile to see every trick that player won. There is no lobby toggle.
+- [ ] Dummy teammates still play after Start if they are seated. The host can tap an empty chair and choose **Bot**.
 - [ ] Host can **Remove** a seated guest (not themselves, not a bot, not after Start). That person is kicked and cannot rejoin for a short wait; each later kick of the same person doubles the wait (about 10s, then 20s, …). They see that they must wait.
 
 ## Table layout (lobby and play)
 
-- [ ] The table stays on the phone screen (no page scroll off the well). Safe areas keep taps above the home indicator.
-- [ ] At ~360×640 with five players, chairs stay around the well; Start / Fill stay in the center; east/west seats do not cover the trick.
+- [ ] The table stays on the phone screen (no page scroll off the well). Safe areas keep taps above the home indicator. **Play** sits at the bottom of the screen (not under the browser chrome) and stays disabled while chairs are empty.
+- [ ] At ~360×640 with five players, chairs stay around the well; the Settings button stays in the center; Play stays on the bottom edge; east/west seats do not cover the trick.
 - [ ] On a wider frame, opponents sit around the well. You stay at the bottom.
 - [ ] Long names ellipsize instead of overflowing.
 
 ## Presence
 
 - [ ] A dropped connection (tab close, network) keeps the seat. That avatar greys out with a **•••** “Reconnecting” mark. Coming back in the same browser restores the seat.
-- [ ] Leaving with **Table** (home) shows a red leaving overlay, then the chair clears after about two seconds so someone else can sit.
+- [ ] Leaving with **Crew** (home) shows a red leaving overlay, then the chair clears after about two seconds so someone else can sit.
 - [ ] Ordinary disconnects do not clear the seat the way a voluntary leave does.
 
 ## Dummy teammates
@@ -101,7 +101,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] During that countdown: **Keep trick visible** pauses the bar and leaves the cards. The button becomes **Start next trick**, which clears the well immediately.
 - [ ] If you do nothing, the well clears on its own when the bar finishes.
 - [ ] Retry / a new attempt does not leave a leftover hold or progress bar on screen.
-- [ ] Won-trick piles always show the count. With **Completed tricks** on, tap a pile to review every trick that player won. With it off, the pile is not tappable.
+- [ ] Won-trick piles always show the count. Tap a pile to review every trick that player won.
 
 ## Sonar
 
@@ -134,7 +134,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 
 - [ ] You never see another player’s hand, only how many cards they hold.
 - [ ] You see the current trick, assigned tasks, sonar tokens, communicated cards, captain, and won-trick counts.
-- [ ] Completed-trick **contents** are hidden unless the lobby turned **Completed tricks** on, or the mission is over (result history).
+- [ ] Completed-trick **contents** are hidden until you tap a pile, or the mission is over (result history).
 - [ ] “Why this card is illegal” is only on your client.
 
 ---

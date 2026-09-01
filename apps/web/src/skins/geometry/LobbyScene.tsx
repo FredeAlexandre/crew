@@ -5,15 +5,39 @@ import {
 	type SeatId,
 } from "@crew/protocol";
 import type { SeatView, TableView } from "@crew/view-model/fixtures";
-import { TextField } from "react-aria-components";
+import { BotIcon, SettingsIcon } from "lucide-react";
+import { useState } from "react";
+import { type Key, Button as Pressable, TextField } from "react-aria-components";
 import { Button } from "../../components/ui/button.tsx";
+import {
+	Drawer,
+	DrawerContent,
+	DrawerDescription,
+	DrawerHeader,
+	DrawerTitle,
+} from "../../components/ui/drawer.tsx";
+import {
+	DropdownMenu,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "../../components/ui/dropdown-menu.tsx";
 import { Input } from "../../components/ui/input.tsx";
 import { Label } from "../../components/ui/label.tsx";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../components/ui/select.tsx";
+import { Switch } from "../../components/ui/switch.tsx";
 import { DISPLAY_NAME_MAX } from "../../lib/display-name.ts";
 import { useI18n } from "../../lib/i18n.tsx";
-import { type LobbySlot, lobbySlot, seatIsEmpty, seatName } from "./copy.ts";
+import { type LobbySlot, lobbySlot, seatIsBot, seatIsEmpty, seatName } from "./copy.ts";
 import { SeatAvatar } from "./parts.tsx";
 import styles from "./scenes.module.css";
+
+const RANDOM_CAPTAIN = "random";
 
 export type LobbySetup = {
 	difficulty: number;
@@ -31,8 +55,8 @@ export type LobbyActions = {
 	onNameChange?: (name: string) => void;
 	onCopyCode?: () => void;
 	onReady?: (ready: boolean) => void;
-	onFillBots?: () => void;
 	onKick?: (seatId: SeatId) => void;
+	onFillBot?: (seatId: SeatId) => void;
 	onConfigure?: (setup: LobbySetup) => void;
 	onStart?: () => void;
 };
@@ -41,10 +65,10 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 	const { t } = useI18n();
 	const code = actions?.roomCode || "————";
 	const setup = currentSetup(view);
+	const roomFull = view.seats.every((seat) => !seatIsEmpty(seat));
 	return (
 		<div className={`${styles.board} ${styles.lobby}`} data-scene={view.scene}>
 			<header className={styles.lobbyHead}>
-				<p className={styles.kicker}>{t("siteTitle")}</p>
 				<Button
 					variant="ghost"
 					className="font-heading h-auto px-0 text-2xl font-semibold tracking-widest uppercase"
@@ -54,7 +78,6 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 				>
 					{code}
 				</Button>
-				<p className={styles.lede}>{t("shareLobby")}</p>
 				{actions?.copied ? <p className={styles.lede}>{t("linkCopied")}</p> : null}
 			</header>
 			<div className={styles.ring} data-count={String(view.playerCount)}>
@@ -67,16 +90,11 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 						name={actions?.name}
 						onNameChange={actions?.onNameChange}
 						onKick={actions?.onKick}
+						onFillBot={actions?.onFillBot}
 					/>
 				))}
 				<div className={styles.lobbyWell}>
-					<SetupPanel view={view} setup={setup} onConfigure={actions?.onConfigure} />
-					{actions?.onFillBots ? (
-						<Button variant="ghost" onPress={actions.onFillBots}>
-							{t("fillSeats")}
-						</Button>
-					) : null}
-					{actions?.onStart ? <Button onPress={actions.onStart}>{t("start")}</Button> : null}
+					<SetupDrawer view={view} setup={setup} onConfigure={actions?.onConfigure} />
 					{actions?.statusNote ? <p className={styles.lede}>{actions.statusNote}</p> : null}
 					{actions?.alert ? (
 						<p className={styles.alert} role="alert">
@@ -85,11 +103,21 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 					) : null}
 				</div>
 			</div>
+			<div className={styles.lobbyPlay}>
+				<Button
+					className="w-full"
+					size="lg"
+					isDisabled={!roomFull || !actions?.onStart}
+					onPress={actions?.onStart}
+				>
+					{t("play")}
+				</Button>
+			</div>
 		</div>
 	);
 }
 
-function SetupPanel({
+function SetupDrawer({
 	view,
 	setup,
 	onConfigure,
@@ -99,95 +127,90 @@ function SetupPanel({
 	onConfigure?: (setup: LobbySetup) => void;
 }) {
 	const { t } = useI18n();
-	if (onConfigure === undefined) {
-		return <p className={styles.lede}>{setupCopy(view, setup, t)}</p>;
+	const [open, setOpen] = useState(false);
+	const captainKey = setup.captainSeat === null ? RANDOM_CAPTAIN : String(setup.captainSeat);
+
+	function apply(patch: Partial<LobbySetup>) {
+		onConfigure?.({ ...setup, completedTricksVisible: true, ...patch });
+	}
+
+	function onCaptainChange(key: Key | null) {
+		if (key === null) {
+			return;
+		}
+		apply({
+			captainSeat: key === RANDOM_CAPTAIN ? null : (Number(key) as SeatId),
+		});
 	}
 
 	return (
-		<div className={styles.setup}>
-			<div className={styles.setupRow}>
-				<span className={styles.setupLabel}>{t("difficulty")}</span>
-				<Button
-					variant="ghost"
-					size="icon"
-					isDisabled={setup.difficulty <= MISSION_DIFFICULTY_MIN}
-					onPress={() => onConfigure({ ...setup, difficulty: setup.difficulty - 1 })}
-					aria-label={t("lowerDifficulty")}
-				>
-					–
-				</Button>
-				<span className={styles.setupValue}>{setup.difficulty}</span>
-				<Button
-					variant="ghost"
-					size="icon"
-					isDisabled={setup.difficulty >= MISSION_DIFFICULTY_MAX}
-					onPress={() => onConfigure({ ...setup, difficulty: setup.difficulty + 1 })}
-					aria-label={t("raiseDifficulty")}
-				>
-					+
-				</Button>
-			</div>
-			<div className={styles.setupRow}>
-				<span className={styles.setupLabel}>{t("captain")}</span>
-				<div className={styles.setupPicks}>
-					<Button
-						variant={setup.captainSeat === null ? "default" : "ghost"}
-						size="sm"
-						onPress={() => onConfigure({ ...setup, captainSeat: null })}
-					>
-						{t("random")}
-					</Button>
-					{view.seats.map((seat) => (
-						<Button
-							key={seat.seatId}
-							variant={setup.captainSeat === seat.seatId ? "default" : "ghost"}
-							size="sm"
-							onPress={() => onConfigure({ ...setup, captainSeat: seat.seatId })}
+		<>
+			<Button variant="outline" onPress={() => setOpen(true)}>
+				{t("settings")}
+				<SettingsIcon data-icon="inline-end" aria-hidden />
+			</Button>
+			<Drawer open={open} onOpenChange={setOpen} showSwipeHandle>
+				<DrawerContent className="pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]">
+					<DrawerHeader>
+						<DrawerTitle>{t("settings")}</DrawerTitle>
+						<DrawerDescription className="sr-only">{t("settings")}</DrawerDescription>
+					</DrawerHeader>
+					<div className={styles.setupDrawer}>
+						<div className={styles.setupRow}>
+							<span className={styles.setupLabel}>{t("difficulty")}</span>
+							<Button
+								variant="ghost"
+								size="icon"
+								isDisabled={onConfigure === undefined || setup.difficulty <= MISSION_DIFFICULTY_MIN}
+								onPress={() => apply({ difficulty: setup.difficulty - 1 })}
+								aria-label={t("lowerDifficulty")}
+							>
+								–
+							</Button>
+							<span className={styles.setupValue}>{setup.difficulty}</span>
+							<Button
+								variant="ghost"
+								size="icon"
+								isDisabled={onConfigure === undefined || setup.difficulty >= MISSION_DIFFICULTY_MAX}
+								onPress={() => apply({ difficulty: setup.difficulty + 1 })}
+								aria-label={t("raiseDifficulty")}
+							>
+								+
+							</Button>
+						</div>
+						<Select
+							className="w-full"
+							selectedKey={captainKey}
+							onSelectionChange={onCaptainChange}
+							isDisabled={onConfigure === undefined}
 						>
-							{captainPickLabel(seat, t)}
-						</Button>
-					))}
-				</div>
-			</div>
-			<div className={styles.setupRow}>
-				<span className={styles.setupLabel}>{t("distress")}</span>
-				<div className={styles.setupPicks}>
-					<Button
-						variant={setup.distressDisabled ? "ghost" : "default"}
-						size="sm"
-						onPress={() => onConfigure({ ...setup, distressDisabled: false })}
-					>
-						{t("on")}
-					</Button>
-					<Button
-						variant={setup.distressDisabled ? "default" : "ghost"}
-						size="sm"
-						onPress={() => onConfigure({ ...setup, distressDisabled: true })}
-					>
-						{t("off")}
-					</Button>
-				</div>
-			</div>
-			<div className={styles.setupRow}>
-				<span className={styles.setupLabel}>{t("completedTricks")}</span>
-				<div className={styles.setupPicks}>
-					<Button
-						variant={setup.completedTricksVisible ? "default" : "ghost"}
-						size="sm"
-						onPress={() => onConfigure({ ...setup, completedTricksVisible: true })}
-					>
-						{t("on")}
-					</Button>
-					<Button
-						variant={setup.completedTricksVisible ? "ghost" : "default"}
-						size="sm"
-						onPress={() => onConfigure({ ...setup, completedTricksVisible: false })}
-					>
-						{t("off")}
-					</Button>
-				</div>
-			</div>
-		</div>
+							<Label>{t("captain")}</Label>
+							<SelectTrigger className="w-full">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent placement="top">
+								<SelectItem id={RANDOM_CAPTAIN}>{t("random")}</SelectItem>
+								{view.seats.map((seat) => (
+									<SelectItem key={seat.seatId} id={String(seat.seatId)}>
+										{captainPickLabel(seat, t)}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						<div className={styles.setupSwitch}>
+							<span className={styles.setupLabel}>{t("distress")}</span>
+							<Switch
+								isSelected={!setup.distressDisabled}
+								isDisabled={onConfigure === undefined}
+								onChange={(selected) => apply({ distressDisabled: !selected })}
+							>
+								<span className="sr-only">{t("distress")}</span>
+							</Switch>
+						</div>
+					</div>
+				</DrawerContent>
+			</Drawer>
+		</>
 	);
 }
 
@@ -198,6 +221,7 @@ function Chair({
 	name,
 	onNameChange,
 	onKick,
+	onFillBot,
 }: {
 	seat: SeatView;
 	slot: LobbySlot;
@@ -205,6 +229,7 @@ function Chair({
 	name?: string;
 	onNameChange?: (name: string) => void;
 	onKick?: (seatId: SeatId) => void;
+	onFillBot?: (seatId: SeatId) => void;
 }) {
 	const { t } = useI18n();
 	const empty = seatIsEmpty(seat);
@@ -219,7 +244,11 @@ function Chair({
 			data-captain={seat.isCaptain ? "true" : "false"}
 			data-self={self ? "true" : "false"}
 		>
-			<SeatAvatar seat={seat} self={self} showName={!(self && !empty && name !== undefined)} />
+			{empty && !self && onFillBot ? (
+				<EmptySeatFill seat={seat} onFillBot={onFillBot} />
+			) : (
+				<SeatAvatar seat={seat} self={self} showName={!(self && !empty && name !== undefined)} />
+			)}
 			{self && !empty && name !== undefined ? (
 				<TextField
 					className={styles.chairNameField}
@@ -244,7 +273,7 @@ function Chair({
 			) : seat.ready ? (
 				<span className={styles.readyMark}>{t("ready")}</span>
 			) : null}
-			{!self && !empty && onKick ? (
+			{!self && !empty && !seatIsBot(seat) && onKick ? (
 				<Button variant="ghost" size="sm" onPress={() => onKick(seat.seatId)}>
 					{t("remove")}
 				</Button>
@@ -253,20 +282,41 @@ function Chair({
 	);
 }
 
+function EmptySeatFill({
+	seat,
+	onFillBot,
+}: {
+	seat: SeatView;
+	onFillBot: (seatId: SeatId) => void;
+}) {
+	const { t } = useI18n();
+	return (
+		<DropdownMenuTrigger>
+			<Pressable className={styles.emptySeatTrigger} aria-label={t("fillSeatWithBot")}>
+				<SeatAvatar seat={seat} />
+			</Pressable>
+			<DropdownMenu placement="bottom" offset={6} showArrow className="min-w-0 rounded-full px-0.5">
+				<DropdownMenuItem
+					textValue={t("bot")}
+					onAction={() => {
+						onFillBot(seat.seatId);
+					}}
+				>
+					<BotIcon />
+					{t("bot")}
+				</DropdownMenuItem>
+			</DropdownMenu>
+		</DropdownMenuTrigger>
+	);
+}
+
 function currentSetup(view: TableView): LobbySetup {
 	return {
 		difficulty: view.chrome.difficulty ?? DEFAULT_MISSION_DIFFICULTY,
 		captainSeat: view.seats.find((seat) => seat.isCaptain)?.seatId ?? null,
 		distressDisabled: view.chrome.flags.distressDisabled,
-		completedTricksVisible: view.chrome.flags.completedTricksVisible,
+		completedTricksVisible: true,
 	};
-}
-
-function setupCopy(view: TableView, setup: LobbySetup, t: ReturnType<typeof useI18n>["t"]): string {
-	const captain = view.seats.find((seat) => seat.isCaptain);
-	const captainLabel = captain === undefined ? t("random") : captainPickLabel(captain, t);
-	const distress = setup.distressDisabled ? t("off") : t("on");
-	return t("setup", { difficulty: setup.difficulty, captain: captainLabel, distress });
 }
 
 function captainPickLabel(seat: SeatView, t: ReturnType<typeof useI18n>["t"]): string {
