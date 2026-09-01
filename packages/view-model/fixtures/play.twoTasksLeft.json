@@ -15,10 +15,12 @@
 			"direction": null
 		},
 		"sonarAvailable": true,
+		"maxTricks": 10,
 		"flags": {
 			"sonarDisabled": false,
 			"discussionAllowed": false,
-			"distressDisabled": false
+			"distressDisabled": false,
+			"completedTricksVisible": false
 		}
 	},
 	"seats": [
@@ -27,6 +29,7 @@
 			"seatId": 2,
 			"displayName": null,
 			"connected": true,
+			"leaving": false,
 			"ready": true,
 			"isCaptain": true,
 			"sonar": {
@@ -35,27 +38,31 @@
 			},
 			"handCount": 10,
 			"wonTrickCount": 0,
+			"completedTricks": [],
 			"isTurn": true,
 			"isLastTrickWinner": false,
 			"tasks": [
 				{
 					"instanceId": "a1:0",
 					"spec": {
-						"kind": "consecutiveTricks",
-						"count": 2,
+						"kind": "collectMoreColor",
+						"more": "yellow",
+						"less": "blue",
 						"difficulty": {
-							"3": 2,
-							"4": 2,
-							"5": 2
+							"3": 1,
+							"4": 1,
+							"5": 1
 						},
 						"captainMaySelect": true,
-						"id": "t60"
+						"id": "t95"
 					},
 					"status": "open",
 					"progress": 0,
 					"region": "tasks.self",
 					"ownerSeatId": 2,
-					"takeable": false
+					"takeable": false,
+					"prediction": null,
+					"needsPrediction": false
 				}
 			]
 		},
@@ -64,6 +71,7 @@
 			"seatId": 3,
 			"displayName": null,
 			"connected": true,
+			"leaving": false,
 			"ready": true,
 			"isCaptain": false,
 			"sonar": {
@@ -72,28 +80,30 @@
 			},
 			"handCount": 10,
 			"wonTrickCount": 0,
+			"completedTricks": [],
 			"isTurn": false,
 			"isLastTrickWinner": false,
 			"tasks": [
 				{
 					"instanceId": "a1:1",
 					"spec": {
-						"kind": "winValue",
-						"value": 1,
-						"count": 1,
+						"kind": "avoid",
+						"suit": "pink",
 						"difficulty": {
-							"3": 1,
-							"4": 1,
-							"5": 1
+							"3": 2,
+							"4": 2,
+							"5": 2
 						},
 						"captainMaySelect": true,
-						"id": "t35"
+						"id": "t43"
 					},
 					"status": "open",
 					"progress": 0,
 					"region": "tasks.1",
 					"ownerSeatId": 3,
-					"takeable": false
+					"takeable": false,
+					"prediction": null,
+					"needsPrediction": false
 				}
 			]
 		},
@@ -102,6 +112,7 @@
 			"seatId": 0,
 			"displayName": null,
 			"connected": true,
+			"leaving": false,
 			"ready": true,
 			"isCaptain": false,
 			"sonar": {
@@ -110,6 +121,7 @@
 			},
 			"handCount": 10,
 			"wonTrickCount": 0,
+			"completedTricks": [],
 			"isTurn": false,
 			"isLastTrickWinner": false,
 			"tasks": []
@@ -119,6 +131,7 @@
 			"seatId": 1,
 			"displayName": null,
 			"connected": true,
+			"leaving": false,
 			"ready": true,
 			"isCaptain": false,
 			"sonar": {
@@ -127,6 +140,7 @@
 			},
 			"handCount": 10,
 			"wonTrickCount": 0,
+			"completedTricks": [],
 			"isTurn": false,
 			"isLastTrickWinner": false,
 			"tasks": []
@@ -202,6 +216,7 @@
 	},
 	"centerTasks": [],
 	"lastTrick": null,
+	"history": [],
 	"undealt": {
 		"present": false
 	},
@@ -243,6 +258,7 @@
 		"canSkipDistress": false,
 		"canActivateDistress": false,
 		"canPassDistressCard": false,
+		"canPredict": false,
 		"canPeekLastTrick": false,
 		"canStart": false,
 		"canFillBots": false,

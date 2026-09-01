@@ -58,45 +58,60 @@ function SumOp({ op }: { op: "gt" | "lt" | "eq" }) {
 	return <span className={styles.op}>{symbol}</span>;
 }
 
-function WinWithArt({ spec }: { spec: Extract<TaskPublic, { kind: "winWith" }> }) {
-	if (spec.card) {
-		return (
-			<div className={styles.winWith}>
-				<MiniCard cardId={spec.card} size="lg" />
-				<span className={styles.playArrow} aria-hidden="true" />
-			</div>
-		);
+function trickSumBound(spec: Extract<TaskPublic, { kind: "trickSum" }>): string {
+	if (spec.targets !== undefined) {
+		return spec.targets.join("/");
 	}
-	if (spec.suit && spec.value !== undefined) {
-		return (
-			<div className={styles.winWith}>
+	if (typeof spec.target === "number") {
+		return String(spec.target);
+	}
+	if (spec.target !== undefined) {
+		return `${spec.target[3]}/${spec.target[4]}/${spec.target[5]}`;
+	}
+	return "";
+}
+
+function WinWithArt({ spec }: { spec: Extract<TaskPublic, { kind: "winWith" }> }) {
+	let capture: ReactNode = null;
+	if (spec.captureCard) {
+		capture = <MiniCard cardId={spec.captureCard} size="md" />;
+	} else if (spec.captureValue !== undefined) {
+		capture = <span className={styles.count}>{spec.captureValue}</span>;
+	}
+
+	let winning: ReactNode = null;
+	if (spec.card) {
+		winning = <MiniCard cardId={spec.card} size="lg" />;
+	} else if (spec.suit && spec.value !== undefined) {
+		winning = (
+			<>
 				<span className={styles.count}>{spec.value}</span>
 				<SuitMark suit={spec.suit} size="xl" />
-				<span className={styles.playArrow} aria-hidden="true" />
-			</div>
+			</>
 		);
-	}
-	if (spec.suit) {
-		return (
-			<div className={styles.winWith}>
-				<SuitMark suit={spec.suit} size="xl" />
-				<span className={styles.playArrow} aria-hidden="true" />
-			</div>
-		);
-	}
-	if (spec.value !== undefined) {
-		return (
-			<div className={styles.winWith}>
+	} else if (spec.suit) {
+		winning = <SuitMark suit={spec.suit} size="xl" />;
+	} else if (spec.value !== undefined) {
+		winning = (
+			<>
 				<span className={styles.count}>{spec.value}</span>
 				<div className={styles.row}>
 					{COLOR_SUITS.map((suit) => (
 						<SuitMark key={suit} suit={suit} size="sm" />
 					))}
 				</div>
-			</div>
+			</>
 		);
 	}
-	return null;
+
+	return (
+		<div className={styles.winWith}>
+			{capture}
+			{capture !== null ? <span className={styles.op}>←</span> : null}
+			{winning}
+			<span className={styles.playArrow} aria-hidden="true" />
+		</div>
+	);
 }
 
 function AvoidArt({ spec }: { spec: Extract<TaskPublic, { kind: "avoid" }> }) {
@@ -110,8 +125,26 @@ function AvoidArt({ spec }: { spec: Extract<TaskPublic, { kind: "avoid" }> }) {
 		);
 	} else if (spec.suit) {
 		body = <SuitMark suit={spec.suit} size="xl" />;
+	} else if (spec.suits) {
+		body = (
+			<div className={styles.row}>
+				{spec.suits.map((suit) => (
+					<SuitMark key={suit} suit={suit} size="lg" />
+				))}
+			</div>
+		);
 	} else if (spec.value !== undefined) {
 		body = <span className={styles.count}>{spec.value}</span>;
+	} else if (spec.values) {
+		body = (
+			<div className={styles.row}>
+				{spec.values.map((value) => (
+					<span key={value} className={styles.count}>
+						{value}
+					</span>
+				))}
+			</div>
+		);
 	} else if (spec.cards) {
 		body = (
 			<div className={styles.row}>
@@ -198,7 +231,11 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 			return (
 				<div className={styles.art}>
 					<div className={styles.stack}>
-						<SuitRepeat suit="submarine" count={spec.count} />
+						{spec.onlyCard ? (
+							<MiniCard cardId={spec.onlyCard} size="lg" />
+						) : (
+							<SuitRepeat suit="submarine" count={spec.count} />
+						)}
 						<TrickStacks count={spec.count} />
 					</div>
 				</div>
@@ -265,7 +302,11 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 						<CompareOp op={spec.op} />
 						<div className={styles.compareCol}>
 							<span className={styles.compareLabel}>
-								{spec.vs === "captain" ? t("artCaptain") : t("artEach")}
+								{spec.vs === "captain"
+									? t("artCaptain")
+									: spec.vs === "othersCombined"
+										? t("artCombined")
+										: t("artEach")}
 							</span>
 							<div className={styles.compareStacks}>
 								<TrickPile />
@@ -288,7 +329,7 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 						</div>
 						<div className={styles.row}>
 							<SumOp op={spec.op} />
-							<span className={styles.count}>{spec.target}</span>
+							<span className={styles.count}>{trickSumBound(spec)}</span>
 						</div>
 						{spec.noSubmarines ? <span className={styles.badge}>{t("artNoSub")}</span> : null}
 					</div>
@@ -340,6 +381,57 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 							<SuitMark suit={spec.less} size="md" />
 							<SuitMark suit={spec.less} size="sm" />
 						</div>
+					</div>
+				</div>
+			);
+		case "winColors":
+			return (
+				<div className={styles.art}>
+					<div className={styles.stack}>
+						{spec.parts.map((part) => (
+							<SuitRepeat key={part.suit} suit={part.suit} count={Math.max(part.count, 1)} />
+						))}
+					</div>
+				</div>
+			);
+		case "noLead":
+			return (
+				<div className={styles.art}>
+					<div className={styles.avoidWrap}>
+						<div className={styles.row}>
+							{spec.suits.map((suit) => (
+								<SuitMark key={suit} suit={suit} size="lg" />
+							))}
+						</div>
+					</div>
+				</div>
+			);
+		case "skipFirstTricks":
+			return (
+				<div className={styles.art}>
+					<div className={styles.timeline}>
+						<TrickStacks count={Math.min(spec.count, 4)} />
+						<span className={styles.badge}>0</span>
+					</div>
+				</div>
+			);
+		case "collectEqualColor":
+			return (
+				<div className={styles.art}>
+					<div className={styles.moreLess}>
+						<SuitMark suit={spec.a} size="lg" />
+						<span className={styles.op}>=</span>
+						<SuitMark suit={spec.b} size="lg" />
+					</div>
+				</div>
+			);
+		case "predictTricks":
+			return (
+				<div className={styles.art}>
+					<div className={styles.stack}>
+						<span className={styles.count}>X</span>
+						<TrickStacks count={3} />
+						{spec.reveal === "hidden" ? <span className={styles.badge}>?</span> : null}
 					</div>
 				</div>
 			);

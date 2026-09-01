@@ -279,6 +279,10 @@ export function PlayScene({
 		sendIntent?.({ type: "task.pass" });
 	}
 
+	function predictTricks(count: number) {
+		sendIntent?.({ type: "task.predict", count });
+	}
+
 	function nudgeIllegal(cardId: CardId) {
 		setNudged(null);
 		window.requestAnimationFrame(() => {
@@ -360,6 +364,7 @@ export function PlayScene({
 								view.affordances.canActivateDistress && sendIntent ? activateDistress : undefined
 							}
 							onUseSonar={useSonar}
+							onPredict={view.affordances.canPredict && sendIntent ? predictTricks : undefined}
 							onCancelQueue={queuedSonar !== null ? cancelQueuedSonar : undefined}
 							onCloseSkin={closeSkinOverlay}
 						/>
@@ -571,6 +576,7 @@ function OverlayBody({
 	onSkipDistress,
 	onActivateDistress,
 	onUseSonar,
+	onPredict,
 	onCancelQueue,
 	onCloseSkin,
 }: {
@@ -584,10 +590,34 @@ function OverlayBody({
 	onSkipDistress?: () => void;
 	onActivateDistress?: (direction: DistressDirection) => void;
 	onUseSonar: (position: SonarPosition) => void;
+	onPredict?: (count: number) => void;
 	onCancelQueue?: () => void;
 	onCloseSkin: () => void;
 }) {
 	const { t } = useI18n();
+	if (overlay === "predict") {
+		const max = view.chrome.maxTricks ?? 10;
+		const hidden = view.seats
+			.flatMap((seat) => seat.tasks)
+			.some((task) => task.spec.kind === "predictTricks" && task.spec.reveal === "hidden");
+		return (
+			<>
+				<p className={styles.overlayTitle}>{t("predictTitle")}</p>
+				<p className={styles.overlayCopy}>{hidden ? t("predictHiddenCopy") : t("predictCopy")}</p>
+				{onPredict ? (
+					<div className={styles.overlayActions}>
+						{Array.from({ length: max + 1 }, (_, count) => (
+							<Button key={count} onPress={() => onPredict(count)}>
+								{count}
+							</Button>
+						))}
+					</div>
+				) : (
+					<p className={styles.overlayCopy}>{t("waitingCrew")}</p>
+				)}
+			</>
+		);
+	}
 	if (overlay === "distress") {
 		if (view.affordances.canActivateDistress || view.affordances.canSkipDistress) {
 			return (
@@ -679,7 +709,12 @@ function OverlayBody({
 			<>
 				<p className={styles.overlayTitle}>{t("task")}</p>
 				<div className={styles.inspectCard}>
-					<TaskCatalogCard task={inspectedTask.spec} status={inspectedTask.status} showMeta />
+					<TaskCatalogCard
+						task={inspectedTask.spec}
+						status={inspectedTask.status}
+						showMeta
+						prediction={inspectedTask.prediction}
+					/>
 				</div>
 				<Button variant="ghost" onPress={onCloseSkin}>
 					{t("close")}

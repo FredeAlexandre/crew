@@ -17,6 +17,7 @@ function task(kind: TaskPublic): TaskInstance {
 		status: "open",
 		progress: 0,
 		spec: kind,
+		prediction: null,
 	};
 }
 
@@ -390,6 +391,57 @@ describe("task families", () => {
 				}),
 				ctx({
 					captured: [["pink-1", "pink-2"], [], [], []],
+					hands: [[], [], [], []],
+				}),
+			).verdict,
+		).toBe("completed");
+	});
+
+	it("noLead, skipFirstTricks, and equal colors", () => {
+		expect(
+			evaluateTask(
+				task({
+					id: "x",
+					kind: "noLead",
+					suits: ["pink"],
+					difficulty,
+					captainMaySelect: true,
+				}),
+				ctx({
+					trick: [
+						{ seatId: 0, cardId: "pink-9" },
+						{ seatId: 1, cardId: "pink-2" },
+						{ seatId: 2, cardId: "yellow-9" },
+						{ seatId: 3, cardId: "pink-3" },
+					],
+				}),
+			).verdict,
+		).toBe("failed");
+		expect(
+			evaluateTask(
+				task({
+					id: "x",
+					kind: "skipFirstTricks",
+					count: 4,
+					difficulty,
+					captainMaySelect: true,
+				}),
+				ctx({ trickId: 1, winnerSeat: 0 }),
+			).verdict,
+		).toBe("failed");
+		expect(
+			evaluateTask(
+				task({
+					id: "x",
+					kind: "collectEqualColor",
+					a: "pink",
+					b: "yellow",
+					inTrick: false,
+					difficulty,
+					captainMaySelect: true,
+				}),
+				ctx({
+					captured: [["pink-9", "yellow-9"], [], [], []],
 					hands: [[], [], [], []],
 				}),
 			).verdict,

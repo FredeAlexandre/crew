@@ -371,6 +371,7 @@ export function TaskMark({
 			size={size}
 			status={task.status}
 			region={task.region}
+			prediction={task.prediction}
 			onPress={onInspect ? () => onInspect(task) : undefined}
 		/>
 	);
@@ -385,6 +386,7 @@ export function TaskCard({ task, onTake }: { task: TaskView; onTake?: (task: Tas
 			takeable={task.takeable}
 			showMeta
 			region={task.region}
+			prediction={task.prediction}
 			onPress={task.takeable && onTake ? () => onTake(task) : undefined}
 		/>
 	);

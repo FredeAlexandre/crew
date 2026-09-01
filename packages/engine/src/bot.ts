@@ -4,6 +4,7 @@ import type { EngineState } from "./state.ts";
 
 const RANK: Partial<Record<Intent["type"], number>> = {
 	"card.play": 0,
+	"task.predict": 0,
 	"task.take": 1,
 	"task.pass": 2,
 	"distress.passCard": 3,
@@ -21,7 +22,7 @@ export function pickSeatIntent(state: EngineState, seat: SeatId): PlayIntent | n
 		if (!isDummyIntent(intent)) {
 			continue;
 		}
-		const rank = RANK[intent.type];
+		const rank = intent.type === "task.predict" ? (intent.count === 1 ? 0 : 20) : RANK[intent.type];
 		if (rank === undefined || rank >= bestRank) {
 			continue;
 		}

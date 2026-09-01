@@ -53,20 +53,68 @@ function countKey(count: number, one: string, many: string): string {
 export function taskCatalogLabel(spec: TaskPublic, t: Translate): string {
 	switch (spec.kind) {
 		case "winCards":
+			if (spec.inTrick === 0) {
+				return t("taskWinCardsLast", { cards: formatCards(spec.cards, t) });
+			}
 			return t("taskWinCards", { cards: formatCards(spec.cards, t) });
-		case "winColor":
-			return t(countKey(spec.count, "taskWinColorOne", "taskWinColorMany"), {
-				count: spec.count,
-				suit: suitName(spec.suit, t),
+		case "winColor": {
+			const exact = spec.op === "exact";
+			return t(
+				countKey(
+					spec.count,
+					exact ? "taskWinColorExactOne" : "taskWinColorAtLeastOne",
+					exact ? "taskWinColorExactMany" : "taskWinColorAtLeastMany",
+				),
+				{ count: spec.count, suit: suitName(spec.suit, t) },
+			);
+		}
+		case "winColors":
+			return t("taskWinColors", {
+				parts: spec.parts
+					.map((part) =>
+						t(countKey(part.count, "taskColorPartOne", "taskColorPartMany"), {
+							count: part.count,
+							suit: suitName(part.suit, t),
+						}),
+					)
+					.join(t("taskColorPartJoin")),
 			});
-		case "winValue":
-			return t(countKey(spec.count, "taskWinValueOne", "taskWinValueMany"), {
-				count: spec.count,
-				value: spec.value,
-			});
+		case "winValue": {
+			const exact = spec.op === "exact";
+			return t(
+				countKey(
+					spec.count,
+					exact ? "taskWinValueExactOne" : "taskWinValueAtLeastOne",
+					exact ? "taskWinValueExactMany" : "taskWinValueAtLeastMany",
+				),
+				{ count: spec.count, value: spec.value },
+			);
+		}
 		case "winSubmarines":
-			return t(countKey(spec.count, "taskWinSubOne", "taskWinSubMany"), { count: spec.count });
+			if (spec.onlyCard) {
+				return t("taskWinSubOnly", { card: formatCard(spec.onlyCard, t) });
+			}
+			return t(
+				countKey(
+					spec.count,
+					spec.op === "exact" ? "taskWinSubExactOne" : "taskWinSubAtLeastOne",
+					spec.op === "exact" ? "taskWinSubExactMany" : "taskWinSubAtLeastMany",
+				),
+				{ count: spec.count },
+			);
 		case "winWith": {
+			if (spec.captureCard && spec.suit) {
+				return t("taskWinCaptureWithSuit", {
+					card: formatCard(spec.captureCard, t),
+					suit: suitName(spec.suit, t),
+				});
+			}
+			if (spec.captureValue !== undefined && spec.value !== undefined) {
+				return t("taskWinCaptureValueWithValue", {
+					capture: spec.captureValue,
+					value: spec.value,
+				});
+			}
 			if (spec.card) {
 				return t("taskWinWithCard", { card: formatCard(spec.card, t) });
 			}
@@ -85,8 +133,16 @@ export function taskCatalogLabel(spec: TaskPublic, t: Translate): string {
 			if (spec.submarines) {
 				return t("taskAvoidSub");
 			}
+			if (spec.suits && spec.suits.length > 0) {
+				return t("taskAvoidSuits", {
+					suits: spec.suits.map((suit) => suitName(suit, t)).join(t("taskColorPartJoin")),
+				});
+			}
 			if (spec.suit) {
 				return t("taskAvoidSuit", { suit: suitName(spec.suit, t) });
+			}
+			if (spec.values && spec.values.length > 0) {
+				return t("taskAvoidValues", { values: spec.values.join(t("taskColorPartJoin")) });
 			}
 			if (spec.value !== undefined) {
 				return t("taskAvoidValue", { value: spec.value });
@@ -96,6 +152,10 @@ export function taskCatalogLabel(spec: TaskPublic, t: Translate): string {
 			}
 			return t("taskAvoid");
 		}
+		case "noLead":
+			return t("taskNoLead", {
+				suits: spec.suits.map((suit) => suitName(suit, t)).join(t("taskColorPartJoin")),
+			});
 		case "trickCount":
 			if (spec.op === "exact") {
 				return t(countKey(spec.count, "taskTrickCountExactOne", "taskTrickCountExactMany"), {
@@ -110,11 +170,37 @@ export function taskCatalogLabel(spec: TaskPublic, t: Translate): string {
 			return t(countKey(spec.count, "taskTrickCountAtMostOne", "taskTrickCountAtMostMany"), {
 				count: spec.count,
 			});
+		case "predictTricks":
+			return spec.reveal === "hidden" ? t("taskPredictHidden") : t("taskPredictOpen");
 		case "consecutiveTricks":
+			if (spec.op === "none") {
+				return t("taskConsecutiveNone", { count: spec.count });
+			}
+			if (spec.op === "exact") {
+				return t("taskConsecutiveExact", { count: spec.count });
+			}
 			return t("taskConsecutive", { count: spec.count });
-		case "nthTrick":
+		case "nthTrick": {
+			if (spec.only === true && spec.n === 0) {
+				return t("taskOnlyLastTrick");
+			}
+			if (spec.only === true && spec.n === 1) {
+				return t("taskOnlyFirstTrick");
+			}
+			if (spec.alsoLast === true) {
+				return t("taskFirstAndLast");
+			}
+			if ((spec.count ?? 1) > 1 && spec.n === 1) {
+				return t("taskFirstNTricks", { count: spec.count ?? 1 });
+			}
 			return spec.n === 0 ? t("taskLastTrick") : t("taskNthTrick", { n: spec.n });
+		}
+		case "skipFirstTricks":
+			return t("taskSkipFirst", { count: spec.count });
 		case "compareTricks": {
+			if (spec.vs === "othersCombined") {
+				return spec.op === "moreThan" ? t("taskMoreThanCombined") : t("taskFewerThanCombined");
+			}
 			const target = spec.vs === "captain" ? t("theCaptain") : t("eachOtherPlayer");
 			if (spec.op === "moreThan") {
 				return t("taskMoreThan", { target });
@@ -126,8 +212,15 @@ export function taskCatalogLabel(spec: TaskPublic, t: Translate): string {
 		}
 		case "trickSum": {
 			const key = spec.op === "gt" ? "taskSumGt" : spec.op === "lt" ? "taskSumLt" : "taskSumEq";
+			const bound =
+				spec.targets?.join("/") ??
+				(typeof spec.target === "number"
+					? String(spec.target)
+					: spec.target
+						? `${spec.target[3]}/${spec.target[4]}/${spec.target[5]}`
+						: "");
 			const subNote = spec.noSubmarines ? t("taskNoSubmarines") : "";
-			return `${t(key, { target: spec.target })}${subNote}`;
+			return `${t(key, { target: bound })}${subNote}`;
 		}
 		case "trickFilter": {
 			const subNote = spec.noSubmarines ? t("taskNoSubmarines") : "";
@@ -150,6 +243,11 @@ export function taskCatalogLabel(spec: TaskPublic, t: Translate): string {
 			return t("taskCollectMore", {
 				more: suitName(spec.more, t),
 				less: suitName(spec.less, t),
+			});
+		case "collectEqualColor":
+			return t(spec.inTrick ? "taskCollectEqualInTrick" : "taskCollectEqual", {
+				a: suitName(spec.a, t),
+				b: suitName(spec.b, t),
 			});
 	}
 }

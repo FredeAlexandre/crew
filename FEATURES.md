@@ -68,10 +68,12 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] Start deals a real mission. You see your cards; opponents show a **count**, never their faces.
 - [ ] The holder of **submarine 4** is captain (crown on that seat). A designated captain in the lobby is that seat receiving submarine 4.
 - [ ] With 3 players, one leftover card sits face-down in the well and is never played.
+- [ ] If a submarine task’s printed deal is impossible (for example one seat holds every submarine), the playing cards are dealt again. The tasks stay.
 
 ## Task draft
 
 - [ ] Face-up tasks sit in the center. On your draft turn you tap a task to take it, or **Pass**.
+- [ ] After you take an “I will win X tricks” card, you name that number. Open cards show it to the crew; hidden cards keep it until the result.
 - [ ] Tasks at seats (yours and others) are illustrated cards. Tap one to open a larger Task overlay; Escape or Close dismisses it.
 - [ ] Completed tasks read as done; failed tasks as failed. Takeable tasks in the center are marked so they look takeable.
 
@@ -124,7 +126,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Catalog
 
 - [ ] **Browse assets** → Mission tasks and Playing cards.
-- [ ] Mission tasks: every task grouped by type, with a readable sentence, id, difficulty for 3/4/5 players, and a captain-may-select mark.
+- [ ] Mission tasks: the official **96** task cards, grouped by type, with a readable sentence, id, difficulty for 3/4/5 players, and a captain-may-select mark.
 - [ ] Playing cards: all 40 faces by suit (including submarine 4 as Captain) plus table states (legal, selected, muted, back, …).
 - [ ] Old `/missions` and `/playing-cards` links still land on the catalogs.
 

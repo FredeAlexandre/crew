@@ -31,6 +31,11 @@ export function takeAllTasks(state: EngineState): EngineState {
 			throw new Error("draft with no current seat");
 		}
 		const intents = legalIntents(current, seat);
+		const predict = intents.find((intent) => intent.type === "task.predict");
+		if (predict !== undefined) {
+			current = must(apply(current, predict));
+			continue;
+		}
 		const take = intents.find((intent) => intent.type === "task.take") ?? intents[0];
 		if (take === undefined) {
 			throw new Error("no draft intent");
@@ -88,6 +93,7 @@ export function failWithImpossibleTask(state: EngineState): EngineState {
 					difficulty: { 3: 1, 4: 1, 5: 1 },
 					captainMaySelect: true,
 				},
+				prediction: null,
 			},
 		],
 	};
