@@ -5,7 +5,7 @@ import {
 	type SeatId,
 } from "@crew/protocol";
 import type { SeatView, TableView } from "@crew/view-model/fixtures";
-import { SettingsIcon } from "lucide-react";
+import { BotIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
 import { type Key, Button as Pressable, TextField } from "react-aria-components";
 import { Button } from "../../components/ui/button.tsx";
@@ -16,9 +16,13 @@ import {
 	DrawerHeader,
 	DrawerTitle,
 } from "../../components/ui/drawer.tsx";
+import {
+	DropdownMenu,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "../../components/ui/dropdown-menu.tsx";
 import { Input } from "../../components/ui/input.tsx";
 import { Label } from "../../components/ui/label.tsx";
-import { Popover, PopoverTrigger } from "../../components/ui/popover.tsx";
 import {
 	Select,
 	SelectContent,
@@ -241,7 +245,7 @@ function Chair({
 			data-self={self ? "true" : "false"}
 		>
 			{empty && !self && onFillBot ? (
-				<EmptySeatFill seat={seat} slot={slot} onFillBot={onFillBot} />
+				<EmptySeatFill seat={seat} onFillBot={onFillBot} />
 			) : (
 				<SeatAvatar seat={seat} self={self} showName={!(self && !empty && name !== undefined)} />
 			)}
@@ -280,47 +284,30 @@ function Chair({
 
 function EmptySeatFill({
 	seat,
-	slot,
 	onFillBot,
 }: {
 	seat: SeatView;
-	slot: LobbySlot;
 	onFillBot: (seatId: SeatId) => void;
 }) {
 	const { t } = useI18n();
-	const [open, setOpen] = useState(false);
 	return (
-		<PopoverTrigger isOpen={open} onOpenChange={setOpen}>
+		<DropdownMenuTrigger>
 			<Pressable className={styles.emptySeatTrigger} aria-label={t("fillSeatWithBot")}>
 				<SeatAvatar seat={seat} />
 			</Pressable>
-			<Popover placement={emptySeatPopoverPlacement(slot)} className="w-auto min-w-28 gap-0 p-2">
-				<Button
-					variant="ghost"
-					className="w-full"
-					onPress={() => {
+			<DropdownMenu placement="bottom" offset={6} showArrow className="min-w-0 rounded-full px-0.5">
+				<DropdownMenuItem
+					textValue={t("bot")}
+					onAction={() => {
 						onFillBot(seat.seatId);
-						setOpen(false);
 					}}
 				>
+					<BotIcon />
 					{t("bot")}
-				</Button>
-			</Popover>
-		</PopoverTrigger>
+				</DropdownMenuItem>
+			</DropdownMenu>
+		</DropdownMenuTrigger>
 	);
-}
-
-function emptySeatPopoverPlacement(slot: LobbySlot): "left" | "right" | "bottom" | "top" {
-	if (slot === "west") {
-		return "right";
-	}
-	if (slot === "east") {
-		return "left";
-	}
-	if (slot === "self") {
-		return "top";
-	}
-	return "bottom";
 }
 
 function currentSetup(view: TableView): LobbySetup {

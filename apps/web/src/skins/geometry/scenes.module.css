@@ -210,12 +210,13 @@
 	color: inherit;
 	font: inherit;
 	cursor: pointer;
-	border-radius: 0;
+	border-radius: 0.75rem;
+	transition: opacity 160ms ease;
 }
 
 .emptySeatTrigger:hover,
 .emptySeatTrigger[data-hovered] {
-	opacity: 0.85;
+	opacity: 0.9;
 }
 
 .chair[data-slot="self"] {
