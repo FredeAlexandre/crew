@@ -40,7 +40,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
   - **Difficulty** 1–16 (default 4).
   - **Captain**: random, or a specific chair (a selector, not a row of buttons). That chair is dealt submarine 4. Captain is still “who holds submarine 4.”
   - **Distress** off (default) or on. Off skips the distress step after the draft.
-- [ ] Completed tricks are always on: tap a pile to see every trick that player won. There is no lobby toggle.
+- [ ] Completed tricks are always on: tap a won-trick count to see every trick that player won. There is no lobby toggle.
 - [ ] Dummy teammates still play after Start if they are seated. The host can tap an empty chair and choose **Bot**.
 - [ ] Host can **Remove** a seated guest (not themselves, not a bot, not after Start). That person is kicked and cannot rejoin for a short wait; each later kick of the same person doubles the wait (about 10s, then 20s, …). They see that they must wait.
 
@@ -92,24 +92,24 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] On your turn, tap a legal card: it lifts. Tap it again, or tap **Play**, to play it. A legal play lands in the well with a short place sound.
 - [ ] Illegal cards stay in the row, muted. Selecting one shows why (for example “Must follow suit”). Tapping an illegal card nudges it and ticks; it does not play.
 - [ ] You must follow the led color when you can. A submarine beats every color; the highest submarine wins if more than one is played.
-- [ ] Reduced motion: land, win pulse, and nudge animations do not run.
+- [ ] Reduced motion: land, win pulse, sonar pulse, and nudge animations do not run.
 
 ## Tricks
 
-- [ ] Each seat shows whose turn it is, a won-trick count, tasks, and sonar.
+- [ ] Each seat shows whose turn it is, a sonar dot before the name, a won-trick count after the name, and that player’s tasks under the name. Seats without a task stay as short as the name row — no empty task hole.
 - [ ] Newly played cards land in a single centered row, left to right in the order they were played, so every face stays visible. The led card is marked.
 - [ ] When the last card of a trick is down, the cards **stay in the well about two seconds**, the winner pulses, and a **progress bar** counts down to the next trick.
 - [ ] During that countdown: **Keep trick visible** pauses the bar and leaves the cards. The button becomes **Start next trick**, which clears the well immediately.
 - [ ] If you do nothing, the well clears on its own when the bar finishes.
 - [ ] Retry / a new attempt does not leave a leftover hold or progress bar on screen.
-- [ ] Won-trick piles always show the count. Tap a pile to review every trick that player won.
+- [ ] Won-trick counts always show as a number after the name. Tap the number to review every trick that player won.
 
 ## Sonar
 
-- [ ] **Sonar** sits on your seat while you still have it. Open it, pick a color card from your hand, then **Highest / Only / Lowest**. Illegal combinations cannot be confirmed (no submarine; it must really be your highest, only, or lowest of that color).
+- [ ] A small circle before each name is green and pulsing while that player still has sonar, red and still once it has been used. Tap your own green circle to open sonar: pick a color card from your hand, then **Highest / Only / Lowest**. Illegal combinations cannot be confirmed (no submarine; it must really be your highest, only, or lowest of that color).
 - [ ] You may set sonar **during a trick**. The crew does not see it until the trick ends. You can change or cancel the queued choice until then.
 - [ ] Once revealed, the communicated card stays on that seat (card + highest/only/lowest) until the trick that contains that card ends, then it clears.
-- [ ] Tap a sonar token or a communicated card to read the reminder (highest / only / lowest). Escape or Close dismisses it.
+- [ ] Tap the sonar dot or a communicated card to read the reminder (highest / only / lowest). Escape or Close dismisses it.
 - [ ] Sonar is once per player per mission.
 
 ## Sound
@@ -134,7 +134,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Hidden information (must stay true)
 
 - [ ] You never see another player’s hand, only how many cards they hold.
-- [ ] You see the current trick, assigned tasks, sonar tokens, communicated cards, captain, and won-trick counts.
+- [ ] You see the current trick, assigned tasks, sonar dots, communicated cards, captain, and won-trick counts.
 - [ ] Completed-trick **contents** are hidden until you tap a pile, or the mission is over (result history).
 - [ ] “Why this card is illegal” is only on your client.
 
