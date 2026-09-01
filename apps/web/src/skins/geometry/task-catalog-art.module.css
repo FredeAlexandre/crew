@@ -44,7 +44,7 @@
 	font-size: 1.1rem;
 	font-weight: 700;
 	line-height: 1;
-	color: color-mix(in srgb, #1c1914 70%, var(--muted));
+	color: color-mix(in srgb, #1c1914 70%, var(--fog));
 }
 
 .badge {
@@ -54,7 +54,7 @@
 	min-height: 1.15rem;
 	padding: 0.1rem 0.2rem;
 	border-radius: 999px;
-	background: color-mix(in srgb, var(--accent) 22%, #f3eee4);
+	background: color-mix(in srgb, var(--gold) 22%, #f3eee4);
 	color: #1c1914;
 	font-size: 0.62rem;
 	font-weight: 700;
@@ -67,7 +67,7 @@
 	width: 1.35rem;
 	height: 1.75rem;
 	border-radius: 0.22rem;
-	border: 1.5px solid color-mix(in srgb, var(--muted) 55%, #1c1914);
+	border: 1.5px solid color-mix(in srgb, var(--fog) 55%, #1c1914);
 	background: linear-gradient(168deg, #f3eee4 0%, color-mix(in srgb, #f3eee4 88%, #000) 100%);
 	box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
 }
@@ -79,7 +79,7 @@
 	inset: 0.12rem 0.1rem auto;
 	height: 0.55rem;
 	border-radius: 0.12rem;
-	border: 1px solid color-mix(in srgb, var(--muted) 40%, transparent);
+	border: 1px solid color-mix(in srgb, var(--fog) 40%, transparent);
 	background: color-mix(in srgb, #f3eee4 92%, #fff);
 }
 
@@ -88,9 +88,9 @@
 }
 
 .trickPile[data-highlight="true"] {
-	border-color: var(--accent);
+	border-color: var(--gold);
 	box-shadow:
-		0 0 0 1px var(--accent),
+		0 0 0 1px var(--gold),
 		0 1px 2px rgb(0 0 0 / 0.12);
 }
 
@@ -108,7 +108,7 @@
 	width: 0.45rem;
 	height: 0.12rem;
 	border-radius: 999px;
-	background: color-mix(in srgb, var(--muted) 70%, #1c1914);
+	background: color-mix(in srgb, var(--fog) 70%, #1c1914);
 }
 
 .timeline {
@@ -126,7 +126,7 @@
 	font-weight: 700;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
-	color: color-mix(in srgb, #1c1914 55%, var(--muted));
+	color: color-mix(in srgb, #1c1914 55%, var(--fog));
 }
 
 .compareStacks {
@@ -162,7 +162,7 @@
 	width: 1rem;
 	height: 1rem;
 	border-radius: 0.16rem;
-	background: color-mix(in srgb, var(--suit, var(--muted)) 18%, #f3eee4);
+	background: color-mix(in srgb, var(--suit, var(--fog)) 18%, #f3eee4);
 }
 
 .suitGrid[data-full="true"] .cell {
@@ -179,7 +179,7 @@
 	width: 1.45rem;
 	height: 1.95rem;
 	border-radius: 0.2rem;
-	border: 1.5px solid color-mix(in srgb, var(--muted) 50%, #1c1914);
+	border: 1.5px solid color-mix(in srgb, var(--fog) 50%, #1c1914);
 	background: #f3eee4;
 	font-size: 0.72rem;
 	font-weight: 700;
@@ -206,7 +206,7 @@
 	height: 0;
 	border-left: 0.35rem solid transparent;
 	border-right: 0.35rem solid transparent;
-	border-bottom: 0.55rem solid var(--accent);
+	border-bottom: 0.55rem solid var(--gold);
 }
 
 .moreLess {

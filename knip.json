@@ -2,6 +2,16 @@
 	"$schema": "https://unpkg.com/knip@5/schema.json",
 	"ignoreBinaries": ["nub", "nubx"],
 	"ignoreDependencies": ["@biomejs/biome", "cloudflare"],
+	"ignoreIssues": {
+		"apps/web/src/components/ui/**": [
+			"files",
+			"exports",
+			"types",
+			"nsExports",
+			"nsTypes",
+			"duplicates"
+		]
+	},
 	"workspaces": {
 		".": {
 			"entry": ["dependency-cruiser.mjs"]
@@ -11,6 +21,9 @@
 		},
 		"packages/view-model": {
 			"entry": ["playground/**/index.ts!"]
+		},
+		"apps/web": {
+			"ignore": ["src/components/ui/**"]
 		}
 	}
 }

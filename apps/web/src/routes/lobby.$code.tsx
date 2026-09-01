@@ -9,7 +9,6 @@ import { useI18n } from "../lib/i18n.tsx";
 import { lobbyShareUrl } from "../lib/lobby-code.ts";
 import { joinRoom, roomErrorCopy } from "../lib/rooms.ts";
 import { GeometryTable } from "../skins/geometry/Table.tsx";
-import styles from "../styles/lobby.module.css";
 
 export const Route = createFileRoute("/lobby/$code")({
 	component: LobbyRoute,
@@ -92,8 +91,14 @@ function LobbyRoute() {
 			: null;
 
 	return (
-		<section className={styles.page}>
-			<div className={waitingToSit ? `${styles.stage} ${styles.pending}` : styles.stage}>
+		<section className="grid h-full min-h-0 min-w-0 max-w-full">
+			<div
+				className={
+					waitingToSit
+						? "grid h-full min-h-0 min-w-0 max-w-full opacity-55"
+						: "grid h-full min-h-0 min-w-0 max-w-full"
+				}
+			>
 				<GeometryTable
 					view={view}
 					sendIntent={table.sendIntent}

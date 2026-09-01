@@ -36,7 +36,7 @@
 .dock[data-turn="true"] .avatarWrap .pipName,
 .avatarWrap[data-turn="true"] .pipName,
 .avatarWrapCompact[data-turn="true"] .pipName {
-	color: var(--accent);
+	color: var(--gold);
 }
 
 .pip[data-empty="true"] {
@@ -67,7 +67,7 @@
 	transform: translateX(-50%);
 	width: 1.15rem;
 	height: 0.82rem;
-	color: var(--accent);
+	color: var(--gold);
 }
 
 .crownHole {
@@ -104,7 +104,7 @@
 	line-height: 1;
 	color: var(--ink);
 	background: color-mix(in srgb, var(--table) 55%, var(--ink) 8%);
-	box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--muted) 50%, transparent);
+	box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--fog) 50%, transparent);
 }
 
 .avatarPhoto {
@@ -117,7 +117,7 @@
 .connectionDots {
 	position: absolute;
 	top: 2.7rem;
-	color: var(--muted);
+	color: var(--fog);
 	font-size: 0.8rem;
 	letter-spacing: 0.16em;
 	line-height: 1;
@@ -166,7 +166,7 @@
 }
 
 .avatar[data-self="true"] {
-	box-shadow: inset 0 0 0 2px var(--accent);
+	box-shadow: inset 0 0 0 2px var(--gold);
 }
 
 .avatar[data-empty="true"],
@@ -179,18 +179,18 @@
 .avatarWrapCompact[data-turn="true"] .avatar,
 .avatarWrapCompact[data-turn="true"] .avatarCompact {
 	box-shadow:
-		inset 0 0 0 1.5px color-mix(in srgb, var(--muted) 50%, transparent),
-		0 0 0 2px var(--accent),
-		0 0 0 3.5px color-mix(in srgb, var(--accent) 28%, transparent);
+		inset 0 0 0 1.5px color-mix(in srgb, var(--fog) 50%, transparent),
+		0 0 0 2px var(--gold),
+		0 0 0 3.5px color-mix(in srgb, var(--gold) 28%, transparent);
 }
 
 .avatarWrap[data-turn="true"] .avatar[data-self="true"],
 .avatarWrapCompact[data-turn="true"] .avatar[data-self="true"],
 .avatarWrapCompact[data-turn="true"] .avatarCompact[data-self="true"] {
 	box-shadow:
-		inset 0 0 0 2px var(--accent),
-		0 0 0 2px var(--accent),
-		0 0 0 3.5px color-mix(in srgb, var(--accent) 28%, transparent);
+		inset 0 0 0 2px var(--gold),
+		0 0 0 2px var(--gold),
+		0 0 0 3.5px color-mix(in srgb, var(--gold) 28%, transparent);
 }
 
 .avatarWrap .pipName,
@@ -204,7 +204,7 @@
 	width: 0.7rem;
 	height: 0.7rem;
 	border-radius: 50%;
-	box-shadow: inset 0 0 0 1px var(--muted);
+	box-shadow: inset 0 0 0 1px var(--fog);
 }
 
 .sonar[data-state="available"] {
@@ -217,7 +217,7 @@
 }
 
 .sonar[data-state="communicating"] {
-	background: var(--accent);
+	background: var(--gold);
 	box-shadow: none;
 }
 
@@ -226,7 +226,7 @@
 .taskCount {
 	font-variant-numeric: tabular-nums;
 	font-size: 0.78rem;
-	color: var(--muted);
+	color: var(--fog);
 }
 
 .wonHole {
@@ -243,7 +243,7 @@
 	font: inherit;
 	font-variant-numeric: tabular-nums;
 	font-size: 0.78rem;
-	color: var(--accent);
+	color: var(--gold);
 	cursor: pointer;
 }
 
@@ -269,8 +269,8 @@
 .textAction {
 	min-height: 44px;
 	padding-inline: 0.85rem;
-	border-color: var(--accent);
-	color: var(--accent);
+	border-color: var(--gold);
+	color: var(--gold);
 }
 
 .fan {
@@ -379,13 +379,13 @@
 	flex-wrap: wrap;
 	gap: 0.35rem 0.75rem;
 	justify-content: center;
-	color: var(--muted);
+	color: var(--fog);
 	font-size: 0.88rem;
 	max-width: 100%;
 }
 
 .turn {
-	color: var(--accent);
+	color: var(--gold);
 }
 
 .mute {
@@ -393,13 +393,13 @@
 	min-width: 44px;
 	padding: 0 0.7rem;
 	border-color: transparent;
-	color: var(--muted);
+	color: var(--fog);
 	font: inherit;
 	font-size: 0.88rem;
 }
 
 .mute[data-on="true"] {
-	color: var(--accent);
+	color: var(--gold);
 }
 
 .playSeat {
@@ -452,7 +452,7 @@
 	width: 2.4rem;
 	height: 2.4rem;
 	border-radius: 0.35rem;
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--muted) 35%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fog) 35%, transparent);
 	opacity: 0.35;
 }
 
@@ -564,7 +564,7 @@ button.wonPile {
 	width: 1.1rem;
 	height: 1.1rem;
 	border-radius: 50%;
-	background: var(--accent);
+	background: var(--gold);
 	color: #f3eee4;
 	box-shadow: 0 0 0 1px color-mix(in srgb, var(--table) 70%, transparent);
 }
@@ -595,7 +595,7 @@ button.wonPile {
 
 .detailCopy {
 	margin: 0;
-	color: var(--muted);
+	color: var(--fog);
 	font-size: 0.9rem;
 	text-align: center;
 }

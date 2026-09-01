@@ -7,7 +7,7 @@
 	align-content: center;
 	gap: 0.15rem;
 	padding: 0.32rem 0.26rem;
-	border: 2.5px solid var(--suit, var(--muted));
+	border: 2.5px solid var(--suit, var(--fog));
 	border-radius: 0.55rem;
 	background-color: var(--face);
 	background-image: linear-gradient(
@@ -25,7 +25,7 @@
 	flex-shrink: 0;
 	max-width: 100%;
 	box-shadow:
-		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--muted)) 28%, #fff),
+		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--fog)) 28%, #fff),
 		var(--card-shadow);
 }
 
@@ -37,7 +37,7 @@ button.card {
 		var(--face) 42%,
 		color-mix(in srgb, var(--face) 92%, #000) 100%
 	);
-	border: 2.5px solid var(--suit, var(--muted));
+	border: 2.5px solid var(--suit, var(--fog));
 	color: var(--ink-face);
 	min-height: 0;
 	min-width: 0;
@@ -136,7 +136,7 @@ button.card {
 .card .mark,
 .card .pip {
 	flex-shrink: 0;
-	color: var(--suit, var(--muted));
+	color: var(--suit, var(--fog));
 }
 
 .card .mark {
@@ -180,19 +180,19 @@ button.card {
 
 .illegal {
 	--face: #d8d2c6;
-	border-color: color-mix(in srgb, var(--suit, var(--muted)) 55%, var(--muted));
+	border-color: color-mix(in srgb, var(--suit, var(--fog)) 55%, var(--fog));
 }
 
 .selected {
 	z-index: 3;
-	outline: 2px solid var(--accent);
+	outline: 2px solid var(--gold);
 	outline-offset: 2px;
 }
 
 .communicated {
 	box-shadow:
-		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--muted)) 28%, #fff),
-		inset 0 0 0 2px var(--accent),
+		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--fog)) 28%, #fff),
+		inset 0 0 0 2px var(--gold),
 		var(--card-shadow);
 }
 
@@ -204,13 +204,13 @@ button.card {
 
 .lead {
 	box-shadow:
-		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--muted)) 28%, #fff),
-		0 0 0 1px var(--accent),
+		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--fog)) 28%, #fff),
+		0 0 0 1px var(--gold),
 		var(--card-shadow);
 }
 
 .back {
-	border-color: color-mix(in srgb, var(--muted) 55%, #6b655c);
+	border-color: color-mix(in srgb, var(--fog) 55%, #6b655c);
 	background-color: #cfc6b4;
 	background-image: repeating-linear-gradient(-18deg, #cfc6b4 0 7px, #b9b09e 7px 14px);
 	box-shadow: var(--card-shadow);
@@ -224,6 +224,6 @@ button.card {
 }
 
 .card:focus-visible {
-	outline: 2px solid var(--accent);
+	outline: 2px solid var(--gold);
 	outline-offset: 2px;
 }

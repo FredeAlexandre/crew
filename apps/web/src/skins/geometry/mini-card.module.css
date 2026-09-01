@@ -7,7 +7,7 @@
 	align-content: stretch;
 	gap: 0.05rem;
 	padding: 0.14rem 0.12rem;
-	border: 1.5px solid var(--suit, var(--muted));
+	border: 1.5px solid var(--suit, var(--fog));
 	border-radius: 0.28rem;
 	background-color: var(--face);
 	background-image: linear-gradient(
@@ -18,7 +18,7 @@
 	);
 	color: var(--ink-face);
 	box-shadow:
-		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--muted)) 28%, #fff),
+		inset 0 0 0 1px color-mix(in srgb, var(--suit, var(--fog)) 28%, #fff),
 		0 1px 2px rgb(0 0 0 / 0.16);
 }
 

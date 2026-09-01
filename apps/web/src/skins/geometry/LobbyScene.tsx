@@ -5,7 +5,10 @@ import {
 	type SeatId,
 } from "@crew/protocol";
 import type { SeatView, TableView } from "@crew/view-model/fixtures";
-import { Button, Input, Label, TextField } from "react-aria-components";
+import { TextField } from "react-aria-components";
+import { Button } from "../../components/ui/button.tsx";
+import { Input } from "../../components/ui/input.tsx";
+import { Label } from "../../components/ui/label.tsx";
 import { DISPLAY_NAME_MAX } from "../../lib/display-name.ts";
 import { useI18n } from "../../lib/i18n.tsx";
 import { type LobbySlot, lobbySlot, seatIsEmpty, seatName } from "./copy.ts";
@@ -43,7 +46,8 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 			<header className={styles.lobbyHead}>
 				<p className={styles.kicker}>Crew</p>
 				<Button
-					className={styles.code}
+					variant="ghost"
+					className="font-heading h-auto px-0 text-2xl font-semibold tracking-widest uppercase"
 					onPress={actions?.onCopyCode}
 					isDisabled={!actions?.onCopyCode}
 					aria-label={t("copyLobbyLink", { code })}
@@ -68,15 +72,11 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 				<div className={styles.lobbyWell}>
 					<SetupPanel view={view} setup={setup} onConfigure={actions?.onConfigure} />
 					{actions?.onFillBots ? (
-						<Button className={styles.ghost} onPress={actions.onFillBots}>
+						<Button variant="ghost" onPress={actions.onFillBots}>
 							{t("fillSeats")}
 						</Button>
 					) : null}
-					{actions?.onStart ? (
-						<Button className={styles.primary} onPress={actions.onStart}>
-							{t("start")}
-						</Button>
-					) : null}
+					{actions?.onStart ? <Button onPress={actions.onStart}>{t("start")}</Button> : null}
 					{actions?.statusNote ? <p className={styles.lede}>{actions.statusNote}</p> : null}
 					{actions?.alert ? (
 						<p className={styles.alert} role="alert">
@@ -108,7 +108,8 @@ function SetupPanel({
 			<div className={styles.setupRow}>
 				<span className={styles.setupLabel}>{t("difficulty")}</span>
 				<Button
-					className={styles.ghost}
+					variant="ghost"
+					size="icon"
 					isDisabled={setup.difficulty <= MISSION_DIFFICULTY_MIN}
 					onPress={() => onConfigure({ ...setup, difficulty: setup.difficulty - 1 })}
 					aria-label={t("lowerDifficulty")}
@@ -117,7 +118,8 @@ function SetupPanel({
 				</Button>
 				<span className={styles.setupValue}>{setup.difficulty}</span>
 				<Button
-					className={styles.ghost}
+					variant="ghost"
+					size="icon"
 					isDisabled={setup.difficulty >= MISSION_DIFFICULTY_MAX}
 					onPress={() => onConfigure({ ...setup, difficulty: setup.difficulty + 1 })}
 					aria-label={t("raiseDifficulty")}
@@ -129,7 +131,8 @@ function SetupPanel({
 				<span className={styles.setupLabel}>{t("captain")}</span>
 				<div className={styles.setupPicks}>
 					<Button
-						className={setup.captainSeat === null ? styles.primary : styles.ghost}
+						variant={setup.captainSeat === null ? "default" : "ghost"}
+						size="sm"
 						onPress={() => onConfigure({ ...setup, captainSeat: null })}
 					>
 						{t("random")}
@@ -137,7 +140,8 @@ function SetupPanel({
 					{view.seats.map((seat) => (
 						<Button
 							key={seat.seatId}
-							className={setup.captainSeat === seat.seatId ? styles.primary : styles.ghost}
+							variant={setup.captainSeat === seat.seatId ? "default" : "ghost"}
+							size="sm"
 							onPress={() => onConfigure({ ...setup, captainSeat: seat.seatId })}
 						>
 							{captainPickLabel(seat, t)}
@@ -149,13 +153,15 @@ function SetupPanel({
 				<span className={styles.setupLabel}>{t("distress")}</span>
 				<div className={styles.setupPicks}>
 					<Button
-						className={setup.distressDisabled ? styles.ghost : styles.primary}
+						variant={setup.distressDisabled ? "ghost" : "default"}
+						size="sm"
 						onPress={() => onConfigure({ ...setup, distressDisabled: false })}
 					>
 						{t("on")}
 					</Button>
 					<Button
-						className={setup.distressDisabled ? styles.primary : styles.ghost}
+						variant={setup.distressDisabled ? "default" : "ghost"}
+						size="sm"
 						onPress={() => onConfigure({ ...setup, distressDisabled: true })}
 					>
 						{t("off")}
@@ -166,13 +172,15 @@ function SetupPanel({
 				<span className={styles.setupLabel}>{t("completedTricks")}</span>
 				<div className={styles.setupPicks}>
 					<Button
-						className={setup.completedTricksVisible ? styles.primary : styles.ghost}
+						variant={setup.completedTricksVisible ? "default" : "ghost"}
+						size="sm"
 						onPress={() => onConfigure({ ...setup, completedTricksVisible: true })}
 					>
 						{t("on")}
 					</Button>
 					<Button
-						className={setup.completedTricksVisible ? styles.ghost : styles.primary}
+						variant={setup.completedTricksVisible ? "ghost" : "default"}
+						size="sm"
 						onPress={() => onConfigure({ ...setup, completedTricksVisible: false })}
 					>
 						{t("off")}
@@ -219,9 +227,9 @@ function Chair({
 					onChange={onNameChange}
 					isDisabled={onNameChange === undefined}
 				>
-					<Label className={styles.visuallyHidden}>{t("yourName")}</Label>
+					<Label className="sr-only">{t("yourName")}</Label>
 					<Input
-						className={styles.chairNameInput}
+						className="h-9 min-h-9 px-2 text-center"
 						placeholder={t("yourName")}
 						autoComplete="nickname"
 						maxLength={DISPLAY_NAME_MAX}
@@ -230,14 +238,14 @@ function Chair({
 				</TextField>
 			) : null}
 			{self && !empty ? (
-				<Button className={styles.ghost} onPress={() => onReady?.(!seat.ready)}>
+				<Button variant="ghost" size="sm" onPress={() => onReady?.(!seat.ready)}>
 					{seat.ready ? t("ready") : t("sitReady")}
 				</Button>
 			) : seat.ready ? (
 				<span className={styles.readyMark}>{t("ready")}</span>
 			) : null}
 			{!self && !empty && onKick ? (
-				<Button className={styles.ghost} onPress={() => onKick(seat.seatId)}>
+				<Button variant="ghost" size="sm" onPress={() => onKick(seat.seatId)}>
 					Remove
 				</Button>
 			) : null}

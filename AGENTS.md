@@ -17,7 +17,7 @@ nub run check    # biome, tsc, knip, cruiser, unit tests
 nub run test
 ```
 
-Use **nub** (`nub run`, `nubx`), not pnpm. Do not add Tailwind or shadcn.
+Use **nub** (`nub run`, `nubx`), not pnpm. Web UI is Tailwind + shadcn (Aria) in `apps/web`.
 
 Engine code must run in Vitest, Node, and Cloudflare Workers — no `node:fs`,
 no DOM. `apps/web` must not import `@crew/engine`.

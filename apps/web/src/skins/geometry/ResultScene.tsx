@@ -1,6 +1,6 @@
 import type { TableView } from "@crew/view-model/fixtures";
 import { useEffect, useState } from "react";
-import { Button } from "react-aria-components";
+import { Button } from "../../components/ui/button.tsx";
 import { useI18n } from "../../lib/i18n.tsx";
 import { playCue } from "../../lib/sfx.ts";
 import { CardFace } from "./Card.tsx";
@@ -113,9 +113,7 @@ export function ResultScene({
 			</div>
 			{view.affordances.canRetry && onRetry ? (
 				<div className={styles.boardActions}>
-					<Button className={styles.primary} onPress={onRetry}>
-						{t("retry")}
-					</Button>
+					<Button onPress={onRetry}>{t("retry")}</Button>
 				</div>
 			) : null}
 		</div>

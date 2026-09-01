@@ -1,7 +1,7 @@
 .mark {
 	display: block;
 	flex-shrink: 0;
-	color: var(--suit, var(--muted));
+	color: var(--suit, var(--fog));
 }
 
 .sm {

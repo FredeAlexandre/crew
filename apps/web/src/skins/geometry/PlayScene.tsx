@@ -1,7 +1,7 @@
 import type { CardId, DistressDirection, SonarPosition } from "@crew/protocol";
 import type { Overlay, TableView, TaskView } from "@crew/view-model/fixtures";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Button } from "react-aria-components";
+import { Button } from "../../components/ui/button.tsx";
 import type { ClientIntent } from "../../hooks/use-table.ts";
 import { useI18n } from "../../lib/i18n.tsx";
 import { playCue } from "../../lib/sfx.ts";
@@ -434,16 +434,8 @@ export function PlayScene({
 				/>
 				{confirmRail ? (
 					<div className={styles.handConfirm}>
-						{canPassSelected ? (
-							<Button className={styles.handAction} onPress={passDistressCard}>
-								Pass
-							</Button>
-						) : null}
-						{canPlaySelected ? (
-							<Button className={styles.handAction} onPress={playCard}>
-								Play
-							</Button>
-						) : null}
+						{canPassSelected ? <Button onPress={passDistressCard}>Pass</Button> : null}
+						{canPlaySelected ? <Button onPress={playCard}>Play</Button> : null}
 					</div>
 				) : null}
 			</div>
@@ -553,7 +545,7 @@ function TrickTransitionControl({
 			>
 				<span style={{ transform: `scaleX(${percent / 100})` }} />
 			</div>
-			<Button className={styles.trickTransitionAction} onPress={onToggle}>
+			<Button variant="outline" size="sm" onPress={onToggle}>
 				{transition.paused ? "Start next trick" : "Keep trick visible"}
 			</Button>
 		</div>
@@ -595,22 +587,11 @@ function OverlayBody({
 					<p className={styles.overlayTitle}>{t("distressSignal")}</p>
 					<p className={styles.overlayCopy}>{t("passColorCard")}</p>
 					<div className={styles.overlayActions}>
-						{onSkipDistress ? (
-							<Button className={styles.overlayAction} onPress={onSkipDistress}>
-								{t("skip")}
-							</Button>
-						) : null}
+						{onSkipDistress ? <Button onPress={onSkipDistress}>{t("skip")}</Button> : null}
 						{onActivateDistress ? (
 							<>
-								<Button className={styles.overlayAction} onPress={() => onActivateDistress("left")}>
-									{t("passRight")}
-								</Button>
-								<Button
-									className={styles.overlayAction}
-									onPress={() => onActivateDistress("right")}
-								>
-									{t("passLeft")}
-								</Button>
+								<Button onPress={() => onActivateDistress("left")}>{t("passRight")}</Button>
+								<Button onPress={() => onActivateDistress("right")}>{t("passLeft")}</Button>
 							</>
 						) : null}
 					</div>
@@ -640,22 +621,18 @@ function OverlayBody({
 				{sonarPositions.length > 0 ? (
 					<div className={styles.overlayActions}>
 						{sonarPositions.map((position) => (
-							<Button
-								key={position}
-								className={styles.overlayAction}
-								onPress={() => onUseSonar(position)}
-							>
+							<Button key={position} onPress={() => onUseSonar(position)}>
 								{t(position)}
 							</Button>
 						))}
 					</div>
 				) : null}
 				{onCancelQueue ? (
-					<Button className={styles.overlayAction} onPress={onCancelQueue}>
+					<Button variant="ghost" onPress={onCancelQueue}>
 						{t("cancelQueue")}
 					</Button>
 				) : null}
-				<Button className={styles.overlayAction} onPress={onCloseSkin}>
+				<Button variant="ghost" onPress={onCloseSkin}>
 					{t("close")}
 				</Button>
 			</>
@@ -679,7 +656,7 @@ function OverlayBody({
 						</div>
 					))}
 				</div>
-				<Button className={styles.overlayAction} onPress={onCloseSkin}>
+				<Button variant="ghost" onPress={onCloseSkin}>
 					{t("close")}
 				</Button>
 			</>
@@ -692,7 +669,7 @@ function OverlayBody({
 				<div className={styles.inspectCard}>
 					<TaskCatalogCard task={inspectedTask.spec} status={inspectedTask.status} showMeta />
 				</div>
-				<Button className={styles.overlayAction} onPress={onCloseSkin}>
+				<Button variant="ghost" onPress={onCloseSkin}>
 					{t("close")}
 				</Button>
 			</>
@@ -702,7 +679,7 @@ function OverlayBody({
 		return (
 			<>
 				<SonarDetailBody seat={sonarDetailSeat} />
-				<Button className={styles.overlayAction} onPress={onCloseSkin}>
+				<Button variant="ghost" onPress={onCloseSkin}>
 					{t("close")}
 				</Button>
 			</>
