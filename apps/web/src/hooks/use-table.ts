@@ -27,7 +27,7 @@ export type ClientIntent =
 			completedTricksVisible?: boolean;
 	  }
 	| { type: "host.retry" }
-	| { type: "host.fillBots" }
+	| { type: "host.fillBots"; seatId?: number }
 	| { type: "host.kick"; seatId: number }
 	| { type: "task.take"; taskInstanceId: TaskInstanceId }
 	| { type: "task.pass" }

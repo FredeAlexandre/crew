@@ -41,7 +41,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
   - **Captain**: random, or a specific chair (a selector, not a row of buttons). That chair is dealt submarine 4. Captain is still “who holds submarine 4.”
   - **Distress** off (default) or on. Off skips the distress step after the draft.
 - [ ] Completed tricks are always on: tap a pile to see every trick that player won. There is no lobby toggle.
-- [ ] Dummy teammates still play after Start if they are seated. The lobby no longer offers **Fill empty seats**.
+- [ ] Dummy teammates still play after Start if they are seated. The host can tap an empty chair and choose **Bot**.
 - [ ] Host can **Remove** a seated guest (not themselves, not a bot, not after Start). That person is kicked and cannot rejoin for a short wait; each later kick of the same person doubles the wait (about 10s, then 20s, …). They see that they must wait.
 
 ## Table layout (lobby and play)

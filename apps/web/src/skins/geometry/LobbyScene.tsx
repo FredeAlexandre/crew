@@ -7,7 +7,7 @@ import {
 import type { SeatView, TableView } from "@crew/view-model/fixtures";
 import { SettingsIcon } from "lucide-react";
 import { useState } from "react";
-import { type Key, TextField } from "react-aria-components";
+import { type Key, Button as Pressable, TextField } from "react-aria-components";
 import { Button } from "../../components/ui/button.tsx";
 import {
 	Drawer,
@@ -18,6 +18,7 @@ import {
 } from "../../components/ui/drawer.tsx";
 import { Input } from "../../components/ui/input.tsx";
 import { Label } from "../../components/ui/label.tsx";
+import { Popover, PopoverTrigger } from "../../components/ui/popover.tsx";
 import {
 	Select,
 	SelectContent,
@@ -28,7 +29,7 @@ import {
 import { Switch } from "../../components/ui/switch.tsx";
 import { DISPLAY_NAME_MAX } from "../../lib/display-name.ts";
 import { useI18n } from "../../lib/i18n.tsx";
-import { type LobbySlot, lobbySlot, seatIsEmpty, seatName } from "./copy.ts";
+import { type LobbySlot, lobbySlot, seatIsBot, seatIsEmpty, seatName } from "./copy.ts";
 import { SeatAvatar } from "./parts.tsx";
 import styles from "./scenes.module.css";
 
@@ -51,6 +52,7 @@ export type LobbyActions = {
 	onCopyCode?: () => void;
 	onReady?: (ready: boolean) => void;
 	onKick?: (seatId: SeatId) => void;
+	onFillBot?: (seatId: SeatId) => void;
 	onConfigure?: (setup: LobbySetup) => void;
 	onStart?: () => void;
 };
@@ -84,6 +86,7 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 						name={actions?.name}
 						onNameChange={actions?.onNameChange}
 						onKick={actions?.onKick}
+						onFillBot={actions?.onFillBot}
 					/>
 				))}
 				<div className={styles.lobbyWell}>
@@ -214,6 +217,7 @@ function Chair({
 	name,
 	onNameChange,
 	onKick,
+	onFillBot,
 }: {
 	seat: SeatView;
 	slot: LobbySlot;
@@ -221,6 +225,7 @@ function Chair({
 	name?: string;
 	onNameChange?: (name: string) => void;
 	onKick?: (seatId: SeatId) => void;
+	onFillBot?: (seatId: SeatId) => void;
 }) {
 	const { t } = useI18n();
 	const empty = seatIsEmpty(seat);
@@ -235,7 +240,11 @@ function Chair({
 			data-captain={seat.isCaptain ? "true" : "false"}
 			data-self={self ? "true" : "false"}
 		>
-			<SeatAvatar seat={seat} self={self} showName={!(self && !empty && name !== undefined)} />
+			{empty && !self && onFillBot ? (
+				<EmptySeatFill seat={seat} slot={slot} onFillBot={onFillBot} />
+			) : (
+				<SeatAvatar seat={seat} self={self} showName={!(self && !empty && name !== undefined)} />
+			)}
 			{self && !empty && name !== undefined ? (
 				<TextField
 					className={styles.chairNameField}
@@ -260,13 +269,58 @@ function Chair({
 			) : seat.ready ? (
 				<span className={styles.readyMark}>{t("ready")}</span>
 			) : null}
-			{!self && !empty && onKick ? (
+			{!self && !empty && !seatIsBot(seat) && onKick ? (
 				<Button variant="ghost" size="sm" onPress={() => onKick(seat.seatId)}>
 					{t("remove")}
 				</Button>
 			) : null}
 		</div>
 	);
+}
+
+function EmptySeatFill({
+	seat,
+	slot,
+	onFillBot,
+}: {
+	seat: SeatView;
+	slot: LobbySlot;
+	onFillBot: (seatId: SeatId) => void;
+}) {
+	const { t } = useI18n();
+	const [open, setOpen] = useState(false);
+	return (
+		<PopoverTrigger isOpen={open} onOpenChange={setOpen}>
+			<Pressable className={styles.emptySeatTrigger} aria-label={t("fillSeatWithBot")}>
+				<SeatAvatar seat={seat} />
+			</Pressable>
+			<Popover placement={emptySeatPopoverPlacement(slot)} className="w-auto min-w-28 gap-0 p-2">
+				<Button
+					variant="ghost"
+					className="w-full"
+					onPress={() => {
+						onFillBot(seat.seatId);
+						setOpen(false);
+					}}
+				>
+					{t("bot")}
+				</Button>
+			</Popover>
+		</PopoverTrigger>
+	);
+}
+
+function emptySeatPopoverPlacement(slot: LobbySlot): "left" | "right" | "bottom" | "top" {
+	if (slot === "west") {
+		return "right";
+	}
+	if (slot === "east") {
+		return "left";
+	}
+	if (slot === "self") {
+		return "top";
+	}
+	return "bottom";
 }
 
 function currentSetup(view: TableView): LobbySetup {

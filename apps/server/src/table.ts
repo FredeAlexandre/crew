@@ -331,7 +331,7 @@ export function handleIntent(
 		return retry(state, playerId, options);
 	}
 	if (intent.type === "host.fillBots") {
-		return fillBots(state, playerId);
+		return fillBots(state, playerId, intent.seatId);
 	}
 	if (intent.type === "host.kick") {
 		return kick(state, playerId, intent.seatId, options?.now);
@@ -581,7 +581,50 @@ function play(state: TableState, seatId: SeatId, intent: PlayIntent): TableResul
 	return succeed(stamped.state, stamped.facts, false);
 }
 
-function fillBots(state: TableState, playerId: string): TableResult {
+function nextBotNumber(state: TableState): number {
+	let count = 0;
+	for (const occupant of state.seats) {
+		if (occupant !== null && occupant !== undefined && isBotPlayerId(occupant.playerId)) {
+			count += 1;
+		}
+	}
+	return count + 1;
+}
+
+function fillOneBot(
+	state: TableState,
+	seatId: SeatId,
+	botNumber: number,
+): { state: TableState; facts: Fact[] } {
+	const botId = `${BOT_PLAYER_PREFIX}${seatId}`;
+	const displayName = `Bot ${botNumber}`;
+	const seats = cloneSeats(state);
+	seats[seatId] = {
+		playerId: botId,
+		displayName,
+		connected: true,
+		ready: true,
+	};
+	const sat = pushFact(
+		{ ...state, seats },
+		{
+			type: "player.sat",
+			attemptId: null,
+			seatId,
+			playerId: botId,
+			displayName,
+		},
+	);
+	const readied = pushFact(sat.state, {
+		type: "player.ready",
+		attemptId: null,
+		seatId,
+		ready: true,
+	});
+	return { state: readied.state, facts: [sat.fact, readied.fact] };
+}
+
+function fillBots(state: TableState, playerId: string, targetSeat?: SeatId): TableResult {
 	if (playerId !== state.hostPlayerId) {
 		return fail(state, "notHost", "only the host can fill bots");
 	}
@@ -592,42 +635,31 @@ function fillBots(state: TableState, playerId: string): TableResult {
 		return fail(state, "notSeated", "sit before filling seats");
 	}
 
+	const targets: SeatId[] = [];
+	if (targetSeat !== undefined) {
+		if (targetSeat >= state.playerCount) {
+			return fail(state, "illegalSeat", "seat is not at this table");
+		}
+		if (state.seats[targetSeat] !== null) {
+			return fail(state, "illegalSeat", "seat is already taken");
+		}
+		targets.push(targetSeat);
+	} else {
+		for (let index = 0; index < state.seats.length; index += 1) {
+			if (state.seats[index] === null) {
+				targets.push(index as SeatId);
+			}
+		}
+	}
+
 	let next = state;
 	const facts: Fact[] = [];
-	let botNumber = 1;
-	for (let index = 0; index < next.seats.length; index += 1) {
-		if (next.seats[index] !== null) {
-			continue;
-		}
-		const seatId = index as SeatId;
-		const botId = `${BOT_PLAYER_PREFIX}${seatId}`;
-		const displayName = `Bot ${botNumber}`;
+	let botNumber = nextBotNumber(state);
+	for (const seatId of targets) {
+		const filled = fillOneBot(next, seatId, botNumber);
+		facts.push(...filled.facts);
+		next = filled.state;
 		botNumber += 1;
-		const seats = cloneSeats(next);
-		seats[index] = {
-			playerId: botId,
-			displayName,
-			connected: true,
-			ready: true,
-		};
-		const sat = pushFact(
-			{ ...next, seats },
-			{
-				type: "player.sat",
-				attemptId: null,
-				seatId,
-				playerId: botId,
-				displayName,
-			},
-		);
-		const readied = pushFact(sat.state, {
-			type: "player.ready",
-			attemptId: null,
-			seatId,
-			ready: true,
-		});
-		facts.push(sat.fact, readied.fact);
-		next = readied.state;
 	}
 
 	return succeed(next, facts, false);

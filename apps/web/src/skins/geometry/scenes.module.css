@@ -200,6 +200,24 @@
 	max-width: 100%;
 }
 
+.emptySeatTrigger {
+	display: grid;
+	justify-items: center;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+	border-radius: 0;
+}
+
+.emptySeatTrigger:hover,
+.emptySeatTrigger[data-hovered] {
+	opacity: 0.85;
+}
+
 .chair[data-slot="self"] {
 	grid-area: self;
 	justify-self: center;

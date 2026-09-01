@@ -54,6 +54,7 @@ export const hostRetryIntentSchema = z.object({
 
 export const hostFillBotsIntentSchema = z.object({
 	type: z.literal("host.fillBots"),
+	seatId: seatIdSchema.optional(),
 });
 
 export const hostKickIntentSchema = z.object({

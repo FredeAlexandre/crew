@@ -466,6 +466,24 @@ describe("table bots", () => {
 		expect(oneBot.seats.map((seat) => seat?.displayName)).toEqual(["Alex", "Bea", "Bot 1"]);
 	});
 
+	it("lets the host fill one empty seat", () => {
+		const host = sit(fresh(), "p0", "Alex");
+		const filled = mustOk(handleIntent(host, "p0", { type: "host.fillBots", seatId: 2 })).state;
+		expect(filled.seats.map((seat) => seat?.displayName ?? null)).toEqual(["Alex", null, "Bot 1"]);
+		expect(filled.seats[2]?.ready && filled.seats[2]?.connected).toBe(true);
+		expect(isBotPlayerId(filled.seats[2]?.playerId ?? "")).toBe(true);
+		expect(viewForSeat(filled, 0).affordances.canFillBots).toBe(true);
+
+		const second = mustOk(handleIntent(filled, "p0", { type: "host.fillBots", seatId: 1 })).state;
+		expect(second.seats.map((seat) => seat?.displayName)).toEqual(["Alex", "Bot 2", "Bot 1"]);
+
+		const taken = handleIntent(second, "p0", { type: "host.fillBots", seatId: 1 });
+		expect(taken.ok).toBe(false);
+		if (!taken.ok) {
+			expect(taken.code).toBe("illegalSeat");
+		}
+	});
+
 	it("plays one bot turn at a time and pauses on distress", () => {
 		const filled = mustOk(
 			handleIntent(sit(fresh(), "p0", "Alex"), "p0", { type: "host.fillBots" }),
