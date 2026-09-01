@@ -36,7 +36,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] Each chair shows that player’s face and name. Your chair has an editable name field; changing it updates every seat.
 - [ ] Tap **Sit ready**. Others see a ready mark. Only the host can **Play**, and only when every chair is filled and ready.
 - [ ] Tap the lobby code to copy a **full invite URL**.
-- [ ] Host-only setup lives behind **Settings** in the well (opens a drawer from the bottom). Guests can open it to read the current choices, not change them:
+- [ ] Host-only setup lives behind a **Settings** button in the well (opens a drawer from the bottom). Guests can open it to read the current choices, not change them:
   - **Difficulty** 1–16 (default 4).
   - **Captain**: random, or a specific chair (a selector, not a row of buttons). That chair is dealt submarine 4. Captain is still “who holds submarine 4.”
   - **Distress** off (default) or on. Off skips the distress step after the draft.
@@ -47,7 +47,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Table layout (lobby and play)
 
 - [ ] The table stays on the phone screen (no page scroll off the well). Safe areas keep taps above the home indicator. **Play** sits at the bottom of the screen (not under the browser chrome) and stays disabled while chairs are empty.
-- [ ] At ~360×640 with five players, chairs stay around the well; Settings stays in the center; Play stays on the bottom edge; east/west seats do not cover the trick.
+- [ ] At ~360×640 with five players, chairs stay around the well; the Settings button stays in the center; Play stays on the bottom edge; east/west seats do not cover the trick.
 - [ ] On a wider frame, opponents sit around the well. You stay at the bottom.
 - [ ] Long names ellipsize instead of overflowing.
 

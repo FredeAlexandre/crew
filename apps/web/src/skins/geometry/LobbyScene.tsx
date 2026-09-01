@@ -138,8 +138,9 @@ function SetupDrawer({
 
 	return (
 		<>
-			<Button variant="ghost" size="icon" aria-label={t("settings")} onPress={() => setOpen(true)}>
-				<SettingsIcon />
+			<Button variant="outline" onPress={() => setOpen(true)}>
+				{t("settings")}
+				<SettingsIcon data-icon="inline-end" aria-hidden />
 			</Button>
 			<Drawer open={open} onOpenChange={setOpen} showSwipeHandle>
 				<DrawerContent className="pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]">
