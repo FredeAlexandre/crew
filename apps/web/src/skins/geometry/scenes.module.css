@@ -71,7 +71,7 @@
 }
 
 .lobby {
-	grid-template-rows: auto minmax(0, 1fr);
+	grid-template-rows: auto minmax(0, 1fr) auto;
 	align-content: stretch;
 	justify-items: stretch;
 	gap: 0.4rem;
@@ -126,6 +126,30 @@
 	padding: 0.25rem;
 	min-width: 0;
 	max-width: 100%;
+}
+
+.lobbyPlay {
+	position: sticky;
+	bottom: 0;
+	z-index: 6;
+	display: grid;
+	width: min(42rem, 100%);
+	justify-self: center;
+	padding: 0.35rem 0.75rem 0;
+}
+
+.setupDrawer {
+	display: grid;
+	gap: 1.1rem;
+	padding: 1rem 1.25rem 0.5rem;
+	min-width: 0;
+}
+
+.setupSwitch {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
 }
 
 .setup {
@@ -287,7 +311,7 @@
 	}
 
 	/* Five players keep their table positions on a phone. Only the chair
-	 * markers shrink; the lobby controls keep their thumb-sized targets. */
+	 * markers shrink; Settings stays in the well and Play stays on screen. */
 	.ring[data-count="5"] {
 		display: block;
 		position: relative;

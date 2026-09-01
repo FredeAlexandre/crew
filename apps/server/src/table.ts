@@ -21,8 +21,8 @@ import { type Occupancy, project, projectFacts, projectLobby } from "@crew/view-
 const DEFAULT_SETUP: TableSetup = {
 	difficulty: DEFAULT_MISSION_DIFFICULTY,
 	captainSeat: null,
-	distressDisabled: false,
-	completedTricksVisible: false,
+	distressDisabled: true,
+	completedTricksVisible: true,
 };
 const BOT_PLAYER_PREFIX = "bot:";
 const KICK_COOLDOWN_MS = 10_000;

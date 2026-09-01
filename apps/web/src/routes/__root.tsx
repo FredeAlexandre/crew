@@ -3,7 +3,7 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { IdentitySheetProvider } from "../components/identity-sheet.tsx";
 import { LanguageFlag } from "../components/LanguageFlag.tsx";
 import { ProfileControl } from "../components/ProfileControl.tsx";
-import { I18nProvider, useI18n } from "../lib/i18n.tsx";
+import { I18nProvider } from "../lib/i18n.tsx";
 import { cn } from "../lib/utils.ts";
 import "../styles/tokens.css";
 
@@ -29,7 +29,6 @@ function RootComponent() {
 }
 
 function RootShell() {
-	const { t } = useI18n();
 	const pathname = useRouterState({ select: (state) => state.location.pathname });
 	const atTable = pathname.startsWith("/lobby/");
 	const atHome = pathname === "/";
@@ -58,7 +57,7 @@ function RootShell() {
 								to="/"
 								onClick={() => window.dispatchEvent(new Event("crew:leave-table"))}
 							>
-								{t("table")}
+								Crew
 							</Link>
 						) : atHome ? null : (
 							<span />

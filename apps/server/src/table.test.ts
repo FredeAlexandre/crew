@@ -242,24 +242,14 @@ describe("table lobby", () => {
 		expect(started.state.engine?.hands[1]).toContain("submarine-4");
 	});
 
-	it("lets the host disable distress before start", () => {
+	it("skips distress by default and lets the host turn it on before start", () => {
 		const seated = sitAll();
-		expect(viewForSeat(seated, 0).chrome.flags.distressDisabled).toBe(false);
-		const configured = mustOk(
-			handleIntent(seated, "p0", {
-				type: "host.configure",
-				difficulty: 4,
-				captainSeat: null,
-				distressDisabled: true,
-				completedTricksVisible: false,
-			}),
-		);
-		expect(viewForSeat(configured.state, 1).chrome.flags.distressDisabled).toBe(true);
-		const started = startGame(readyAll(configured.state));
-		expect(started.state.engine?.mission?.flags?.distressDisabled).toBe(true);
+		expect(viewForSeat(seated, 0).chrome.flags.distressDisabled).toBe(true);
+		const startedOff = startGame(readyAll(seated));
+		expect(startedOff.state.engine?.mission?.flags?.distressDisabled).toBe(true);
 
-		let current = started.state;
-		let offeredDistress = started.facts.some((fact) => fact.type === "distress.offered");
+		let current = startedOff.state;
+		let offeredDistress = startedOff.facts.some((fact) => fact.type === "distress.offered");
 		while (current.engine?.phase === "taskDraft") {
 			const seat = current.engine.currentSeat;
 			if (seat === null) {
@@ -279,13 +269,9 @@ describe("table lobby", () => {
 		}
 		expect(offeredDistress).toBe(false);
 		expect(current.engine?.phase).toBe("play");
-	});
 
-	it("lets the host enable completed-trick inspection before start", () => {
-		const seated = sitAll();
-		expect(viewForSeat(seated, 0).chrome.flags.completedTricksVisible).toBe(false);
-		const configured = mustOk(
-			handleIntent(seated, "p0", {
+		const enabled = mustOk(
+			handleIntent(sitAll(), "p0", {
 				type: "host.configure",
 				difficulty: 4,
 				captainSeat: null,
@@ -293,8 +279,15 @@ describe("table lobby", () => {
 				completedTricksVisible: true,
 			}),
 		);
-		expect(viewForSeat(configured.state, 1).chrome.flags.completedTricksVisible).toBe(true);
-		const started = startGame(readyAll(configured.state));
+		expect(viewForSeat(enabled.state, 1).chrome.flags.distressDisabled).toBe(false);
+		const startedOn = startGame(readyAll(enabled.state));
+		expect(startedOn.state.engine?.mission?.flags?.distressDisabled).toBeUndefined();
+	});
+
+	it("shows completed tricks by default", () => {
+		const seated = sitAll();
+		expect(viewForSeat(seated, 0).chrome.flags.completedTricksVisible).toBe(true);
+		const started = startGame(readyAll(seated));
 		expect(viewForSeat(started.state, 1).chrome.flags.completedTricksVisible).toBe(true);
 	});
 
@@ -470,8 +463,17 @@ describe("table bots", () => {
 	});
 
 	it("plays one bot turn at a time and pauses on distress", () => {
-		const lobby = mustOk(
+		const filled = mustOk(
 			handleIntent(sit(fresh(), "p0", "Alex"), "p0", { type: "host.fillBots" }),
+		).state;
+		const lobby = mustOk(
+			handleIntent(filled, "p0", {
+				type: "host.configure",
+				difficulty: 4,
+				captainSeat: null,
+				distressDisabled: false,
+				completedTricksVisible: true,
+			}),
 		).state;
 		const ready = mustOk(handleIntent(lobby, "p0", { type: "player.ready", ready: true })).state;
 		const started = mustOk(
