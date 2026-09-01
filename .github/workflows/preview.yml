@@ -3,17 +3,24 @@ name: Preview
 on:
   pull_request:
     types: [opened, reopened, synchronize, closed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number whose leftover preview stage to destroy
+        required: true
+        type: string
 
 concurrency:
-  group: preview-pr-${{ github.event.number }}
+  group: preview-pr-${{ github.event.pull_request.number || inputs.pr_number }}
   cancel-in-progress: false
 
 env:
-  STAGE: pr-${{ github.event.number }}
+  STAGE: pr-${{ github.event.pull_request.number || inputs.pr_number }}
 
 jobs:
   deploy:
     if: >
+      github.event_name == 'pull_request' &&
       github.event.action != 'closed' &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
@@ -79,15 +86,16 @@ jobs:
 
   destroy:
     if: >
-      github.event.action == 'closed' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: nubjs/setup-nub@v0
       - run: nub ci
       - name: Refuse to destroy production
@@ -102,10 +110,11 @@ jobs:
       - name: Write preview env
         working-directory: packages/infra
         env:
-          PR: ${{ github.event.number }}
+          PR: ${{ github.event.pull_request.number || inputs.pr_number }}
           BETTER_AUTH_SECRET: ${{ secrets.PREVIEW_BETTER_AUTH_SECRET }}
         run: |
           : "${BETTER_AUTH_SECRET:?missing GitHub secret PREVIEW_BETTER_AUTH_SECRET}"
+          : "${PR:?missing pull request number}"
           umask 077
           printf 'CORS_ORIGIN=%s\nBETTER_AUTH_SECRET=%s\n' \
             "https://crew-pr-${PR}.aleno.casa" \
