@@ -110,30 +110,36 @@ export function sonarPositionCopy(position: "highest" | "only" | "lowest", t: Tr
 	return t("sonarLowestOfColor");
 }
 
-export function trickSlot(
-	region: SeatView["region"],
-	playerCount: number,
-): "top" | "left" | "right" | "bottom" {
-	if (region === "seat.self") {
-		return "bottom";
+export function playLeadRegion(
+	view: {
+		scene?: string;
+		trick: { leadRegion: SeatView["region"] | null };
+		chrome: { turnRegion: SeatView["region"] | null };
+		seats: ReadonlyArray<{ region: SeatView["region"]; isCaptain: boolean }>;
+	},
+	shownLead: SeatView["region"] | null | undefined = undefined,
+): SeatView["region"] | null {
+	if (shownLead) {
+		return shownLead;
 	}
-	if (playerCount <= 3) {
-		return region === "seat.1" ? "left" : "right";
+	if (view.trick.leadRegion) {
+		return view.trick.leadRegion;
 	}
-	if (playerCount === 4) {
-		if (region === "seat.1") {
-			return "left";
-		}
-		if (region === "seat.2") {
-			return "top";
-		}
-		return "right";
+	if (view.scene !== "taskDraft" && view.scene !== "deal" && view.chrome.turnRegion) {
+		return view.chrome.turnRegion;
 	}
-	if (region === "seat.1") {
-		return "left";
+	return view.seats.find((seat) => seat.isCaptain)?.region ?? view.chrome.turnRegion ?? null;
+}
+
+export function seatsInPlayOrder<T extends { region: SeatView["region"] }>(
+	seats: readonly T[],
+	leadRegion: SeatView["region"] | null,
+): T[] {
+	if (seats.length === 0) {
+		return [];
 	}
-	if (region === "seat.4") {
-		return "right";
-	}
-	return "top";
+	const leadIndex =
+		leadRegion === null ? -1 : seats.findIndex((seat) => seat.region === leadRegion);
+	const start = leadIndex >= 0 ? leadIndex : 0;
+	return [...seats.slice(start), ...seats.slice(0, start)];
 }
