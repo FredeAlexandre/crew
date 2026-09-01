@@ -8,23 +8,23 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 
 ## Home
 
-- [ ] Open the site and see **Create a lobby** next to **Join a lobby** on a wide screen; on a phone the two choices stack.
-- [ ] Pick **3, 4, or 5** players when creating a table.
-- [ ] Type a name (up to 24 characters). It saves on its own. A generated guest name stays blank until you type something.
-- [ ] Join with a short code **or** by pasting the full lobby link. Pasting a link leaves only the code in the field.
+- [ ] Open the site and see **Play** and **Join** on a full-screen landing. No name, player count, or extra links on that screen.
+- [ ] **Play** opens a 4-player table.
+- [ ] **Join** asks for the short code or the lobby link, then sits you down.
 - [ ] A bad code says there is no lobby with that code.
-- [ ] **Browse assets** opens the card catalogs. **Sign in** is in the masthead when you are still a guest.
+- [ ] A flag at the top-right (left of the face) is where language lives, even if you cannot read the rest of the page.
+- [ ] The disc in the top-right opens profile, sign-in, settings, and **Browse assets**.
 
 ## Language
 
-- [ ] Switch **FR / ES / EN** from the top bar. The choice survives a reload.
+- [ ] Switch **FR / ES / EN** from the flag. The choice survives a reload.
 - [ ] Home, lobby, play overlays (distress, sonar, reminders), profile, and result copy follow that language.
 
 ## Profile
 
 - [ ] A disc in the top-right opens your profile. It is not a seat and does not take a chair.
 - [ ] Every player gets a stable cartoon face generated from their identity. The same person shows the same face on every device. There is no photo upload.
-- [ ] As a guest: set a name, **Create account** (email and password on this same person), or **Sign in** to an existing account.
+- [ ] As a guest: set a name (up to 24 characters; it saves on its own; a generated guest name stays blank until you type something), **Create account** (email and password on this same person), or **Sign in** to an existing account.
 - [ ] Creating an account keeps this person (name, seat, hosted tables). Signing in to another account moves the guest’s name and hosted tables over, then drops the throwaway guest.
 - [ ] Signed in: change password, sign out (you become a new guest), and see **Mission history** of completed attempts (win or fail, date). Guests do not get history.
 - [ ] Theme, SFX volume, and animation prefs in the sheet are stubs (“Coming later”). Mute at the table is real (see Sound).
