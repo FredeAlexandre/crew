@@ -1,15 +1,20 @@
 import { isRoomCode, PLAYER_COUNTS, type PlayerCount } from "@crew/protocol";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Button, Input, Label, Radio, RadioGroup, TextField } from "react-aria-components";
+import { TextField } from "react-aria-components";
 import { useIdentitySheet } from "../components/identity-sheet.tsx";
+import { Alert, AlertDescription } from "../components/ui/alert.tsx";
+import { Button } from "../components/ui/button.tsx";
+import { Card, CardContent, CardDescription, CardHeader } from "../components/ui/card.tsx";
+import { Field, FieldLabel } from "../components/ui/field.tsx";
+import { Input } from "../components/ui/input.tsx";
+import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group.tsx";
 import { useDisplayName } from "../hooks/use-display-name.ts";
 import { useIdentity } from "../hooks/use-identity.ts";
 import { DISPLAY_NAME_MAX } from "../lib/display-name.ts";
 import { useI18n } from "../lib/i18n.tsx";
 import { extractLobbyCode } from "../lib/lobby-code.ts";
 import { createRoom, joinRoom, roomErrorCopy } from "../lib/rooms.ts";
-import styles from "../styles/boot.module.css";
 
 export const Route = createFileRoute("/")({
 	component: BootRoute,
@@ -61,107 +66,131 @@ function BootRoute() {
 	const shownError = error ?? displayName.sessionError;
 
 	return (
-		<section className={styles.table}>
-			<header className={styles.masthead}>
-				<h1 className={styles.title}>Crew</h1>
-				<p className={styles.lede}>{t("openTable")}</p>
-				<nav className={styles.links}>
-					<Link className={styles.catalogLink} to="/assets">
+		<section className="@container grid w-full justify-items-center gap-5 px-0 pt-3 pb-6 sm:min-h-full sm:content-center sm:gap-7 sm:pt-6 sm:pb-8">
+			<header className="grid justify-items-center gap-1.5 text-center">
+				<h1 className="font-heading m-0 text-[clamp(1.75rem,4vw,2.5rem)] font-semibold tracking-wider uppercase">
+					Crew
+				</h1>
+				<p className="m-0 text-muted-foreground">{t("openTable")}</p>
+				<nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1">
+					<Link
+						className="inline-flex min-h-11 items-center text-muted-foreground no-underline hover:text-primary"
+						to="/assets"
+					>
 						{t("browseAssets")}
 					</Link>
 					{identity.user?.isAnonymous !== false ? (
-						<Button className={styles.signIn} onPress={sheet.openSignIn}>
+						<Button variant="ghost" className="text-muted-foreground" onPress={sheet.openSignIn}>
 							{t("signIn")}
 						</Button>
 					) : null}
 				</nav>
 			</header>
-			<div className={styles.board}>
+			<div className="grid w-full max-w-[52rem] gap-5">
 				<TextField
-					className={styles.identity}
+					className="w-full max-w-96 justify-self-center"
 					value={displayName.name}
 					onChange={displayName.onChange}
 					isDisabled={blocked || !displayName.ready}
 				>
-					<Label className={styles.fieldLabel}>{t("name")}</Label>
-					<Input
-						className={styles.nameInput}
-						placeholder={t("yourName")}
-						autoComplete="nickname"
-						maxLength={DISPLAY_NAME_MAX}
-						spellCheck="false"
-					/>
+					<Field>
+						<FieldLabel>{t("name")}</FieldLabel>
+						<Input
+							placeholder={t("yourName")}
+							autoComplete="nickname"
+							maxLength={DISPLAY_NAME_MAX}
+							spellCheck="false"
+						/>
+					</Field>
 				</TextField>
-				<div className={styles.choices}>
+				<div className="@min-[36rem]:grid-cols-2 grid grid-cols-1 items-stretch gap-4 @min-[36rem]:gap-0">
 					<form
-						className={styles.choice}
+						className="@min-[36rem]:px-7 grid content-start gap-3 p-5 @min-[36rem]:py-6"
 						onSubmit={(event) => {
 							event.preventDefault();
 							void openTable();
 						}}
 					>
-						<h2 className={styles.choiceTitle}>{t("createLobby")}</h2>
-						<p className={styles.choiceCopy}>{t("openTable")}</p>
-						<RadioGroup
-							className={styles.counts}
-							value={String(playerCount)}
-							orientation="horizontal"
-							onChange={(value: string) => {
-								const next = Number(value);
-								if (next === 3 || next === 4 || next === 5) {
-									setPlayerCount(next);
-								}
-							}}
-							isDisabled={blocked}
-						>
-							<Label className={styles.fieldLabel}>{t("players")}</Label>
-							{PLAYER_COUNTS.map((count) => (
-								<Radio key={count} className={styles.count} value={String(count)}>
-									{count}
-								</Radio>
-							))}
-						</RadioGroup>
-						<Button className={styles.action} type="submit" isDisabled={blocked}>
-							{busy === "create" ? "…" : t("create")}
-						</Button>
+						<Card className="bg-transparent py-0 shadow-none ring-0">
+							<CardHeader className="px-0">
+								<h2 className="font-heading m-0 text-base font-semibold tracking-wider uppercase">
+									{t("createLobby")}
+								</h2>
+								<CardDescription>{t("openTable")}</CardDescription>
+							</CardHeader>
+							<CardContent className="grid gap-3 px-0">
+								<Field>
+									<FieldLabel>{t("players")}</FieldLabel>
+									<ToggleGroup
+										selectionMode="single"
+										disallowEmptySelection
+										isDisabled={blocked}
+										selectedKeys={new Set([String(playerCount)])}
+										onSelectionChange={(keys) => {
+											const [value] = keys;
+											const next = Number(value);
+											if (next === 3 || next === 4 || next === 5) {
+												setPlayerCount(next);
+											}
+										}}
+										aria-label={t("players")}
+									>
+										{PLAYER_COUNTS.map((count) => (
+											<ToggleGroupItem key={count} id={String(count)}>
+												{count}
+											</ToggleGroupItem>
+										))}
+									</ToggleGroup>
+								</Field>
+								<Button type="submit" isDisabled={blocked}>
+									{busy === "create" ? "…" : t("create")}
+								</Button>
+							</CardContent>
+						</Card>
 					</form>
 					<form
-						className={styles.choice}
+						className="@min-[36rem]:border-l @min-[36rem]:border-border/40 @min-[36rem]:px-7 grid content-start gap-3 p-5 @min-[36rem]:py-6"
 						onSubmit={(event) => {
 							event.preventDefault();
 							void sitDown();
 						}}
 					>
-						<h2 className={styles.choiceTitle}>{t("joinLobby")}</h2>
-						<p className={styles.choiceCopy}>{t("pasteCode")}</p>
-						<TextField
-							aria-label={t("lobbyCode")}
-							value={code}
-							onChange={(value: string) => setCode(extractLobbyCode(value))}
-							isDisabled={blocked}
-						>
-							<Input
-								className={styles.codeInput}
-								placeholder="CODE"
-								autoComplete="off"
-								autoCapitalize="characters"
-								spellCheck="false"
-							/>
-						</TextField>
-						<Button
-							className={styles.action}
-							type="submit"
-							isDisabled={blocked || !isRoomCode(code)}
-						>
-							{busy === "join" ? "…" : t("join")}
-						</Button>
+						<Card className="bg-transparent py-0 shadow-none ring-0">
+							<CardHeader className="px-0">
+								<h2 className="font-heading m-0 text-base font-semibold tracking-wider uppercase">
+									{t("joinLobby")}
+								</h2>
+								<CardDescription>{t("pasteCode")}</CardDescription>
+							</CardHeader>
+							<CardContent className="grid gap-3 px-0">
+								<TextField
+									value={code}
+									onChange={(value: string) => setCode(extractLobbyCode(value))}
+									isDisabled={blocked}
+								>
+									<Field>
+										<FieldLabel className="sr-only">{t("lobbyCode")}</FieldLabel>
+										<Input
+											placeholder="CODE"
+											autoComplete="off"
+											autoCapitalize="characters"
+											spellCheck="false"
+											className="uppercase tracking-[0.18em]"
+										/>
+									</Field>
+								</TextField>
+								<Button type="submit" isDisabled={blocked || !isRoomCode(code)}>
+									{busy === "join" ? "…" : t("join")}
+								</Button>
+							</CardContent>
+						</Card>
 					</form>
 				</div>
 			</div>
 			{shownError ? (
-				<p className={styles.error} role="alert">
-					{shownError}
-				</p>
+				<Alert variant="destructive" className="max-w-xl text-center">
+					<AlertDescription>{shownError}</AlertDescription>
+				</Alert>
 			) : null}
 		</section>
 	);

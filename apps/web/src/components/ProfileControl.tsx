@@ -1,15 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-	Button,
-	Dialog,
-	DialogTrigger,
-	Heading,
-	Input,
-	Label,
-	Modal,
-	ModalOverlay,
-	TextField,
-} from "react-aria-components";
+import { TextField } from "react-aria-components";
 import { useIdentity } from "../hooks/use-identity.ts";
 import {
 	accountErrorCopy,
@@ -29,9 +19,28 @@ import {
 import { type HistoryEntry, readPlayerHistory } from "../lib/history.ts";
 import { type Translate, useI18n } from "../lib/i18n.tsx";
 import { persistDisplayName } from "../lib/rooms.ts";
-import styles from "../styles/identity.module.css";
 import { useIdentitySheet } from "./identity-sheet.tsx";
 import { PlayerHistory } from "./PlayerHistory.tsx";
+import { Alert, AlertDescription } from "./ui/alert.tsx";
+import { Button } from "./ui/button.tsx";
+import {
+	Dialog,
+	DialogClose,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "./ui/dialog.tsx";
+import {
+	Field,
+	FieldDescription,
+	FieldGroup,
+	FieldLabel,
+	FieldLegend,
+	FieldSet,
+} from "./ui/field.tsx";
+import { Input } from "./ui/input.tsx";
+import { Separator } from "./ui/separator.tsx";
 
 type SheetMode = "home" | "create" | "signin" | "password";
 
@@ -137,260 +146,249 @@ export function ProfileControl() {
 			}}
 		>
 			<Button
-				className={styles.disc}
+				variant="ghost"
+				size="icon"
+				className="size-11 overflow-hidden rounded-full ring-1 ring-muted-foreground/50 data-[account=real]:ring-foreground/35"
 				aria-label={openLabel}
 				data-account={isAnonymous ? "guest" : "real"}
 				isDisabled={!identity.ready && identity.sessionError === null}
 			>
 				<img
-					className={styles.photo}
+					className="size-full object-cover"
 					src={user?.image ?? identiconUrl(user?.id ?? "guest")}
 					alt=""
 				/>
 			</Button>
-			<ModalOverlay className={styles.scrim} isDismissable={!busy}>
-				<Modal className={styles.sheet}>
-					<Dialog className={styles.dialog}>
-						{({ close }: { close: () => void }) => (
-							<>
-								<Heading slot="title" className={styles.title}>
-									{sheetTitle(mode, isAnonymous, t)}
-								</Heading>
-								{mode === "home" ? (
-									<>
-										<TextField
-											className={styles.field}
-											value={name}
-											onChange={(value: string) => {
-												setName(value);
-												nameSaver.schedule(value);
-											}}
-											isDisabled={busy || !identity.ready}
-										>
-											<Label className={styles.label}>{t("name")}</Label>
-											<Input
-												className={styles.input}
-												placeholder={t("yourName")}
-												autoComplete="nickname"
-												maxLength={DISPLAY_NAME_MAX}
-												spellCheck="false"
-											/>
-										</TextField>
-										{isAnonymous ? (
-											<div className={styles.actions}>
-												<Button
-													className={styles.primary}
-													onPress={() => {
-														setError(null);
-														setMode("create");
-													}}
-												>
-													{t("createAccount")}
-												</Button>
-												<Button
-													className={styles.primary}
-													onPress={() => {
-														setError(null);
-														setMode("signin");
-													}}
-												>
-													{t("signIn")}
-												</Button>
-											</div>
-										) : (
-											<>
-												<p className={styles.copy}>
-													{t("signedInAs", { email: user?.email ?? t("yourAccount") })}
-												</p>
-												<div className={styles.actions}>
-													<Button
-														className={styles.ghost}
-														onPress={() => {
-															setError(null);
-															setMode("password");
-														}}
-													>
-														{t("changePassword")}
-													</Button>
-													<Button
-														className={styles.ghost}
-														onPress={() =>
-															void run(async () => {
-																await signOutAccount();
-															})
-														}
-														isDisabled={busy}
-													>
-														{t("signOut")}
-													</Button>
-												</div>
-												<p className={styles.hint}>{t("changeEmailLater")}</p>
-											</>
-										)}
-										<fieldset className={styles.stubs} disabled>
-											<legend className={styles.legend}>{t("tableFeel")}</legend>
-											<p className={styles.hint}>{t("comingLater")}</p>
-											<p className={styles.stubRow}>
-												{t("theme")}
-												<span>{t("darkLight")}</span>
-											</p>
-											<p className={styles.stubRow}>
-												{t("sfx")}
-												<span>{t("volume")}</span>
-											</p>
-											<p className={styles.stubRow}>
-												{t("animations")}
-												<span>{t("onOff")}</span>
-											</p>
-										</fieldset>
-										{!isAnonymous ? (
-											<PlayerHistory history={history} loading={historyLoading} />
-										) : null}
-									</>
-								) : null}
-								{mode === "create" ? (
-									<form
-										className={styles.form}
-										onSubmit={(event) => {
-											event.preventDefault();
-											void run(async () => {
-												await nameSaver.flush(name);
-												await convertAnonymousAccount(email, password);
-											});
-										}}
-									>
-										<p className={styles.copy}>{t("createAccountCopy")}</p>
-										<EmailPasswordFields
-											email={email}
-											password={password}
-											onEmail={setEmail}
-											onPassword={setPassword}
-											busy={busy}
-											autoCompletePassword="new-password"
-										/>
-										<div className={styles.actions}>
-											<Button className={styles.primary} type="submit" isDisabled={busy}>
-												{busy ? t("saving") : t("createAccount")}
-											</Button>
-											<Button
-												className={styles.ghost}
-												onPress={() => {
-													setError(null);
-													setMode("home");
-												}}
-												isDisabled={busy}
-											>
-												{t("back")}
-											</Button>
-										</div>
-									</form>
-								) : null}
-								{mode === "signin" ? (
-									<form
-										className={styles.form}
-										onSubmit={(event) => {
-											event.preventDefault();
-											void run(async () => {
-												await signInAccount(email, password);
-											});
-										}}
-									>
-										<p className={styles.copy}>{t("signInCopy")}</p>
-										<EmailPasswordFields
-											email={email}
-											password={password}
-											onEmail={setEmail}
-											onPassword={setPassword}
-											busy={busy}
-											autoCompletePassword="current-password"
-										/>
-										<div className={styles.actions}>
-											<Button className={styles.primary} type="submit" isDisabled={busy}>
-												{busy ? t("signingIn") : t("signIn")}
-											</Button>
-											<Button
-												className={styles.ghost}
-												onPress={() => {
-													setError(null);
-													setMode("home");
-												}}
-												isDisabled={busy}
-											>
-												{t("back")}
-											</Button>
-										</div>
-									</form>
-								) : null}
-								{mode === "password" ? (
-									<form
-										className={styles.form}
-										onSubmit={(event) => {
-											event.preventDefault();
-											void run(async () => {
-												await changeAccountPassword(currentPassword, newPassword);
-											});
-										}}
-									>
-										<TextField
-											className={styles.field}
-											value={currentPassword}
-											onChange={setCurrentPassword}
-											isDisabled={busy}
-										>
-											<Label className={styles.label}>{t("currentPassword")}</Label>
-											<Input
-												className={styles.input}
-												type="password"
-												autoComplete="current-password"
-												minLength={MIN_PASSWORD_LENGTH}
-												maxLength={MAX_PASSWORD_LENGTH}
-											/>
-										</TextField>
-										<TextField
-											className={styles.field}
-											value={newPassword}
-											onChange={setNewPassword}
-											isDisabled={busy}
-										>
-											<Label className={styles.label}>{t("newPassword")}</Label>
-											<Input
-												className={styles.input}
-												type="password"
-												autoComplete="new-password"
-												minLength={MIN_PASSWORD_LENGTH}
-												maxLength={MAX_PASSWORD_LENGTH}
-											/>
-										</TextField>
-										<div className={styles.actions}>
-											<Button className={styles.primary} type="submit" isDisabled={busy}>
-												{busy ? t("saving") : t("savePassword")}
-											</Button>
-											<Button
-												className={styles.ghost}
-												onPress={() => {
-													setError(null);
-													setMode("home");
-												}}
-												isDisabled={busy}
-											>
-												{t("back")}
-											</Button>
-										</div>
-									</form>
-								) : null}
-								{shownError ? (
-									<p className={styles.alert} role="alert">
-										{shownError}
-									</p>
-								) : null}
-								<Button className={styles.close} onPress={close} isDisabled={busy}>
-									{t("close")}
+			<Dialog
+				isDismissable={!busy}
+				showCloseButton={false}
+				className="max-h-[min(90svh,40rem)] overflow-auto"
+			>
+				<DialogHeader>
+					<DialogTitle>{sheetTitle(mode, isAnonymous, t)}</DialogTitle>
+				</DialogHeader>
+				{mode === "home" ? (
+					<FieldGroup className="gap-4">
+						<TextField
+							value={name}
+							onChange={(value: string) => {
+								setName(value);
+								nameSaver.schedule(value);
+							}}
+							isDisabled={busy || !identity.ready}
+						>
+							<Field>
+								<FieldLabel>{t("name")}</FieldLabel>
+								<Input
+									placeholder={t("yourName")}
+									autoComplete="nickname"
+									maxLength={DISPLAY_NAME_MAX}
+									spellCheck="false"
+								/>
+							</Field>
+						</TextField>
+						{isAnonymous ? (
+							<div className="flex flex-wrap gap-2">
+								<Button
+									onPress={() => {
+										setError(null);
+										setMode("create");
+									}}
+								>
+									{t("createAccount")}
 								</Button>
+								<Button
+									onPress={() => {
+										setError(null);
+										setMode("signin");
+									}}
+								>
+									{t("signIn")}
+								</Button>
+							</div>
+						) : (
+							<>
+								<p className="m-0 text-sm text-muted-foreground">
+									{t("signedInAs", { email: user?.email ?? t("yourAccount") })}
+								</p>
+								<div className="flex flex-wrap gap-2">
+									<Button
+										variant="ghost"
+										onPress={() => {
+											setError(null);
+											setMode("password");
+										}}
+									>
+										{t("changePassword")}
+									</Button>
+									<Button
+										variant="ghost"
+										onPress={() =>
+											void run(async () => {
+												await signOutAccount();
+											})
+										}
+										isDisabled={busy}
+									>
+										{t("signOut")}
+									</Button>
+								</div>
+								<FieldDescription>{t("changeEmailLater")}</FieldDescription>
 							</>
 						)}
-					</Dialog>
-				</Modal>
-			</ModalOverlay>
+						<Separator />
+						<FieldSet disabled>
+							<FieldLegend>{t("tableFeel")}</FieldLegend>
+							<FieldDescription>{t("comingLater")}</FieldDescription>
+							<p className="flex min-h-11 items-center justify-between gap-3 text-sm text-muted-foreground">
+								{t("theme")}
+								<span>{t("darkLight")}</span>
+							</p>
+							<p className="flex min-h-11 items-center justify-between gap-3 text-sm text-muted-foreground">
+								{t("sfx")}
+								<span>{t("volume")}</span>
+							</p>
+							<p className="flex min-h-11 items-center justify-between gap-3 text-sm text-muted-foreground">
+								{t("animations")}
+								<span>{t("onOff")}</span>
+							</p>
+						</FieldSet>
+						{!isAnonymous ? <PlayerHistory history={history} loading={historyLoading} /> : null}
+					</FieldGroup>
+				) : null}
+				{mode === "create" ? (
+					<form
+						className="grid gap-3"
+						onSubmit={(event) => {
+							event.preventDefault();
+							void run(async () => {
+								await nameSaver.flush(name);
+								await convertAnonymousAccount(email, password);
+							});
+						}}
+					>
+						<FieldDescription>{t("createAccountCopy")}</FieldDescription>
+						<EmailPasswordFields
+							email={email}
+							password={password}
+							onEmail={setEmail}
+							onPassword={setPassword}
+							busy={busy}
+							autoCompletePassword="new-password"
+						/>
+						<div className="flex flex-wrap gap-2">
+							<Button type="submit" isDisabled={busy}>
+								{busy ? t("saving") : t("createAccount")}
+							</Button>
+							<Button
+								variant="ghost"
+								onPress={() => {
+									setError(null);
+									setMode("home");
+								}}
+								isDisabled={busy}
+							>
+								{t("back")}
+							</Button>
+						</div>
+					</form>
+				) : null}
+				{mode === "signin" ? (
+					<form
+						className="grid gap-3"
+						onSubmit={(event) => {
+							event.preventDefault();
+							void run(async () => {
+								await signInAccount(email, password);
+							});
+						}}
+					>
+						<FieldDescription>{t("signInCopy")}</FieldDescription>
+						<EmailPasswordFields
+							email={email}
+							password={password}
+							onEmail={setEmail}
+							onPassword={setPassword}
+							busy={busy}
+							autoCompletePassword="current-password"
+						/>
+						<div className="flex flex-wrap gap-2">
+							<Button type="submit" isDisabled={busy}>
+								{busy ? t("signingIn") : t("signIn")}
+							</Button>
+							<Button
+								variant="ghost"
+								onPress={() => {
+									setError(null);
+									setMode("home");
+								}}
+								isDisabled={busy}
+							>
+								{t("back")}
+							</Button>
+						</div>
+					</form>
+				) : null}
+				{mode === "password" ? (
+					<form
+						className="grid gap-3"
+						onSubmit={(event) => {
+							event.preventDefault();
+							void run(async () => {
+								await changeAccountPassword(currentPassword, newPassword);
+							});
+						}}
+					>
+						<TextField value={currentPassword} onChange={setCurrentPassword} isDisabled={busy}>
+							<Field>
+								<FieldLabel>{t("currentPassword")}</FieldLabel>
+								<Input
+									type="password"
+									autoComplete="current-password"
+									minLength={MIN_PASSWORD_LENGTH}
+									maxLength={MAX_PASSWORD_LENGTH}
+								/>
+							</Field>
+						</TextField>
+						<TextField value={newPassword} onChange={setNewPassword} isDisabled={busy}>
+							<Field>
+								<FieldLabel>{t("newPassword")}</FieldLabel>
+								<Input
+									type="password"
+									autoComplete="new-password"
+									minLength={MIN_PASSWORD_LENGTH}
+									maxLength={MAX_PASSWORD_LENGTH}
+								/>
+							</Field>
+						</TextField>
+						<div className="flex flex-wrap gap-2">
+							<Button type="submit" isDisabled={busy}>
+								{busy ? t("saving") : t("savePassword")}
+							</Button>
+							<Button
+								variant="ghost"
+								onPress={() => {
+									setError(null);
+									setMode("home");
+								}}
+								isDisabled={busy}
+							>
+								{t("back")}
+							</Button>
+						</div>
+					</form>
+				) : null}
+				{shownError ? (
+					<Alert variant="destructive">
+						<AlertDescription>{shownError}</AlertDescription>
+					</Alert>
+				) : null}
+				<DialogFooter>
+					<DialogClose variant="ghost" isDisabled={busy}>
+						{t("close")}
+					</DialogClose>
+				</DialogFooter>
+			</Dialog>
 		</DialogTrigger>
 	);
 }
@@ -426,20 +424,23 @@ function EmailPasswordFields({
 	const { t } = useI18n();
 	return (
 		<>
-			<TextField className={styles.field} value={email} onChange={onEmail} isDisabled={busy}>
-				<Label className={styles.label}>{t("email")}</Label>
-				<Input className={styles.input} type="email" autoComplete="email" required />
+			<TextField value={email} onChange={onEmail} isDisabled={busy}>
+				<Field>
+					<FieldLabel>{t("email")}</FieldLabel>
+					<Input type="email" autoComplete="email" required />
+				</Field>
 			</TextField>
-			<TextField className={styles.field} value={password} onChange={onPassword} isDisabled={busy}>
-				<Label className={styles.label}>{t("password")}</Label>
-				<Input
-					className={styles.input}
-					type="password"
-					autoComplete={autoCompletePassword}
-					minLength={MIN_PASSWORD_LENGTH}
-					maxLength={MAX_PASSWORD_LENGTH}
-					required
-				/>
+			<TextField value={password} onChange={onPassword} isDisabled={busy}>
+				<Field>
+					<FieldLabel>{t("password")}</FieldLabel>
+					<Input
+						type="password"
+						autoComplete={autoCompletePassword}
+						minLength={MIN_PASSWORD_LENGTH}
+						maxLength={MAX_PASSWORD_LENGTH}
+						required
+					/>
+				</Field>
 			</TextField>
 		</>
 	);

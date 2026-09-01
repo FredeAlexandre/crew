@@ -28,7 +28,7 @@
 
 .kicker {
 	margin: 0;
-	color: var(--muted);
+	color: var(--fog);
 	font-size: 0.95rem;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
@@ -62,12 +62,12 @@
 .lede {
 	margin: 0;
 	max-width: 28rem;
-	color: var(--muted);
+	color: var(--fog);
 }
 
 .alert {
 	margin: 0;
-	color: var(--accent);
+	color: var(--gold);
 }
 
 .lobby {
@@ -147,7 +147,7 @@
 }
 
 .setupLabel {
-	color: var(--muted);
+	color: var(--fog);
 	font-size: 0.75rem;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
@@ -365,7 +365,7 @@
 	width: 100%;
 	min-height: 32px;
 	border: 0;
-	border-bottom: 1px solid color-mix(in srgb, var(--muted) 55%, transparent);
+	border-bottom: 1px solid color-mix(in srgb, var(--fog) 55%, transparent);
 	border-radius: 0;
 	padding: 0.2rem 0.35rem;
 	background: transparent;
@@ -375,8 +375,8 @@
 }
 
 .chairNameInput:focus-visible {
-	border-bottom-color: var(--accent);
-	outline: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
+	border-bottom-color: var(--gold);
+	outline: 2px solid color-mix(in srgb, var(--gold) 35%, transparent);
 	outline-offset: 2px;
 }
 
@@ -398,7 +398,7 @@
 
 .readyMark {
 	font-size: 0.75rem;
-	color: var(--accent);
+	color: var(--gold);
 }
 
 .boardActions {
@@ -416,13 +416,13 @@
 }
 
 .primary {
-	border-color: var(--accent);
-	color: var(--accent);
+	border-color: var(--gold);
+	color: var(--gold);
 }
 
 .ghost {
 	border-color: transparent;
-	color: var(--muted);
+	color: var(--fog);
 }
 
 .mission,
@@ -446,7 +446,7 @@
 }
 
 .outcome[data-outcome="won"] {
-	color: var(--accent);
+	color: var(--gold);
 }
 
 @keyframes outcomeEnter {
@@ -477,7 +477,7 @@
 
 .difficulty {
 	margin: 0;
-	color: var(--muted);
+	color: var(--fog);
 	letter-spacing: 0.08em;
 }
 
@@ -489,7 +489,7 @@
 	margin: 0;
 	padding: 0;
 	list-style: none;
-	color: var(--muted);
+	color: var(--fog);
 }
 
 .crewLineWrap {
@@ -529,7 +529,7 @@
 }
 
 .reviewRemaining {
-	color: var(--muted);
+	color: var(--fog);
 }
 
 .reviewList {
@@ -575,13 +575,13 @@
 	display: grid;
 	gap: 0.35rem;
 	padding: 0.55rem;
-	border: 1px solid color-mix(in srgb, var(--muted) 35%, transparent);
+	border: 1px solid color-mix(in srgb, var(--fog) 35%, transparent);
 	border-radius: 0.5rem;
 }
 
 .historyTrick p {
 	margin: 0;
-	color: var(--muted);
+	color: var(--fog);
 	font-size: 0.85rem;
 }
 
@@ -619,7 +619,7 @@
 
 .marketPrompt {
 	margin: 0;
-	color: var(--accent);
+	color: var(--gold);
 	text-align: center;
 }
 

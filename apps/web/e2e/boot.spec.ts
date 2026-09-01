@@ -5,6 +5,9 @@ test("home offers create and join", async ({ page }) => {
 		!process.env.PLAYWRIGHT_WEB,
 		"Stub until a live Vite server is running; set PLAYWRIGHT_WEB=1 to run.",
 	);
+	await page.addInitScript(() => {
+		localStorage.setItem("crew.locale", "en");
+	});
 	await page.goto("/");
 	await expect(page.getByRole("heading", { name: "Crew" })).toBeVisible();
 	await expect(page.getByRole("button", { name: /profile/i })).toBeVisible();

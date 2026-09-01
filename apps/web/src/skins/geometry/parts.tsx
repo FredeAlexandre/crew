@@ -2,7 +2,9 @@ import type { CardId, SonarPosition } from "@crew/protocol";
 import type { HandCard, SeatView, TableView, TaskView } from "@crew/view-model/fixtures";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useRef } from "react";
-import { Button } from "react-aria-components";
+import { Button as Pressable } from "react-aria-components";
+import { Button } from "../../components/ui/button.tsx";
+import { Toggle } from "../../components/ui/toggle.tsx";
 import { useSfxMuted } from "../../hooks/use-sfx-muted.ts";
 import { identiconUrl } from "../../lib/avatar.ts";
 import { CardBack, CardFace } from "./Card.tsx";
@@ -100,9 +102,13 @@ function WonTrickPile({ count, onPeek }: { count: number; onPeek?: () => void })
 	const label = count === 1 ? "1 trick won" : `${count} tricks won`;
 	if (onPeek) {
 		return (
-			<Button className={styles.wonPile} onPress={onPeek} aria-label={`${label}. Peek last trick.`}>
+			<Pressable
+				className={styles.wonPile}
+				onPress={onPeek}
+				aria-label={`${label}. Peek last trick.`}
+			>
 				{body}
-			</Button>
+			</Pressable>
 		);
 	}
 	return (
@@ -127,13 +133,13 @@ function SonarTokenButton({
 	);
 	if (onPress) {
 		return (
-			<Button
+			<Pressable
 				className={styles.sonarTokenBtn}
 				onPress={onPress}
 				aria-label={available ? "Sonar available" : "Sonar used"}
 			>
 				{body}
-			</Button>
+			</Pressable>
 		);
 	}
 	return body;
@@ -158,9 +164,9 @@ function CommunicatedSlot({
 	);
 	if (onPress) {
 		return (
-			<Button className={styles.commSlotBtn} onPress={onPress} aria-label="Sonar clue">
+			<Pressable className={styles.commSlotBtn} onPress={onPress} aria-label="Sonar clue">
 				{body}
-			</Button>
+			</Pressable>
 		);
 	}
 	return body;
@@ -236,12 +242,12 @@ export function PlaySeat({
 				{self ? (
 					<div className={styles.seatActions}>
 						{canSonar && onSonar ? (
-							<Button className={styles.textAction} onPress={onSonar}>
+							<Button variant="outline" size="sm" onPress={onSonar}>
 								Sonar
 							</Button>
 						) : null}
 						{canPass && onPass ? (
-							<Button className={styles.textAction} onPress={onPass}>
+							<Button variant="outline" size="sm" onPress={onPass}>
 								Pass
 							</Button>
 						) : null}
@@ -290,9 +296,9 @@ function WonCount({
 	}
 	if (onPeek) {
 		return (
-			<Button className={styles.wonPeek} onPress={onPeek} aria-label="Last trick">
+			<Pressable className={styles.wonPeek} onPress={onPeek} aria-label="Last trick">
 				{count}
-			</Button>
+			</Pressable>
 		);
 	}
 	return <span className={styles.won}>{count}</span>;
@@ -532,15 +538,13 @@ export function ChromeLine({ view }: { view: TableView }) {
 				<span key={bit}>{bit}</span>
 			))}
 			{turn ? <span className={styles.turn}>{turn}</span> : null}
-			<Button
-				className={styles.mute}
-				data-on={muted ? "false" : "true"}
-				aria-pressed={!muted}
+			<Toggle
+				isSelected={!muted}
 				aria-label={muted ? "Sound off" : "Sound on"}
-				onPress={() => setMuted(!muted)}
+				onChange={(selected) => setMuted(!selected)}
 			>
 				{muted ? "Muted" : "Sound"}
-			</Button>
+			</Toggle>
 		</div>
 	);
 }
