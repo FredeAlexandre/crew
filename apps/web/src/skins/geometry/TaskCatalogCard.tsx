@@ -9,6 +9,7 @@ import { taskCatalogLabel } from "./task-label.ts";
 export type TaskCardSize = "catalog" | "table" | "self" | "compact";
 
 function DifficultyPips({ difficulty }: { difficulty: TaskPublic["difficulty"] }) {
+	const { t } = useI18n();
 	const groups = [
 		{ label: "3", value: difficulty[3] },
 		{ label: "4", value: difficulty[4] },
@@ -18,6 +19,13 @@ function DifficultyPips({ difficulty }: { difficulty: TaskPublic["difficulty"] }
 
 	return (
 		<div className={styles.difficulty}>
+			<span className={styles.srOnly}>
+				{t("taskDifficulty", {
+					three: difficulty[3],
+					four: difficulty[4],
+					five: difficulty[5],
+				})}
+			</span>
 			{groups.map(({ label, value }) => (
 				<span key={label} className={styles.difficultyGroup}>
 					<span className={styles.playerLabel}>{label}</span>
@@ -49,12 +57,21 @@ function taskAriaLabel(
 	return caption;
 }
 
+export function TaskCatalogMeta({ task }: { task: TaskPublic }) {
+	return (
+		<div className={styles.meta}>
+			<span className={styles.id}>{task.id}</span>
+			<DifficultyPips difficulty={task.difficulty} />
+		</div>
+	);
+}
+
 export function TaskCatalogCard({
 	task,
 	size = "catalog",
 	status,
 	takeable = false,
-	showMeta,
+	muted = false,
 	region,
 	prediction,
 	onPress,
@@ -63,7 +80,7 @@ export function TaskCatalogCard({
 	size?: TaskCardSize;
 	status?: TaskView["status"];
 	takeable?: boolean;
-	showMeta?: boolean;
+	muted?: boolean;
 	region?: TaskView["region"];
 	prediction?: number | null;
 	onPress?: () => void;
@@ -72,29 +89,13 @@ export function TaskCatalogCard({
 	const base = taskCatalogLabel(task, t);
 	const caption =
 		prediction !== undefined && prediction !== null ? `${base} (${prediction})` : base;
-	const chrome = showMeta ?? size === "catalog";
 	const label = taskAriaLabel(caption, status, t);
 	const inner = (
 		<>
-			{chrome ? (
-				<div className={styles.top}>
-					{size === "catalog" ? <span className={styles.id}>{task.id}</span> : <span />}
-					{task.captainMaySelect ? (
-						<span className={styles.captain} title={t("captainMaySelect")}>
-							C
-						</span>
-					) : null}
-				</div>
-			) : null}
 			<div className={styles.artSlot}>
 				<TaskCatalogArt spec={task} />
 			</div>
 			<p className={styles.caption}>{caption}</p>
-			{chrome ? (
-				<div className={styles.footer}>
-					<DifficultyPips difficulty={task.difficulty} />
-				</div>
-			) : null}
 		</>
 	);
 
@@ -104,9 +105,9 @@ export function TaskCatalogCard({
 				className={styles.card}
 				data-kind={task.kind}
 				data-size={size}
-				data-chrome={chrome ? "true" : undefined}
 				data-status={status}
 				data-takeable={takeable ? "true" : undefined}
+				data-muted={muted ? "true" : undefined}
 				data-region={region}
 				aria-label={label}
 				onPress={onPress}
@@ -121,9 +122,9 @@ export function TaskCatalogCard({
 			className={styles.card}
 			data-kind={task.kind}
 			data-size={size}
-			data-chrome={chrome ? "true" : undefined}
 			data-status={status}
 			data-takeable={takeable ? "true" : undefined}
+			data-muted={muted ? "true" : undefined}
 			data-region={region}
 			aria-label={label}
 		>

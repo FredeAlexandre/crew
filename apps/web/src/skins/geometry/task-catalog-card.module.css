@@ -2,12 +2,15 @@
 	--face: #f3eee4;
 	display: grid;
 	grid-template-rows: minmax(0, 1fr) auto;
-	gap: 0.25rem;
+	gap: 0.22rem;
 	width: 100%;
-	min-height: 8.5rem;
-	padding: 0.4rem 0.35rem 0.45rem;
+	aspect-ratio: 2.5 / 3.6;
+	height: auto;
+	min-height: 0;
+	padding: 0.35rem 0.3rem 0.38rem;
+	overflow: hidden;
 	border: 2px solid color-mix(in srgb, var(--kind-accent, var(--fog)) 45%, #8a8276);
-	border-radius: 0.5rem;
+	border-radius: 0.55rem;
 	background:
 		radial-gradient(
 			circle at 50% 0%,
@@ -28,9 +31,11 @@
 }
 
 button.card {
-	min-height: 8.5rem;
+	aspect-ratio: 2.5 / 3.6;
+	height: auto;
+	min-height: 0;
 	min-width: 44px;
-	padding: 0.4rem 0.35rem 0.45rem;
+	padding: 0.35rem 0.3rem 0.38rem;
 	border: 2px solid color-mix(in srgb, var(--kind-accent, var(--fog)) 45%, #8a8276);
 	background:
 		radial-gradient(
@@ -47,15 +52,15 @@ button.card {
 	cursor: pointer;
 }
 
-.card[data-chrome="true"] {
-	grid-template-rows: auto minmax(0, 1fr) auto auto;
-}
-
 .card[data-takeable="true"] {
 	box-shadow:
 		inset 0 0 0 1px color-mix(in srgb, #fff 70%, transparent),
 		0 0 0 2px var(--gold),
 		0 2px 8px rgb(0 0 0 / 0.18);
+}
+
+.card[data-muted="true"] {
+	opacity: 0.42;
 }
 
 .card[data-status="completed"],
@@ -96,55 +101,41 @@ button.card {
 	--kind-accent: var(--suit-blue);
 }
 
-.top {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.25rem;
-	min-height: 0.95rem;
-}
-
-.id {
-	font-size: 0.58rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: color-mix(in srgb, #1c1914 45%, var(--fog));
-}
-
-.captain {
-	display: grid;
-	place-items: center;
-	width: 0.95rem;
-	height: 0.95rem;
-	border-radius: 50%;
-	background: color-mix(in srgb, var(--gold) 24%, #f3eee4);
-	color: #1c1914;
-	font-size: 0.55rem;
-	font-weight: 700;
-	line-height: 1;
-}
-
 .artSlot {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	min-height: 4.5rem;
+	min-height: 0;
 	padding-inline: 0.1rem;
+	overflow: hidden;
 }
 
 .caption {
 	margin: 0;
-	font-size: 0.68rem;
-	line-height: 1.25;
+	max-height: 2.55em;
+	overflow: hidden;
+	font-size: 0.62rem;
+	line-height: 1.22;
 	text-align: center;
 	color: color-mix(in srgb, #1c1914 78%, var(--fog));
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
 }
 
-.footer {
+.meta {
+	position: relative;
 	display: grid;
-	gap: 0.18rem;
 	justify-items: center;
+	gap: 0.18rem;
+}
+
+.id {
+	font-size: 0.62rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
 }
 
 .difficulty {
@@ -153,7 +144,7 @@ button.card {
 	align-items: center;
 	font-size: 0.58rem;
 	font-variant-numeric: tabular-nums;
-	color: color-mix(in srgb, #1c1914 50%, var(--fog));
+	color: var(--muted-foreground);
 }
 
 .difficultyGroup {
@@ -170,7 +161,7 @@ button.card {
 }
 
 .pip[data-on="true"] {
-	background: var(--kind-accent, var(--gold));
+	background: var(--gold);
 }
 
 .playerLabel {
@@ -179,104 +170,90 @@ button.card {
 	letter-spacing: 0.04em;
 }
 
+.srOnly {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 .card[data-size="table"] {
-	width: min(7.35rem, 100%);
-	min-height: 8.25rem;
+	width: min(6.15rem, 100%);
 	flex-shrink: 0;
 }
 
-button.card[data-size="table"] {
-	min-height: 8.25rem;
-}
-
 .card[data-size="self"] {
-	width: 5.5rem;
-	min-height: 6.55rem;
-	padding: 0.32rem 0.26rem 0.34rem;
+	width: 4.85rem;
+	padding: 0.28rem 0.22rem 0.3rem;
 	flex-shrink: 0;
 }
 
 button.card[data-size="self"] {
-	min-height: 6.55rem;
 	min-width: 44px;
-	padding: 0.32rem 0.26rem 0.34rem;
+	padding: 0.28rem 0.22rem 0.3rem;
 }
 
 .card[data-size="self"] .artSlot {
-	min-height: 3.35rem;
 	zoom: 0.78;
 }
 
 .card[data-size="self"] .caption {
-	font-size: 0.62rem;
-	line-height: 1.22;
+	font-size: 0.55rem;
+	line-height: 1.18;
 }
 
 .card[data-size="compact"] {
-	width: 4.35rem;
-	min-height: 5.5rem;
-	padding: 0.28rem 0.2rem 0.3rem;
-	gap: 0.16rem;
+	width: 3.55rem;
+	padding: 0.22rem 0.16rem 0.24rem;
+	gap: 0.12rem;
 	flex-shrink: 0;
 }
 
 button.card[data-size="compact"] {
-	min-height: 5.5rem;
 	min-width: 44px;
-	padding: 0.28rem 0.2rem 0.3rem;
+	padding: 0.22rem 0.16rem 0.24rem;
 }
 
 .card[data-size="compact"] .artSlot {
-	min-height: 2.85rem;
-	zoom: 0.62;
+	zoom: 0.58;
 }
 
 .card[data-size="compact"] .caption {
-	font-size: 0.55rem;
-	line-height: 1.2;
+	font-size: 0.5rem;
+	line-height: 1.15;
+	-webkit-line-clamp: 2;
+	max-height: 2.3em;
 }
 
 @container (max-width: 40rem) {
 	.card[data-size="table"] {
-		width: min(6.5rem, 100%);
-		min-height: 7.5rem;
-	}
-
-	button.card[data-size="table"] {
-		min-height: 7.5rem;
+		width: min(5.35rem, 100%);
 	}
 
 	.card[data-size="table"] .artSlot {
-		min-height: 3.6rem;
 		zoom: 0.86;
 	}
 
 	.card[data-size="table"] .caption {
-		font-size: 0.62rem;
+		font-size: 0.55rem;
 	}
 
 	.card[data-size="self"] {
-		width: 5.05rem;
-		min-height: 6.15rem;
-	}
-
-	button.card[data-size="self"] {
-		min-height: 6.15rem;
+		width: 4.45rem;
 	}
 
 	.card[data-size="compact"] {
-		width: 3.2rem;
-		min-height: 3.55rem;
+		width: 2.85rem;
 		position: relative;
 	}
 
-	button.card[data-size="compact"] {
-		min-height: 3.55rem;
-	}
-
 	.card[data-size="compact"] .artSlot {
-		min-height: 3.1rem;
-		zoom: 0.54;
+		zoom: 0.5;
 	}
 
 	.card[data-size="compact"] .caption {

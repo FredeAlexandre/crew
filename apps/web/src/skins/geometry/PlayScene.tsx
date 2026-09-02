@@ -498,6 +498,7 @@ function Well({
 }) {
 	const { t } = useI18n();
 	if (view.scene === "taskDraft") {
+		const anyTakeable = view.centerTasks.some((task) => task.takeable);
 		return (
 			<div className={styles.draftWell} data-region="tasks.center">
 				{turn ? (
@@ -507,7 +508,12 @@ function Well({
 				) : null}
 				<div className={styles.taskRow}>
 					{view.centerTasks.map((task) => (
-						<TaskCard key={task.instanceId} task={task} onTake={onTake} />
+						<TaskCard
+							key={task.instanceId}
+							task={task}
+							onTake={onTake}
+							muted={anyTakeable && !task.takeable}
+						/>
 					))}
 				</div>
 			</div>
@@ -730,7 +736,6 @@ function OverlayBody({
 					<TaskCatalogCard
 						task={inspectedTask.spec}
 						status={inspectedTask.status}
-						showMeta
 						prediction={inspectedTask.prediction}
 					/>
 				</div>

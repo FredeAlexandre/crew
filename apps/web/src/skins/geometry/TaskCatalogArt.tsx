@@ -1,8 +1,13 @@
-import { type CardId, COLOR_SUITS, type ColorSuit, type TaskPublic } from "@crew/protocol";
+import {
+	type CardId,
+	COLOR_SUITS,
+	type ColorSuit,
+	type Suit,
+	type TaskPublic,
+} from "@crew/protocol";
 import type { CSSProperties, ReactNode } from "react";
 import { useI18n } from "../../lib/i18n.tsx";
 import { MiniCard } from "./MiniCard.tsx";
-import { SuitMark } from "./SuitMark.tsx";
 import styles from "./task-catalog-art.module.css";
 
 function TrickPile({ highlight = false, dim = false }: { highlight?: boolean; dim?: boolean }) {
@@ -31,12 +36,16 @@ function TrickStacks({ count, highlightIndex }: { count: number; highlightIndex?
 	);
 }
 
+function SuitChip({ suit, size = "md" }: { suit: Suit; size?: "sm" | "md" | "lg" | "xl" }) {
+	return <span className={styles.suitChip} data-suit={suit} data-size={size} aria-hidden="true" />;
+}
+
 function SuitRepeat({ suit, count }: { suit: ColorSuit | "submarine"; count: number }) {
 	const shown = Math.min(count, 6);
 	return (
 		<div className={styles.row}>
 			{Array.from({ length: shown }, (_, index) => (
-				<SuitMark key={index} suit={suit} size={count > 3 ? "sm" : "md"} />
+				<SuitChip key={index} suit={suit} size={count > 3 ? "sm" : "md"} />
 			))}
 			{count > shown ? <span className={styles.countSm}>×{count}</span> : null}
 		</div>
@@ -71,6 +80,32 @@ function trickSumBound(spec: Extract<TaskPublic, { kind: "trickSum" }>): string 
 	return "";
 }
 
+function Ban({ children }: { children: ReactNode }) {
+	return (
+		<div className={styles.avoidWrap}>
+			{children}
+			<svg
+				className={styles.banMark}
+				viewBox="0 0 100 100"
+				preserveAspectRatio="xMidYMid meet"
+				aria-hidden="true"
+				focusable="false"
+			>
+				<circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" strokeWidth="7" />
+				<line
+					x1="24"
+					y1="24"
+					x2="76"
+					y2="76"
+					stroke="currentColor"
+					strokeWidth="7"
+					strokeLinecap="round"
+				/>
+			</svg>
+		</div>
+	);
+}
+
 function WinWithArt({ spec }: { spec: Extract<TaskPublic, { kind: "winWith" }> }) {
 	let capture: ReactNode = null;
 	if (spec.captureCard) {
@@ -84,24 +119,14 @@ function WinWithArt({ spec }: { spec: Extract<TaskPublic, { kind: "winWith" }> }
 		winning = <MiniCard cardId={spec.card} size="lg" />;
 	} else if (spec.suit && spec.value !== undefined) {
 		winning = (
-			<>
-				<span className={styles.count}>{spec.value}</span>
-				<SuitMark suit={spec.suit} size="xl" />
-			</>
+			<span className={styles.rankChip} data-suit={spec.suit}>
+				{spec.value}
+			</span>
 		);
 	} else if (spec.suit) {
-		winning = <SuitMark suit={spec.suit} size="xl" />;
+		winning = <SuitChip suit={spec.suit} size="xl" />;
 	} else if (spec.value !== undefined) {
-		winning = (
-			<>
-				<span className={styles.count}>{spec.value}</span>
-				<div className={styles.row}>
-					{COLOR_SUITS.map((suit) => (
-						<SuitMark key={suit} suit={suit} size="sm" />
-					))}
-				</div>
-			</>
-		);
+		winning = <span className={styles.count}>{spec.value}</span>;
 	}
 
 	return (
@@ -109,7 +134,9 @@ function WinWithArt({ spec }: { spec: Extract<TaskPublic, { kind: "winWith" }> }
 			{capture}
 			{capture !== null ? <span className={styles.op}>←</span> : null}
 			{winning}
-			<span className={styles.playArrow} aria-hidden="true" />
+			<span className={styles.op} aria-hidden="true">
+				↓
+			</span>
 		</div>
 	);
 }
@@ -119,17 +146,17 @@ function AvoidArt({ spec }: { spec: Extract<TaskPublic, { kind: "avoid" }> }) {
 	if (spec.submarines) {
 		body = (
 			<div className={styles.subRow}>
-				<SuitMark suit="submarine" size="lg" />
-				<SuitMark suit="submarine" size="lg" />
+				<SuitChip suit="submarine" size="lg" />
+				<SuitChip suit="submarine" size="lg" />
 			</div>
 		);
 	} else if (spec.suit) {
-		body = <SuitMark suit={spec.suit} size="xl" />;
+		body = <SuitChip suit={spec.suit} size="xl" />;
 	} else if (spec.suits) {
 		body = (
 			<div className={styles.row}>
 				{spec.suits.map((suit) => (
-					<SuitMark key={suit} suit={suit} size="lg" />
+					<SuitChip key={suit} suit={suit} size="lg" />
 				))}
 			</div>
 		);
@@ -156,7 +183,7 @@ function AvoidArt({ spec }: { spec: Extract<TaskPublic, { kind: "avoid" }> }) {
 	} else {
 		body = <span className={styles.op}>×</span>;
 	}
-	return <div className={styles.avoidWrap}>{body}</div>;
+	return <Ban>{body}</Ban>;
 }
 
 function FilterArt({ spec }: { spec: Extract<TaskPublic, { kind: "trickFilter" }> }) {
@@ -220,7 +247,7 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 						<span className={styles.count}>{spec.value}</span>
 						<div className={styles.row}>
 							{COLOR_SUITS.map((suit) => (
-								<SuitMark key={suit} suit={suit} size="sm" />
+								<SuitChip key={suit} suit={suit} size="sm" />
 							))}
 						</div>
 						<TrickStacks count={spec.count} />
@@ -346,7 +373,7 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 				<div className={styles.art}>
 					<div className={styles.row}>
 						{COLOR_SUITS.map((suit) => (
-							<SuitMark key={suit} suit={suit} size="lg" />
+							<SuitChip key={suit} suit={suit} size="lg" />
 						))}
 					</div>
 				</div>
@@ -360,9 +387,7 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 								key={index}
 								className={styles.cell}
 								style={{ "--suit": "var(--suit-pink)" } as CSSProperties}
-							>
-								<SuitMark suit="pink" size="sm" />
-							</span>
+							/>
 						))}
 					</div>
 				</div>
@@ -372,14 +397,14 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 				<div className={styles.art}>
 					<div className={styles.moreLess}>
 						<div className={styles.moreCol}>
-							<SuitMark suit={spec.more} size="lg" />
-							<SuitMark suit={spec.more} size="md" />
-							<SuitMark suit={spec.more} size="md" />
+							<SuitChip suit={spec.more} size="lg" />
+							<SuitChip suit={spec.more} size="md" />
+							<SuitChip suit={spec.more} size="md" />
 						</div>
 						<span className={styles.op}>{">"}</span>
 						<div className={styles.lessCol}>
-							<SuitMark suit={spec.less} size="md" />
-							<SuitMark suit={spec.less} size="sm" />
+							<SuitChip suit={spec.less} size="md" />
+							<SuitChip suit={spec.less} size="sm" />
 						</div>
 					</div>
 				</div>
@@ -397,13 +422,13 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 		case "noLead":
 			return (
 				<div className={styles.art}>
-					<div className={styles.avoidWrap}>
+					<Ban>
 						<div className={styles.row}>
 							{spec.suits.map((suit) => (
-								<SuitMark key={suit} suit={suit} size="lg" />
+								<SuitChip key={suit} suit={suit} size="lg" />
 							))}
 						</div>
-					</div>
+					</Ban>
 				</div>
 			);
 		case "skipFirstTricks":
@@ -419,9 +444,9 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 			return (
 				<div className={styles.art}>
 					<div className={styles.moreLess}>
-						<SuitMark suit={spec.a} size="lg" />
+						<SuitChip suit={spec.a} size="lg" />
 						<span className={styles.op}>=</span>
-						<SuitMark suit={spec.b} size="lg" />
+						<SuitChip suit={spec.b} size="lg" />
 					</div>
 				</div>
 			);
