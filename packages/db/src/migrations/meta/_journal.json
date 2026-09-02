@@ -29,6 +29,13 @@
       "when": 1776800000000,
       "tag": "0003_game_history",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1776900000000,
+      "tag": "0004_campaigns",
+      "breakpoints": true
     }
   ]
 }

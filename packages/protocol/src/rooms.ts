@@ -34,8 +34,12 @@ export function isRoomCode(value: string): boolean {
 	return roomCodeSchema.safeParse(value).success;
 }
 
+export const playModeSchema = z.enum(["freePlay", "campaign"]);
+export type PlayMode = z.infer<typeof playModeSchema>;
+
 export const createRoomRequestSchema = z.object({
 	playerCount: playerCountSchema,
+	mode: playModeSchema.optional().default("freePlay"),
 });
 
 export const roomTicketSchema = z.object({

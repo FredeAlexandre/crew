@@ -40,10 +40,15 @@ export function GeometryTable({ view, lobby, sendIntent }: GeometryTableProps) {
 			scene = <LobbyScene view={view} actions={lobby} />;
 			break;
 		case "briefing":
-			scene = <BriefingScene view={view} />;
+			scene = (
+				<BriefingScene
+					view={view}
+					onReady={sendIntent ? (ready) => sendIntent({ type: "player.ready", ready }) : undefined}
+				/>
+			);
 			break;
 		case "campaign":
-			scene = <CampaignScene />;
+			scene = <CampaignScene view={view} />;
 			break;
 		case "taskDraft":
 		case "deal":
@@ -56,6 +61,7 @@ export function GeometryTable({ view, lobby, sendIntent }: GeometryTableProps) {
 					view={view}
 					enter={enteredResult}
 					onRetry={sendIntent ? () => sendIntent({ type: "host.retry" }) : undefined}
+					onContinue={sendIntent ? () => sendIntent({ type: "host.continue" }) : undefined}
 				/>
 			);
 			break;

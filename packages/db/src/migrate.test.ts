@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
+	CAMPAIGNS_SQL,
 	GAME_HISTORY_SQL,
 	INIT_SQL,
 	PLAYER_COUNT_SQL,
@@ -24,6 +25,7 @@ describe("schema bootstrap SQL", () => {
 		expect(GAME_HISTORY_SQL).toBe(
 			readFileSync(join(migrationsDir, "0003_game_history.sql"), "utf8"),
 		);
+		expect(CAMPAIGNS_SQL).toBe(readFileSync(join(migrationsDir, "0004_campaigns.sql"), "utf8"));
 	});
 
 	it("turns drizzle breakpoints into statement separators", () => {

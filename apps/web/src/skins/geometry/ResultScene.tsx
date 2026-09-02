@@ -12,10 +12,12 @@ import { taskRenderParams } from "./task-label.ts";
 export function ResultScene({
 	view,
 	onRetry,
+	onContinue,
 	enter = false,
 }: {
 	view: TableView;
 	onRetry?: () => void;
+	onContinue?: () => void;
 	enter?: boolean;
 }) {
 	const { t } = useI18n();
@@ -113,11 +115,14 @@ export function ResultScene({
 					<SeatPip key={seat.region} seat={seat} compact params={params} />
 				))}
 			</div>
-			{view.affordances.canRetry && onRetry ? (
-				<div className={styles.boardActions}>
+			<div className={styles.boardActions}>
+				{view.affordances.canContinue && onContinue ? (
+					<Button onPress={onContinue}>{t("continue")}</Button>
+				) : null}
+				{view.affordances.canRetry && onRetry ? (
 					<Button onPress={onRetry}>{t("retry")}</Button>
-				</div>
-			) : null}
+				) : null}
+			</div>
 		</div>
 	);
 }

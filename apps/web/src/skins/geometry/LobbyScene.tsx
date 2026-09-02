@@ -227,57 +227,65 @@ function SetupDrawer({
 								+
 							</Button>
 						</div>
-						<div className={styles.setupRow}>
-							<span className={styles.setupLabel}>{t("difficulty")}</span>
-							<Button
-								variant="ghost"
-								size="icon"
-								isDisabled={onConfigure === undefined || setup.difficulty <= MISSION_DIFFICULTY_MIN}
-								onPress={() => apply({ difficulty: setup.difficulty - 1 })}
-								aria-label={t("lowerDifficulty")}
-							>
-								–
-							</Button>
-							<span className={styles.setupValue}>{setup.difficulty}</span>
-							<Button
-								variant="ghost"
-								size="icon"
-								isDisabled={onConfigure === undefined || setup.difficulty >= MISSION_DIFFICULTY_MAX}
-								onPress={() => apply({ difficulty: setup.difficulty + 1 })}
-								aria-label={t("raiseDifficulty")}
-							>
-								+
-							</Button>
-						</div>
-						<Select
-							className="w-full"
-							selectedKey={captainKey}
-							onSelectionChange={onCaptainChange}
-							isDisabled={onConfigure === undefined}
-						>
-							<Label>{t("captain")}</Label>
-							<SelectTrigger className="w-full">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent placement="top">
-								<SelectItem id={RANDOM_CAPTAIN}>{t("random")}</SelectItem>
-								{view.seats.map((seat) => (
-									<SelectItem key={seat.seatId} id={String(seat.seatId)}>
-										{captainPickLabel(seat, t)}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						<div className={styles.setupSwitch}>
-							<span className={styles.setupLabel}>{t("distress")}</span>
-							<Switch
-								isSelected={!setup.distressDisabled}
-								isDisabled={onConfigure === undefined}
-								onChange={(selected) => apply({ distressDisabled: !selected })}
-							>
-								<span className="sr-only">{t("distress")}</span>
-							</Switch>
-						</div>
+						{view.chrome.mode !== "campaign" ? (
+							<>
+								<div className={styles.setupRow}>
+									<span className={styles.setupLabel}>{t("difficulty")}</span>
+									<Button
+										variant="ghost"
+										size="icon"
+										isDisabled={
+											onConfigure === undefined || setup.difficulty <= MISSION_DIFFICULTY_MIN
+										}
+										onPress={() => apply({ difficulty: setup.difficulty - 1 })}
+										aria-label={t("lowerDifficulty")}
+									>
+										–
+									</Button>
+									<span className={styles.setupValue}>{setup.difficulty}</span>
+									<Button
+										variant="ghost"
+										size="icon"
+										isDisabled={
+											onConfigure === undefined || setup.difficulty >= MISSION_DIFFICULTY_MAX
+										}
+										onPress={() => apply({ difficulty: setup.difficulty + 1 })}
+										aria-label={t("raiseDifficulty")}
+									>
+										+
+									</Button>
+								</div>
+								<Select
+									className="w-full"
+									selectedKey={captainKey}
+									onSelectionChange={onCaptainChange}
+									isDisabled={onConfigure === undefined}
+								>
+									<Label>{t("captain")}</Label>
+									<SelectTrigger className="w-full">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent placement="top">
+										<SelectItem id={RANDOM_CAPTAIN}>{t("random")}</SelectItem>
+										{view.seats.map((seat) => (
+											<SelectItem key={seat.seatId} id={String(seat.seatId)}>
+												{captainPickLabel(seat, t)}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<div className={styles.setupSwitch}>
+									<span className={styles.setupLabel}>{t("distress")}</span>
+									<Switch
+										isSelected={!setup.distressDisabled}
+										isDisabled={onConfigure === undefined}
+										onChange={(selected) => apply({ distressDisabled: !selected })}
+									>
+										<span className="sr-only">{t("distress")}</span>
+									</Switch>
+								</div>
+							</>
+						) : null}
 					</div>
 				</DrawerContent>
 			</Drawer>

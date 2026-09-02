@@ -62,6 +62,7 @@ export type {
 	DistressSkipIntent,
 	EchoIntent,
 	HostConfigureIntent,
+	HostContinueIntent,
 	HostFillBotsIntent,
 	HostKickIntent,
 	HostRetryIntent,
@@ -84,6 +85,7 @@ export {
 	distressSkipIntentSchema,
 	echoIntentSchema,
 	hostConfigureIntentSchema,
+	hostContinueIntentSchema,
 	hostFillBotsIntentSchema,
 	hostKickIntentSchema,
 	hostRetryIntentSchema,
@@ -97,13 +99,22 @@ export {
 	taskPredictIntentSchema,
 	taskTakeIntentSchema,
 } from "./intents.ts";
-export type { PlayerCount, RoomTicket } from "./rooms.ts";
+export type { Logbook, LogbookStep } from "./logbook.ts";
+export {
+	DEEP_SEA_LOGBOOK,
+	getLogbook,
+	LOGBOOKS,
+	logbookSchema,
+	logbookStepSchema,
+} from "./logbook.ts";
+export type { PlayerCount, PlayMode, RoomTicket } from "./rooms.ts";
 export {
 	createRoomRequestSchema,
 	isRoomCode,
 	normalizeRoomCode,
 	PLAYER_COUNTS,
 	playerCountSchema,
+	playModeSchema,
 	ROOM_CODE_ALPHABET,
 	ROOM_CODE_MAX_LENGTH,
 	ROOM_CODE_MIN_LENGTH,
