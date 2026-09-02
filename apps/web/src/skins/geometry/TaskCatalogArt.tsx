@@ -236,7 +236,6 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 					<div className={styles.stack}>
 						<span className={styles.count}>{spec.count}</span>
 						<SuitRepeat suit={spec.suit} count={spec.count} />
-						<TrickStacks count={spec.count} />
 					</div>
 				</div>
 			);
