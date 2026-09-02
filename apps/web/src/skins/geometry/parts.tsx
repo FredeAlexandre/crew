@@ -10,7 +10,7 @@ import { CardFace } from "./Card.tsx";
 import { seatIdenticonSeed, seatIsEmpty, seatName, sonarPositionCopy } from "./copy.ts";
 import { cardIndexFromRects } from "./hand-layout.ts";
 import styles from "./parts.module.css";
-import { type TaskCardSize, TaskCatalogCard } from "./TaskCatalogCard.tsx";
+import { type TaskCardSize, TaskCatalogCard, type TaskRenderParams } from "./TaskCatalogCard.tsx";
 
 function SonarIcon() {
 	return (
@@ -202,6 +202,7 @@ export function PlaySeat({
 	onSonar,
 	onPass,
 	chairClassName,
+	params,
 }: {
 	seat: SeatView;
 	onPeekLastTrick?: () => void;
@@ -212,6 +213,7 @@ export function PlaySeat({
 	onSonar?: () => void;
 	onPass?: () => void;
 	chairClassName?: string;
+	params?: TaskRenderParams;
 }) {
 	const { t } = useI18n();
 	const empty = seatIsEmpty(seat);
@@ -255,6 +257,7 @@ export function PlaySeat({
 										key={task.instanceId}
 										task={task}
 										size="compact"
+										params={params}
 										onInspect={onInspectTask}
 									/>
 								))}
@@ -331,10 +334,12 @@ export function SeatPip({
 	seat,
 	compact = false,
 	onPeekLastTrick,
+	params,
 }: {
 	seat: SeatView;
 	compact?: boolean;
 	onPeekLastTrick?: () => void;
+	params?: TaskRenderParams;
 }) {
 	const empty = seatIsEmpty(seat);
 	return (
@@ -356,7 +361,7 @@ export function SeatPip({
 			{!compact && seat.tasks.length > 0 ? (
 				<div className={styles.dockTasks}>
 					{seat.tasks.map((task) => (
-						<TaskMark key={task.instanceId} task={task} />
+						<TaskMark key={task.instanceId} task={task} params={params} />
 					))}
 				</div>
 			) : null}
@@ -367,10 +372,12 @@ export function SeatPip({
 export function TaskMark({
 	task,
 	size = "compact",
+	params,
 	onInspect,
 }: {
 	task: TaskView;
 	size?: Exclude<TaskCardSize, "catalog">;
+	params?: TaskRenderParams;
 	onInspect?: (task: TaskView) => void;
 }) {
 	return (
@@ -380,6 +387,7 @@ export function TaskMark({
 			status={task.status}
 			region={task.region}
 			prediction={task.prediction}
+			params={params}
 			onPress={onInspect ? () => onInspect(task) : undefined}
 		/>
 	);
@@ -389,10 +397,12 @@ export function TaskCard({
 	task,
 	onTake,
 	muted = false,
+	params,
 }: {
 	task: TaskView;
 	onTake?: (task: TaskView) => void;
 	muted?: boolean;
+	params?: TaskRenderParams;
 }) {
 	return (
 		<TaskCatalogCard
@@ -403,6 +413,7 @@ export function TaskCard({
 			muted={muted}
 			region={task.region}
 			prediction={task.prediction}
+			params={params}
 			onPress={task.takeable && onTake ? () => onTake(task) : undefined}
 		/>
 	);

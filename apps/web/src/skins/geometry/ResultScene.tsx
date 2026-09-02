@@ -7,6 +7,7 @@ import { CardFace } from "./Card.tsx";
 import { resultCopy, seatName } from "./copy.ts";
 import { SeatPip, TaskMark } from "./parts.tsx";
 import styles from "./scenes.module.css";
+import { taskRenderParams } from "./task-label.ts";
 
 export function ResultScene({
 	view,
@@ -19,6 +20,7 @@ export function ResultScene({
 }) {
 	const { t } = useI18n();
 	const [fresh] = useState(enter);
+	const params = taskRenderParams(view.playerCount);
 	const outcome = view.result?.outcome ?? "failed";
 	const tasks = view.seats.flatMap((seat) =>
 		seat.tasks.map((task) => ({ task, owner: seatName(seat, t) })),
@@ -61,7 +63,7 @@ export function ResultScene({
 							<ul className={styles.reviewList} aria-label={t("failedTasks")}>
 								{failed.map(({ task, owner }) => (
 									<li key={task.instanceId}>
-										<TaskMark task={task} size="table" />
+										<TaskMark task={task} size="table" params={params} />
 										<span>{t("ownerTaskFailed", { owner })}</span>
 									</li>
 								))}
@@ -108,7 +110,7 @@ export function ResultScene({
 			) : null}
 			<div className={styles.crewLineWrap}>
 				{view.seats.map((seat) => (
-					<SeatPip key={seat.region} seat={seat} compact />
+					<SeatPip key={seat.region} seat={seat} compact params={params} />
 				))}
 			</div>
 			{view.affordances.canRetry && onRetry ? (

@@ -4,7 +4,9 @@ import { Button } from "react-aria-components";
 import { useI18n } from "../../lib/i18n.tsx";
 import { TaskCatalogArt } from "./TaskCatalogArt.tsx";
 import styles from "./task-catalog-card.module.css";
-import { taskCatalogLabel } from "./task-label.ts";
+import { type TaskRenderParams, taskCatalogLabel } from "./task-label.ts";
+
+export type { TaskRenderParams } from "./task-label.ts";
 
 export type TaskCardSize = "catalog" | "table" | "self" | "compact";
 
@@ -74,6 +76,7 @@ export function TaskCatalogCard({
 	muted = false,
 	region,
 	prediction,
+	params,
 	onPress,
 }: {
 	task: TaskPublic;
@@ -83,17 +86,18 @@ export function TaskCatalogCard({
 	muted?: boolean;
 	region?: TaskView["region"];
 	prediction?: number | null;
+	params?: TaskRenderParams;
 	onPress?: () => void;
 }) {
 	const { t } = useI18n();
-	const base = taskCatalogLabel(task, t);
+	const base = taskCatalogLabel(task, t, params);
 	const caption =
 		prediction !== undefined && prediction !== null ? `${base} (${prediction})` : base;
 	const label = taskAriaLabel(caption, status, t);
 	const inner = (
 		<>
 			<div className={styles.artSlot}>
-				<TaskCatalogArt spec={task} />
+				<TaskCatalogArt spec={task} params={params} />
 			</div>
 			<p className={styles.caption}>{caption}</p>
 		</>
