@@ -8,7 +8,7 @@ import { Toggle } from "../../components/ui/toggle.tsx";
 import { useSfxMuted } from "../../hooks/use-sfx-muted.ts";
 import { identiconUrl } from "../../lib/avatar.ts";
 import { useI18n } from "../../lib/i18n.tsx";
-import { CardBack, CardFace } from "./Card.tsx";
+import { CardFace } from "./Card.tsx";
 import { seatIdenticonSeed, seatIsEmpty, seatName, sonarPositionCopy, turnCopy } from "./copy.ts";
 import { cardIndexFromRects } from "./hand-layout.ts";
 import styles from "./parts.module.css";
@@ -92,34 +92,49 @@ export function SeatAvatar({
 	);
 }
 
-function WonTrickPile({ count, onPeek }: { count: number; onPeek?: () => void }) {
+function SonarLiveDot({
+	state,
+	onPress,
+}: {
+	state: SeatView["sonar"]["state"];
+	onPress?: () => void;
+}) {
 	const { t } = useI18n();
-	const body = (
-		<>
-			<span className={styles.wonStack} aria-hidden="true">
-				<CardBack size="token" />
-				<CardBack size="token" />
-				<CardBack size="token" />
-			</span>
-			<span className={styles.wonCount}>{count}</span>
-		</>
-	);
-	const label = t(count === 1 ? "tricksWonOne" : "tricksWonMany", { count });
-	if (onPeek) {
+	const available = state === "available";
+	const body = <span className={styles.sonarLive} data-state={state} />;
+	if (onPress) {
 		return (
 			<Pressable
-				className={styles.wonPile}
-				onPress={onPeek}
-				aria-label={`${label}. ${t("peekLastTrick")}`}
+				className={styles.sonarLiveBtn}
+				onPress={onPress}
+				aria-label={available ? t("sonarAvailable") : t("sonarUsed")}
 			>
 				{body}
 			</Pressable>
 		);
 	}
+	return body;
+}
+
+function PlayTrickCount({ count, onPeek }: { count: number; onPeek?: () => void }) {
+	const { t } = useI18n();
+	const label = t(count === 1 ? "tricksWonOne" : "tricksWonMany", { count });
+	if (onPeek) {
+		return (
+			<Pressable
+				className={styles.seatTrickCountBtn}
+				onPress={onPeek}
+				aria-label={`${label}. ${t("peekLastTrick")}`}
+			>
+				{count}
+			</Pressable>
+		);
+	}
 	return (
-		<div className={styles.wonPile} role="img" aria-label={label}>
-			{body}
-		</div>
+		<span className={styles.seatTrickCount}>
+			<span className={styles.srOnly}>{label}</span>
+			<span aria-hidden="true">{count}</span>
+		</span>
 	);
 }
 
@@ -204,6 +219,7 @@ export function PlaySeat({
 	const empty = seatIsEmpty(seat);
 	const self = seat.region === "seat.self";
 	const communication = seat.sonar.communication;
+	const hasBody = seat.tasks.length > 0 || Boolean(communication);
 	return (
 		<div
 			className={chairClassName}
@@ -212,50 +228,54 @@ export function PlaySeat({
 			data-empty={empty ? "true" : "false"}
 			data-self={self ? "true" : "false"}
 		>
-			<div className={styles.playSeat} data-self={self ? "true" : "false"}>
+			<div
+				className={styles.playSeat}
+				data-self={self ? "true" : "false"}
+				data-turn={seat.isTurn ? "true" : "false"}
+			>
 				<div className={styles.seatHead}>
-					<SeatAvatar seat={seat} self={self} />
+					<SeatAvatar seat={seat} self={self} showName={false} />
+					{empty ? (
+						<span className={styles.pipName}>{t("empty")}</span>
+					) : (
+						<div className={styles.seatNameRow}>
+							<SonarLiveDot
+								state={seat.sonar.state}
+								onPress={self && canSonar && onSonar ? onSonar : onSonarDetail}
+							/>
+							<span className={styles.pipName}>{seatName(seat, t)}</span>
+							<PlayTrickCount count={seat.wonTrickCount} onPeek={onPeekLastTrick} />
+						</div>
+					)}
 				</div>
-				<div className={styles.seatBody}>
-					<WonTrickPile count={seat.wonTrickCount} onPeek={onPeekLastTrick} />
-					<div className={styles.seatTasks} data-region={self ? "tasks.self" : undefined}>
+				{hasBody ? (
+					<div className={styles.seatBody}>
 						{seat.tasks.length > 0 ? (
-							seat.tasks.map((task) => (
-								<TaskMark
-									key={task.instanceId}
-									task={task}
-									size="compact"
-									onInspect={onInspectTask}
-								/>
-							))
-						) : (
-							<span className={styles.taskHole} aria-hidden="true" />
-						)}
-					</div>
-					<div className={styles.seatSonar}>
+							<div className={styles.seatTasks} data-region={self ? "tasks.self" : undefined}>
+								{seat.tasks.map((task) => (
+									<TaskMark
+										key={task.instanceId}
+										task={task}
+										size="compact"
+										onInspect={onInspectTask}
+									/>
+								))}
+							</div>
+						) : null}
 						{communication ? (
 							<CommunicatedSlot
 								cardId={communication.cardId}
 								position={communication.position}
 								onPress={onSonarDetail}
 							/>
-						) : (
-							<SonarTokenButton state={seat.sonar.state} onPress={onSonarDetail} />
-						)}
+						) : null}
 					</div>
-				</div>
-				{self ? (
+				) : null}
+				{self && canPass && onPass ? (
 					<div className={styles.seatActions}>
-						{canSonar && onSonar ? (
-							<Button variant="outline" size="sm" onPress={onSonar}>
-								{t("sonar")}
-							</Button>
-						) : null}
-						{canPass && onPass ? (
-							<Button variant="outline" size="sm" onPress={onPass}>
-								{t("pass")}
-							</Button>
-						) : null}
+						<Button variant="outline" size="sm" onPress={onPass}>
+							{t("pass")}
+						</Button>
 					</div>
 				) : null}
 			</div>

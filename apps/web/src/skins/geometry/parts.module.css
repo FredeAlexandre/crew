@@ -221,6 +221,106 @@
 	box-shadow: none;
 }
 
+.seatNameRow {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.22rem;
+	min-width: 0;
+	max-width: 100%;
+	width: 100%;
+}
+
+.seatNameRow .pipName {
+	flex: 0 1 auto;
+	min-width: 0;
+	max-width: 100%;
+	font-size: 0.72rem;
+	text-align: center;
+}
+
+.playSeat[data-turn="true"] .seatNameRow .pipName {
+	color: var(--gold);
+}
+
+.sonarLiveBtn {
+	display: grid;
+	flex: 0 0 auto;
+	place-items: center;
+	width: 0.9rem;
+	height: 0.9rem;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+}
+
+.sonarLive {
+	width: 0.42rem;
+	height: 0.42rem;
+	border-radius: 50%;
+	background: var(--fog);
+}
+
+.sonarLive[data-state="available"] {
+	background: var(--suit-green);
+	box-shadow: 0 0 0 0 color-mix(in srgb, var(--suit-green) 70%, transparent);
+	animation: sonarLivePulse 1.7s ease-out infinite;
+}
+
+.sonarLive[data-state="used"],
+.sonarLive[data-state="communicating"] {
+	background: #c44;
+	animation: none;
+}
+
+@keyframes sonarLivePulse {
+	0% {
+		transform: scale(1);
+		box-shadow: 0 0 0 0 color-mix(in srgb, var(--suit-green) 65%, transparent);
+	}
+	70% {
+		transform: scale(1.2);
+		box-shadow: 0 0 0 0.38rem transparent;
+	}
+	100% {
+		transform: scale(1);
+		box-shadow: 0 0 0 0 transparent;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sonarLive[data-state="available"] {
+		animation: none;
+	}
+}
+
+.seatTrickCount,
+.seatTrickCountBtn {
+	flex: 0 0 auto;
+	font-variant-numeric: tabular-nums;
+	font-size: 0.72rem;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--fog);
+}
+
+.seatTrickCountBtn {
+	min-width: 0;
+	min-height: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	font: inherit;
+	font-variant-numeric: tabular-nums;
+	font-size: 0.72rem;
+	font-weight: 600;
+	color: var(--gold);
+	cursor: pointer;
+}
+
 .count,
 .won,
 .taskCount {
@@ -432,7 +532,7 @@
 .seatBody {
 	flex-direction: row;
 	flex-wrap: wrap;
-	align-items: flex-end;
+	align-items: flex-start;
 	justify-content: center;
 	gap: 0.12rem 0.18rem;
 }
@@ -440,90 +540,13 @@
 .seatTasks {
 	display: flex;
 	flex-wrap: wrap;
-	align-items: flex-end;
+	align-items: flex-start;
 	justify-content: center;
 	gap: 0.28rem;
-	min-width: 2.4rem;
-	min-height: 2.4rem;
 }
 
 .playSeat[data-self="true"] .seatTasks {
 	max-width: 100%;
-}
-
-.seatSonar {
-	display: grid;
-	place-items: center;
-	min-width: 2.85rem;
-	min-height: 2.85rem;
-}
-
-.taskHole {
-	width: 2.4rem;
-	height: 2.4rem;
-	border-radius: 0.35rem;
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fog) 35%, transparent);
-	opacity: 0.35;
-}
-
-.wonPile {
-	position: relative;
-	display: grid;
-	place-items: center;
-	width: 2.35rem;
-	min-height: 44px;
-	min-width: 44px;
-	padding: 0;
-	border: 0;
-	background: transparent;
-	color: inherit;
-	font: inherit;
-	cursor: default;
-}
-
-button.wonPile {
-	cursor: pointer;
-}
-
-.wonStack {
-	position: relative;
-	width: 2.35rem;
-	aspect-ratio: 2.5 / 3.5;
-	pointer-events: none;
-}
-
-.wonStack > * {
-	position: absolute;
-	inset: 0;
-	--token-w: 2.35rem;
-}
-
-.wonStack > *:nth-child(1) {
-	transform: translate(-0.18rem, 0.12rem) rotate(-7deg);
-}
-
-.wonStack > *:nth-child(2) {
-	transform: translate(0.14rem, -0.08rem) rotate(5deg);
-}
-
-.wonStack > *:nth-child(3) {
-	transform: translate(0, 0);
-}
-
-.wonCount {
-	position: absolute;
-	left: 50%;
-	top: 42%;
-	transform: translate(-50%, -50%);
-	z-index: 4;
-	font-size: 0.95rem;
-	font-weight: 700;
-	font-variant-numeric: tabular-nums;
-	line-height: 1;
-	text-shadow:
-		0 0 4px var(--table),
-		0 1px 2px rgb(0 0 0 / 0.35);
-	pointer-events: none;
 }
 
 .sonarTokenBtn,
@@ -634,28 +657,10 @@ button.wonPile {
 	height: 0.68rem;
 }
 
-.playSeat .avatarWrap .pipName {
+.playSeat .avatarWrap .pipName,
+.playSeat .seatNameRow .pipName {
 	font-size: 0.72rem;
 	max-width: 100%;
-}
-
-.playSeat .wonPile,
-.playSeat .wonStack {
-	width: 2.15rem;
-	min-width: 2.15rem;
-}
-
-.playSeat .wonStack > * {
-	--token-w: 2rem;
-}
-
-.playSeat .wonCount {
-	font-size: 0.82rem;
-}
-
-.playSeat .seatSonar {
-	min-width: 2.2rem;
-	min-height: 2.2rem;
 }
 
 @container (max-width: 40rem) {
@@ -665,17 +670,10 @@ button.wonPile {
 		font-size: 0.78rem;
 	}
 
-	.playSeat .avatarWrap .pipName {
+	.playSeat .avatarWrap .pipName,
+	.playSeat .seatNameRow .pipName,
+	.playSeat .seatTrickCount,
+	.playSeat .seatTrickCountBtn {
 		font-size: 0.68rem;
-	}
-
-	.playSeat .sonarToken {
-		width: 1.45rem;
-		height: 1.45rem;
-	}
-
-	.playSeat .sonarIcon {
-		width: 0.82rem;
-		height: 0.82rem;
 	}
 }
