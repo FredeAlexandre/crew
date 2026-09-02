@@ -77,6 +77,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] Face-up tasks sit in the center. On your draft turn you tap a task to take it, or **Pass**. A task you cannot take (for example one the captain is not allowed) looks disabled.
 - [ ] After you take an “I will win X tricks” card, you name that number. Open cards show it to the crew; hidden cards keep it until the result.
 - [ ] Tasks at seats (yours and others) are illustrated cards, the same shape as playing cards. Tap one to open a larger Task overlay; Escape or Close dismisses it.
+- [ ] A trick-sum card shows the target for this crew size, not the 3/4/5 options together.
 - [ ] Completed tasks read as done; failed tasks as failed. Takeable tasks in the center are marked so they look takeable.
 
 ## Distress
@@ -128,7 +129,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Catalog
 
 - [ ] **Browse assets** → Mission tasks and Playing cards.
-- [ ] Mission tasks: the official **96** task cards, grouped by type, with a readable sentence. Each face matches a playing card’s shape: color and number, no suit symbols. Avoid and do-not-lead cards put a prohibition mark over the forbidden thing. Id and difficulty for 3/4/5 players sit next to the card, not on it.
+- [ ] Mission tasks: the official **96** task cards, grouped by type, with a readable sentence. Each face matches a playing card’s shape: color and number, no suit symbols. Avoid and do-not-lead cards put a prohibition mark over the forbidden thing. Id and difficulty for 3/4/5 players sit next to the card, not on it. A trick-sum face in this catalog lists the 3/4/5 targets; at the table it shows only this crew’s number.
 - [ ] Playing cards: all 40 faces by suit (including submarine 4 as Captain) plus table states (legal, selected, muted, back, …).
 - [ ] Old `/missions` and `/playing-cards` links still land on the catalogs.
 

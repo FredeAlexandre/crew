@@ -12,6 +12,7 @@ import { sortHand } from "./hand-sort.ts";
 import { HandStrip, PlaySeat, SonarDetailBody, TaskCard } from "./parts.tsx";
 import styles from "./play.module.css";
 import { TaskCatalogCard } from "./TaskCatalogCard.tsx";
+import { taskRenderParams } from "./task-label.ts";
 
 type QueuedSonar = { cardId: CardId; position: SonarPosition };
 type TrickTransition = { remaining: number; paused: boolean };
@@ -100,6 +101,7 @@ export function PlayScene({
 			: (heldCards.find((card) => card.order === 1)?.region ?? null);
 	const orderedSeats = seatsInPlayOrder(shownSeats, playLeadRegion(view, shownLeadRegion));
 	const landKeySet = new Set(heldCards === null ? landKeys : []);
+	const params = taskRenderParams(view.playerCount);
 
 	useEffect(() => {
 		if (view.overlay !== "none") {
@@ -404,6 +406,7 @@ export function PlayScene({
 								key={seat.region}
 								seat={seat}
 								chairClassName={styles.playChair}
+								params={params}
 								onPeekLastTrick={
 									canInspectCompletedTricks && seat.completedTricks.length > 0
 										? () => inspectCompletedTricks(seat)
@@ -499,6 +502,7 @@ function Well({
 	const { t } = useI18n();
 	if (view.scene === "taskDraft") {
 		const anyTakeable = view.centerTasks.some((task) => task.takeable);
+		const params = taskRenderParams(view.playerCount);
 		return (
 			<div className={styles.draftWell} data-region="tasks.center">
 				{turn ? (
@@ -511,6 +515,7 @@ function Well({
 						<TaskCard
 							key={task.instanceId}
 							task={task}
+							params={params}
 							onTake={onTake}
 							muted={anyTakeable && !task.takeable}
 						/>
@@ -737,6 +742,7 @@ function OverlayBody({
 						task={inspectedTask.spec}
 						status={inspectedTask.status}
 						prediction={inspectedTask.prediction}
+						params={taskRenderParams(view.playerCount)}
 					/>
 				</div>
 				<Button variant="ghost" onPress={onCloseSkin}>

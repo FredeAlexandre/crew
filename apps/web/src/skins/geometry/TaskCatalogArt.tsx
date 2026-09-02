@@ -9,6 +9,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { useI18n } from "../../lib/i18n.tsx";
 import { MiniCard } from "./MiniCard.tsx";
 import styles from "./task-catalog-art.module.css";
+import { type TaskRenderParams, trickSumBound } from "./task-label.ts";
 
 function TrickPile({ highlight = false, dim = false }: { highlight?: boolean; dim?: boolean }) {
 	return (
@@ -65,19 +66,6 @@ function TrickCountOp({ op }: { op: "exact" | "atLeast" | "atMost" }) {
 function SumOp({ op }: { op: "gt" | "lt" | "eq" }) {
 	const symbol = op === "gt" ? ">" : op === "lt" ? "<" : "=";
 	return <span className={styles.op}>{symbol}</span>;
-}
-
-function trickSumBound(spec: Extract<TaskPublic, { kind: "trickSum" }>): string {
-	if (spec.targets !== undefined) {
-		return spec.targets.join("/");
-	}
-	if (typeof spec.target === "number") {
-		return String(spec.target);
-	}
-	if (spec.target !== undefined) {
-		return `${spec.target[3]}/${spec.target[4]}/${spec.target[5]}`;
-	}
-	return "";
 }
 
 function Ban({ children }: { children: ReactNode }) {
@@ -217,7 +205,7 @@ function FilterArt({ spec }: { spec: Extract<TaskPublic, { kind: "trickFilter" }
 	);
 }
 
-export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
+export function TaskCatalogArt({ spec, params }: { spec: TaskPublic; params?: TaskRenderParams }) {
 	const { t } = useI18n();
 	switch (spec.kind) {
 		case "winCards":
@@ -355,7 +343,7 @@ export function TaskCatalogArt({ spec }: { spec: TaskPublic }) {
 						</div>
 						<div className={styles.row}>
 							<SumOp op={spec.op} />
-							<span className={styles.count}>{trickSumBound(spec)}</span>
+							<span className={styles.count}>{trickSumBound(spec, params)}</span>
 						</div>
 						{spec.noSubmarines ? <span className={styles.badge}>{t("artNoSub")}</span> : null}
 					</div>

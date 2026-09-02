@@ -1,5 +1,41 @@
-import { type CardId, type Suit, splitCardId, type TaskPublic } from "@crew/protocol";
+import {
+	type CardId,
+	type PlayerCount,
+	type Suit,
+	splitCardId,
+	type TaskPublic,
+} from "@crew/protocol";
 import type { Translate } from "../../lib/i18n.tsx";
+
+export type TaskRenderParams = {
+	playerCount?: PlayerCount;
+};
+
+export function taskRenderParams(playerCount: number): TaskRenderParams {
+	if (playerCount === 3 || playerCount === 4 || playerCount === 5) {
+		return { playerCount };
+	}
+	return {};
+}
+
+export function trickSumBound(
+	spec: Extract<TaskPublic, { kind: "trickSum" }>,
+	params?: TaskRenderParams,
+): string {
+	if (spec.targets !== undefined) {
+		return spec.targets.join("/");
+	}
+	if (typeof spec.target === "number") {
+		return String(spec.target);
+	}
+	if (spec.target === undefined) {
+		return "";
+	}
+	if (params?.playerCount !== undefined) {
+		return String(spec.target[params.playerCount]);
+	}
+	return `${spec.target[3]}/${spec.target[4]}/${spec.target[5]}`;
+}
 
 function suitName(suit: Suit, t: Translate): string {
 	if (suit === "pink") {
@@ -50,7 +86,11 @@ function countKey(count: number, one: string, many: string): string {
 	return count === 1 ? one : many;
 }
 
-export function taskCatalogLabel(spec: TaskPublic, t: Translate): string {
+export function taskCatalogLabel(
+	spec: TaskPublic,
+	t: Translate,
+	params?: TaskRenderParams,
+): string {
 	switch (spec.kind) {
 		case "winCards":
 			if (spec.inTrick === 0) {
@@ -212,15 +252,8 @@ export function taskCatalogLabel(spec: TaskPublic, t: Translate): string {
 		}
 		case "trickSum": {
 			const key = spec.op === "gt" ? "taskSumGt" : spec.op === "lt" ? "taskSumLt" : "taskSumEq";
-			const bound =
-				spec.targets?.join("/") ??
-				(typeof spec.target === "number"
-					? String(spec.target)
-					: spec.target
-						? `${spec.target[3]}/${spec.target[4]}/${spec.target[5]}`
-						: "");
 			const subNote = spec.noSubmarines ? t("taskNoSubmarines") : "";
-			return `${t(key, { target: bound })}${subNote}`;
+			return `${t(key, { target: trickSumBound(spec, params) })}${subNote}`;
 		}
 		case "trickFilter": {
 			const subNote = spec.noSubmarines ? t("taskNoSubmarines") : "";
