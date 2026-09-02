@@ -9,7 +9,7 @@ import { trickCardKey, trickJuice } from "../../lib/trick-juice.ts";
 import { CardBack, CardFace } from "./Card.tsx";
 import { illegalCopy, playLeadRegion, seatsInPlayOrder, turnCopy } from "./copy.ts";
 import { sortHand } from "./hand-sort.ts";
-import { HandStrip, PlaySeat, SonarDetailBody, SoundToggle, TaskCard } from "./parts.tsx";
+import { HandStrip, PlaySeat, SonarDetailBody, TaskCard } from "./parts.tsx";
 import styles from "./play.module.css";
 import { TaskCatalogCard } from "./TaskCatalogCard.tsx";
 
@@ -440,30 +440,27 @@ export function PlayScene({
 			</div>
 			<div className={styles.handWrap} data-tucked={handTucked ? "true" : "false"}>
 				{hint && overlay !== "sonar" ? <p className={styles.hint}>{hint}</p> : null}
-				<div className={styles.handDock}>
-					<SoundToggle />
-					{showHandDock ? (
-						<>
-							<Button
-								variant="outline"
-								className={styles.handAction}
-								isDisabled={!sonarEnabled || sonarOpen}
-								onPress={openSonar}
-							>
-								{t("sonar")}
+				{showHandDock ? (
+					<div className={styles.handDock}>
+						<Button
+							variant="outline"
+							className={styles.handAction}
+							isDisabled={!sonarEnabled || sonarOpen}
+							onPress={openSonar}
+						>
+							{t("sonar")}
+						</Button>
+						{view.affordances.canPassDistressCard ? (
+							<Button isDisabled={!canPassSelected} onPress={passDistressCard}>
+								{t("pass")}
 							</Button>
-							{view.affordances.canPassDistressCard ? (
-								<Button isDisabled={!canPassSelected} onPress={passDistressCard}>
-									{t("pass")}
-								</Button>
-							) : (
-								<Button isDisabled={!canPlaySelected} onPress={playCard}>
-									{t("play")}
-								</Button>
-							)}
-						</>
-					) : null}
-				</div>
+						) : (
+							<Button isDisabled={!canPlaySelected} onPress={playCard}>
+								{t("play")}
+							</Button>
+						)}
+					</div>
+				) : null}
 				<HandStrip
 					cards={displayHand}
 					selected={selected}

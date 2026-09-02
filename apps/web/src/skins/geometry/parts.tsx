@@ -4,8 +4,6 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useRef } from "react";
 import { Button as Pressable } from "react-aria-components";
 import { Button } from "../../components/ui/button.tsx";
-import { Toggle } from "../../components/ui/toggle.tsx";
-import { useSfxMuted } from "../../hooks/use-sfx-muted.ts";
 import { identiconUrl } from "../../lib/avatar.ts";
 import { useI18n } from "../../lib/i18n.tsx";
 import { CardFace } from "./Card.tsx";
@@ -556,19 +554,5 @@ export function HandStrip({
 				})}
 			</div>
 		</div>
-	);
-}
-
-export function SoundToggle() {
-	const { t } = useI18n();
-	const [muted, setMuted] = useSfxMuted();
-	return (
-		<Toggle
-			isSelected={!muted}
-			aria-label={muted ? t("soundOff") : t("soundOn")}
-			onChange={(selected) => setMuted(!selected)}
-		>
-			{muted ? t("muted") : t("sound")}
-		</Toggle>
 	);
 }

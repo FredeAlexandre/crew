@@ -18,7 +18,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Language
 
 - [ ] Switch **FR / ES / EN** from the flag. The choice survives a reload.
-- [ ] The whole site follows that language: home, lobby, table (tasks, illegal plays, turn, play/pass, trick hold, sonar, sound), result, profile, and Browse assets.
+- [ ] The whole site follows that language: home, lobby, table (tasks, illegal plays, turn, play/pass, trick hold, sonar), result, profile, and Browse assets.
 
 ## Profile
 
@@ -27,7 +27,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] As a guest: set a name (up to 24 characters; it saves on its own; a generated guest name stays blank until you type something), **Create account** (email and password on this same person), or **Sign in** to an existing account.
 - [ ] Creating an account keeps this person (name, seat, hosted tables). Signing in to another account moves the guest’s name and hosted tables over, then drops the throwaway guest.
 - [ ] Signed in: change password, sign out (you become a new guest), and see **Mission history** of completed attempts (win or fail, date). Guests do not get history.
-- [ ] Theme, SFX volume, and animation prefs in the sheet are stubs (“Coming later”). Mute at the table is real (see Sound).
+- [ ] Theme, SFX volume, and animation prefs in the sheet are stubs (“Coming later”).
 
 ## Lobby
 
@@ -116,7 +116,6 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 
 ## Sound
 
-- [ ] **Sound / Muted** sits on the hand with Play and Sonar. Mute persists across reload. Default is sound on.
 - [ ] Playing a card, an illegal tap, a trick win, and mission won/failed each have a short cue. There is no background music under play.
 
 ## Result
