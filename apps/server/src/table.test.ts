@@ -242,6 +242,80 @@ describe("table lobby", () => {
 		expect(started.state.engine?.hands[1]).toContain("submarine-4");
 	});
 
+	it("lets the host grow and shrink empty chairs without a new table", () => {
+		const host = sit(fresh(), "p0", "Alex");
+		const grown = mustOk(
+			handleIntent(host, "p0", {
+				type: "host.configure",
+				difficulty: 4,
+				captainSeat: null,
+				distressDisabled: true,
+				completedTricksVisible: true,
+				playerCount: 5,
+			}),
+		);
+		expect(grown.state.code).toBe(host.code);
+		expect(grown.state.playerCount).toBe(5);
+		expect(grown.state.seats).toHaveLength(5);
+		expect(grown.state.seats.slice(1)).toEqual([null, null, null, null]);
+		expect(viewForSeat(grown.state, 0).playerCount).toBe(5);
+		expect(viewForSeat(grown.state, 0).seats).toHaveLength(5);
+
+		const guest = handleIntent(grown.state, "p0", {
+			type: "host.configure",
+			difficulty: 4,
+			captainSeat: null,
+			distressDisabled: true,
+			completedTricksVisible: true,
+			playerCount: 4,
+		});
+		expect(guest.ok).toBe(true);
+		if (!guest.ok) {
+			return;
+		}
+		expect(guest.state.playerCount).toBe(4);
+		expect(guest.state.seats).toHaveLength(4);
+
+		const seated = sit(sit(guest.state, "p1", "Bea"), "p2", "Cam");
+		const last = sit(seated, "p3", "Dee");
+		const blocked = handleIntent(last, "p0", {
+			type: "host.configure",
+			difficulty: 4,
+			captainSeat: null,
+			distressDisabled: true,
+			completedTricksVisible: true,
+			playerCount: 3,
+		});
+		expect(blocked.ok).toBe(false);
+		if (!blocked.ok) {
+			expect(blocked.code).toBe("illegalIntent");
+		}
+
+		const kicked = mustOk(handleIntent(last, "p0", { type: "host.kick", seatId: 3 })).state;
+		const shrunk = mustOk(
+			handleIntent(kicked, "p0", {
+				type: "host.configure",
+				difficulty: 4,
+				captainSeat: 3,
+				distressDisabled: true,
+				completedTricksVisible: true,
+				playerCount: 3,
+			}),
+		);
+		expect(shrunk.state.playerCount).toBe(3);
+		expect(shrunk.state.seats).toHaveLength(3);
+		expect(shrunk.state.setup.captainSeat).toBeNull();
+		expect(viewForSeat(shrunk.state, 0).playerCount).toBe(3);
+	});
+
+	it("lets the host remove a bot the same way as a guest", () => {
+		const host = sit(fresh(), "p0", "Alex");
+		const filled = mustOk(handleIntent(host, "p0", { type: "host.fillBots", seatId: 2 })).state;
+		const removed = mustOk(handleIntent(filled, "p0", { type: "host.kick", seatId: 2 })).state;
+		expect(removed.seats[2]).toBeNull();
+		expect(removed.kicks).toEqual({});
+	});
+
 	it("skips distress by default and lets the host turn it on before start", () => {
 		const seated = sitAll();
 		expect(viewForSeat(seated, 0).chrome.flags.distressDisabled).toBe(true);

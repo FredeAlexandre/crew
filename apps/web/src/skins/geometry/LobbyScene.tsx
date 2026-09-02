@@ -2,12 +2,21 @@ import {
 	DEFAULT_MISSION_DIFFICULTY,
 	MISSION_DIFFICULTY_MAX,
 	MISSION_DIFFICULTY_MIN,
+	PLAYER_COUNTS,
+	type PlayerCount,
 	type SeatId,
 } from "@crew/protocol";
 import type { SeatView, TableView } from "@crew/view-model/fixtures";
-import { BotIcon, SettingsIcon } from "lucide-react";
+import { BotIcon, SettingsIcon, UserXIcon } from "lucide-react";
 import { useState } from "react";
 import { type Key, Button as Pressable, TextField } from "react-aria-components";
+import {
+	AlertDialog,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "../../components/ui/alert-dialog.tsx";
 import { Button } from "../../components/ui/button.tsx";
 import {
 	Drawer,
@@ -38,12 +47,15 @@ import { SeatAvatar } from "./parts.tsx";
 import styles from "./scenes.module.css";
 
 const RANDOM_CAPTAIN = "random";
+const SEAT_COUNT_MIN = PLAYER_COUNTS[0];
+const SEAT_COUNT_MAX = PLAYER_COUNTS[PLAYER_COUNTS.length - 1];
 
 export type LobbySetup = {
 	difficulty: number;
 	captainSeat: SeatId | null;
 	distressDisabled: boolean;
 	completedTricksVisible: boolean;
+	playerCount: PlayerCount;
 };
 
 export type LobbyActions = {
@@ -66,6 +78,21 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 	const code = actions?.roomCode || "————";
 	const setup = currentSetup(view);
 	const roomFull = view.seats.every((seat) => !seatIsEmpty(seat));
+	const [kickSeat, setKickSeat] = useState<SeatView | null>(null);
+	const kickName = kickSeat === null ? "" : seatName(kickSeat, t);
+	const kickCopy =
+		kickSeat !== null && seatIsBot(kickSeat)
+			? t("kickConfirmBotCopy")
+			: t("kickConfirmCopy", { name: kickName });
+
+	function confirmKick() {
+		if (kickSeat === null) {
+			return;
+		}
+		actions?.onKick?.(kickSeat.seatId);
+		setKickSeat(null);
+	}
+
 	return (
 		<div className={`${styles.board} ${styles.lobby}`} data-scene={view.scene}>
 			<header className={styles.lobbyHead}>
@@ -83,13 +110,13 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 			<div className={styles.ring} data-count={String(view.playerCount)}>
 				{view.seats.map((seat) => (
 					<Chair
-						key={seat.region}
+						key={seat.seatId}
 						seat={seat}
 						slot={lobbySlot(seat.region, view.playerCount)}
 						onReady={actions?.onReady}
 						name={actions?.name}
 						onNameChange={actions?.onNameChange}
-						onKick={actions?.onKick}
+						onKick={actions?.onKick ? () => setKickSeat(seat) : undefined}
 						onFillBot={actions?.onFillBot}
 					/>
 				))}
@@ -113,6 +140,27 @@ export function LobbyScene({ view, actions }: { view: TableView; actions?: Lobby
 					{t("play")}
 				</Button>
 			</div>
+			<AlertDialog
+				isOpen={kickSeat !== null}
+				onOpenChange={(open) => {
+					if (!open) {
+						setKickSeat(null);
+					}
+				}}
+			>
+				<AlertDialogHeader>
+					<AlertDialogTitle>{t("kick")}</AlertDialogTitle>
+					<AlertDialogDescription>{kickCopy}</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<Button variant="outline" slot="close">
+						{t("cancel")}
+					</Button>
+					<Button variant="destructive" onPress={confirmKick}>
+						{t("kick")}
+					</Button>
+				</AlertDialogFooter>
+			</AlertDialog>
 		</div>
 	);
 }
@@ -129,6 +177,7 @@ function SetupDrawer({
 	const { t } = useI18n();
 	const [open, setOpen] = useState(false);
 	const captainKey = setup.captainSeat === null ? RANDOM_CAPTAIN : String(setup.captainSeat);
+	const canDropSeat = lastSeatIsEmpty(view) && setup.playerCount > SEAT_COUNT_MIN;
 
 	function apply(patch: Partial<LobbySetup>) {
 		onConfigure?.({ ...setup, completedTricksVisible: true, ...patch });
@@ -156,6 +205,28 @@ function SetupDrawer({
 						<DrawerDescription className="sr-only">{t("settings")}</DrawerDescription>
 					</DrawerHeader>
 					<div className={styles.setupDrawer}>
+						<div className={styles.setupRow}>
+							<span className={styles.setupLabel}>{t("seats")}</span>
+							<Button
+								variant="ghost"
+								size="icon"
+								isDisabled={onConfigure === undefined || !canDropSeat}
+								onPress={() => apply({ playerCount: (setup.playerCount - 1) as PlayerCount })}
+								aria-label={t("fewerSeats")}
+							>
+								–
+							</Button>
+							<span className={styles.setupValue}>{setup.playerCount}</span>
+							<Button
+								variant="ghost"
+								size="icon"
+								isDisabled={onConfigure === undefined || setup.playerCount >= SEAT_COUNT_MAX}
+								onPress={() => apply({ playerCount: (setup.playerCount + 1) as PlayerCount })}
+								aria-label={t("moreSeats")}
+							>
+								+
+							</Button>
+						</div>
 						<div className={styles.setupRow}>
 							<span className={styles.setupLabel}>{t("difficulty")}</span>
 							<Button
@@ -228,7 +299,7 @@ function Chair({
 	onReady?: (ready: boolean) => void;
 	name?: string;
 	onNameChange?: (name: string) => void;
-	onKick?: (seatId: SeatId) => void;
+	onKick?: () => void;
 	onFillBot?: (seatId: SeatId) => void;
 }) {
 	const { t } = useI18n();
@@ -246,6 +317,8 @@ function Chair({
 		>
 			{empty && !self && onFillBot ? (
 				<EmptySeatFill seat={seat} onFillBot={onFillBot} />
+			) : !self && !empty && onKick ? (
+				<OccupiedSeatKick seat={seat} onKick={onKick} />
 			) : (
 				<SeatAvatar seat={seat} self={self} showName={!(self && !empty && name !== undefined)} />
 			)}
@@ -272,11 +345,6 @@ function Chair({
 				</Button>
 			) : seat.ready ? (
 				<span className={styles.readyMark}>{t("ready")}</span>
-			) : null}
-			{!self && !empty && !seatIsBot(seat) && onKick ? (
-				<Button variant="ghost" size="sm" onPress={() => onKick(seat.seatId)}>
-					{t("remove")}
-				</Button>
 			) : null}
 		</div>
 	);
@@ -310,13 +378,46 @@ function EmptySeatFill({
 	);
 }
 
+function OccupiedSeatKick({ seat, onKick }: { seat: SeatView; onKick: () => void }) {
+	const { t } = useI18n();
+	return (
+		<DropdownMenuTrigger>
+			<Pressable
+				className={styles.emptySeatTrigger}
+				aria-label={t("kickSeat", { name: seatName(seat, t) })}
+			>
+				<SeatAvatar seat={seat} />
+			</Pressable>
+			<DropdownMenu placement="bottom" offset={6} showArrow className="min-w-0 rounded-full px-0.5">
+				<DropdownMenuItem textValue={t("kick")} variant="destructive" onAction={onKick}>
+					<UserXIcon />
+					{t("kick")}
+				</DropdownMenuItem>
+			</DropdownMenu>
+		</DropdownMenuTrigger>
+	);
+}
+
 function currentSetup(view: TableView): LobbySetup {
 	return {
 		difficulty: view.chrome.difficulty ?? DEFAULT_MISSION_DIFFICULTY,
 		captainSeat: view.seats.find((seat) => seat.isCaptain)?.seatId ?? null,
 		distressDisabled: view.chrome.flags.distressDisabled,
 		completedTricksVisible: true,
+		playerCount: asPlayerCount(view.playerCount),
 	};
+}
+
+function asPlayerCount(value: number): PlayerCount {
+	if (value === 3 || value === 4 || value === 5) {
+		return value;
+	}
+	return 4;
+}
+
+function lastSeatIsEmpty(view: TableView): boolean {
+	const last = view.seats.find((seat) => seat.seatId === view.playerCount - 1);
+	return last !== undefined && seatIsEmpty(last);
 }
 
 function captainPickLabel(seat: SeatView, t: ReturnType<typeof useI18n>["t"]): string {

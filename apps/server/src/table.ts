@@ -9,6 +9,7 @@ import {
 	DEFAULT_MISSION_DIFFICULTY,
 	DEFAULT_MISSION_ID,
 	type Fact,
+	type HostConfigureIntent,
 	type Intent,
 	type PlayIntent,
 	type RoomErrorCode,
@@ -318,14 +319,7 @@ export function handleIntent(
 		return start(state, playerId, options);
 	}
 	if (intent.type === "host.configure") {
-		return configure(
-			state,
-			playerId,
-			intent.difficulty,
-			intent.captainSeat,
-			intent.distressDisabled,
-			intent.completedTricksVisible,
-		);
+		return configure(state, playerId, intent);
 	}
 	if (intent.type === "host.retry") {
 		return retry(state, playerId, options);
@@ -395,17 +389,20 @@ function kick(state: TableState, playerId: string, seatId: SeatId, now = Date.no
 		return fail(state, "illegalSeat", "seat is not at this table");
 	}
 	const occupant = state.seats[seatId];
-	if (occupant === undefined || occupant === null || isBotPlayerId(occupant.playerId)) {
+	if (occupant === undefined || occupant === null) {
 		return fail(state, "notSeated", "seat has no player to remove");
 	}
 	if (occupant.playerId === state.hostPlayerId) {
 		return fail(state, "illegalIntent", "the host cannot remove themself");
 	}
+	const seats = cloneSeats(state);
+	seats[seatId] = null;
+	if (isBotPlayerId(occupant.playerId)) {
+		return succeed({ ...state, seats }, [], false);
+	}
 	const prior = state.kicks?.[occupant.playerId]?.count ?? 0;
 	const count = prior + 1;
 	const cooldown = KICK_COOLDOWN_MS * 2 ** (count - 1);
-	const seats = cloneSeats(state);
-	seats[seatId] = null;
 	return succeed(
 		{
 			...state,
@@ -467,46 +464,90 @@ function renamePlayer(state: TableState, seatId: SeatId, displayName: string): T
 	return succeed(pushed.state, [pushed.fact], false);
 }
 
-function configure(
-	state: TableState,
-	playerId: string,
-	difficulty: number,
-	captainSeat: SeatId | null,
-	distressDisabled: boolean,
-	completedTricksVisible: boolean,
-): TableResult {
+function configure(state: TableState, playerId: string, intent: HostConfigureIntent): TableResult {
 	if (playerId !== state.hostPlayerId) {
 		return fail(state, "notHost", "only the host can configure the table");
 	}
 	if (state.status !== "lobby") {
 		return fail(state, "alreadyStarted", "game already started");
 	}
-	if (captainSeat !== null && captainSeat >= state.playerCount) {
-		return fail(state, "illegalSeat", "captain seat is not at this table");
+
+	const nextPlayerCount = intent.playerCount ?? state.playerCount;
+	const resized = resizeSeats(state, nextPlayerCount);
+	if (!resized.ok) {
+		return fail(state, resized.code, resized.message);
+	}
+
+	let captainSeat = intent.captainSeat;
+	if (captainSeat !== null && captainSeat >= nextPlayerCount) {
+		if (intent.playerCount !== undefined && intent.playerCount !== state.playerCount) {
+			captainSeat = null;
+		} else {
+			return fail(state, "illegalSeat", "captain seat is not at this table");
+		}
 	}
 
 	const setup = setupOf(state);
 	if (
-		setup.difficulty === difficulty &&
+		setup.difficulty === intent.difficulty &&
 		setup.captainSeat === captainSeat &&
-		setup.distressDisabled === distressDisabled &&
-		setup.completedTricksVisible === completedTricksVisible
+		setup.distressDisabled === intent.distressDisabled &&
+		setup.completedTricksVisible === intent.completedTricksVisible &&
+		state.playerCount === nextPlayerCount
 	) {
 		return succeed(state, [], false);
 	}
 
+	const nextSetup = {
+		difficulty: intent.difficulty,
+		captainSeat,
+		distressDisabled: intent.distressDisabled,
+		completedTricksVisible: intent.completedTricksVisible,
+	};
 	const pushed = pushFact(
-		{ ...state, setup: { difficulty, captainSeat, distressDisabled, completedTricksVisible } },
+		{
+			...state,
+			playerCount: nextPlayerCount,
+			seats: resized.seats,
+			setup: nextSetup,
+		},
 		{
 			type: "host.configured",
 			attemptId: null,
-			difficulty,
-			captainSeat,
-			distressDisabled,
-			completedTricksVisible,
+			difficulty: nextSetup.difficulty,
+			captainSeat: nextSetup.captainSeat,
+			distressDisabled: nextSetup.distressDisabled,
+			completedTricksVisible: nextSetup.completedTricksVisible,
+			playerCount: nextPlayerCount,
 		},
 	);
 	return succeed(pushed.state, [pushed.fact], false);
+}
+
+function resizeSeats(
+	state: TableState,
+	playerCount: PlayerCount,
+):
+	| { ok: true; seats: Array<Occupant | null> }
+	| { ok: false; code: RoomErrorCode; message: string } {
+	if (playerCount === state.playerCount) {
+		return { ok: true, seats: state.seats };
+	}
+	if (playerCount > state.playerCount) {
+		return {
+			ok: true,
+			seats: [
+				...state.seats,
+				...Array.from({ length: playerCount - state.playerCount }, () => null),
+			],
+		};
+	}
+	for (let index = playerCount; index < state.playerCount; index += 1) {
+		if (state.seats[index] !== null) {
+			return { ok: false, code: "illegalIntent", message: "cannot drop occupied seats" };
+		}
+	}
+	return { ok: true, seats: state.seats.slice(0, playerCount) };
 }
 
 function start(state: TableState, playerId: string, options?: StartOptions): TableResult {
