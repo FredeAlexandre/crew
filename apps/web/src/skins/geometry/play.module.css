@@ -11,6 +11,19 @@
 	padding: 0.25rem 0.25rem 0.7rem;
 	overflow: hidden;
 	container-type: size;
+	transition:
+		padding-bottom 320ms ease-out,
+		margin-bottom 320ms ease-out;
+}
+
+.table[data-tucked="true"] {
+	padding-bottom: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.table {
+		transition-duration: 80ms;
+	}
 }
 
 .playBoard {
@@ -61,22 +74,24 @@
 
 .handWrap {
 	display: grid;
-	gap: 0.55rem;
+	gap: 0.4rem;
 	min-width: 0;
 	max-width: 100%;
-	overflow: hidden;
+	overflow: visible;
 	justify-self: center;
 	position: relative;
 	z-index: 1;
 	width: min(100%, 28rem);
 }
 
-.handConfirm {
+.handDock {
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	gap: 0.5rem;
 	min-height: 44px;
+	position: relative;
+	z-index: 2;
 }
 
 .handAction {
@@ -343,6 +358,10 @@
 		gap: 0.15rem;
 	}
 
+	.table[data-tucked="true"] {
+		padding-bottom: 0;
+	}
+
 	.heads {
 		gap: 0.1rem 0.2rem;
 	}
@@ -387,5 +406,9 @@
 	.table {
 		gap: 0.15rem;
 		padding: 0.15rem 0.2rem 0.55rem;
+	}
+
+	.table[data-tucked="true"] {
+		padding-bottom: 0;
 	}
 }
