@@ -25,6 +25,7 @@ export type ClientIntent =
 			captainSeat: number | null;
 			distressDisabled?: boolean;
 			completedTricksVisible?: boolean;
+			playerCount?: number;
 	  }
 	| { type: "host.retry" }
 	| { type: "host.fillBots"; seatId?: number }

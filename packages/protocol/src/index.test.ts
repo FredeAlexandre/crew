@@ -116,6 +116,14 @@ describe("wire schemas", () => {
 		expect(intentSchema.parse({ type: "host.configure", difficulty: 8, captainSeat: 2 }).type).toBe(
 			"host.configure",
 		);
+		expect(
+			intentSchema.parse({
+				type: "host.configure",
+				difficulty: 4,
+				captainSeat: null,
+				playerCount: 5,
+			}),
+		).toMatchObject({ type: "host.configure", playerCount: 5 });
 		expect(() =>
 			intentSchema.parse({ type: "host.configure", difficulty: 0, captainSeat: null }),
 		).toThrow();

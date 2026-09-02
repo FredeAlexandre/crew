@@ -13,6 +13,7 @@ import {
 	taskInstanceIdSchema,
 	trickIdSchema,
 } from "./ids.ts";
+import { playerCountSchema } from "./rooms.ts";
 import { taskPublicSchema } from "./tasks.ts";
 
 const wireMeta = {
@@ -73,6 +74,7 @@ const hostConfiguredFactSchema = z.object({
 	captainSeat: seatIdSchema.nullable(),
 	distressDisabled: z.boolean().default(true),
 	completedTricksVisible: z.boolean().default(true),
+	playerCount: playerCountSchema.optional(),
 });
 
 const cardDealtFactSchema = z.object({

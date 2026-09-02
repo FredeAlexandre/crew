@@ -37,12 +37,13 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] Tap **Sit ready**. Others see a ready mark. Only the host can **Play**, and only when every chair is filled and ready.
 - [ ] Tap the lobby code to copy a **full invite URL**.
 - [ ] Host-only setup lives behind a **Settings** button in the well (opens a drawer from the bottom). Guests can open it to read the current choices, not change them:
+  - **Seats** 3–5 (default 4). Changing this keeps the same lobby code and does not reload the table. You cannot drop a chair someone is sitting in; kick them first.
   - **Difficulty** 1–16 (default 4).
   - **Captain**: random, or a specific chair (a selector, not a row of buttons). That chair is dealt submarine 4. Captain is still “who holds submarine 4.”
   - **Distress** off (default) or on. Off skips the distress step after the draft.
 - [ ] Completed tricks are always on: tap a won-trick count to see every trick that player won. There is no lobby toggle.
 - [ ] Dummy teammates still play after Start if they are seated. The host can tap an empty chair and choose **Bot**.
-- [ ] Host can **Remove** a seated guest (not themselves, not a bot, not after Start). That person is kicked and cannot rejoin for a short wait; each later kick of the same person doubles the wait (about 10s, then 20s, …). They see that they must wait.
+- [ ] Host can tap a seated guest or bot (not themselves, not after Start) and choose **Kick**, then confirm. A kicked guest cannot rejoin for a short wait; each later kick of the same person doubles the wait (about 10s, then 20s, …). They see that they must wait. A bot leaves the chair at once.
 
 ## Table layout (lobby and play)
 

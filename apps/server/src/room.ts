@@ -166,6 +166,9 @@ export default class Room extends DurableObject<RoomBindings> {
 				}
 			}
 		}
+		if (next.playerCount !== loaded.playerCount) {
+			await this.markPlayerCount(next.code, next.playerCount);
+		}
 		if (result.state.status === "playing" && loaded.status === "lobby") {
 			await this.markPlaying(result.state.code);
 			this.log({
@@ -230,6 +233,11 @@ export default class Room extends DurableObject<RoomBindings> {
 	private async markPlaying(code: string) {
 		const db = createDb(this.env.DB);
 		await db.update(rooms).set({ status: "playing" }).where(eq(rooms.code, code));
+	}
+
+	private async markPlayerCount(code: string, playerCount: 3 | 4 | 5) {
+		const db = createDb(this.env.DB);
+		await db.update(rooms).set({ playerCount }).where(eq(rooms.code, code));
 	}
 
 	private async load(): Promise<TableState | null> {

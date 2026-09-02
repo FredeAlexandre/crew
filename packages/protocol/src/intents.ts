@@ -9,6 +9,7 @@ import {
 	sonarPositionSchema,
 	taskInstanceIdSchema,
 } from "./ids.ts";
+import { playerCountSchema } from "./rooms.ts";
 
 const playMeta = {
 	attemptId: attemptIdSchema,
@@ -46,6 +47,7 @@ export const hostConfigureIntentSchema = z.object({
 	captainSeat: seatIdSchema.nullable(),
 	distressDisabled: z.boolean().default(true),
 	completedTricksVisible: z.boolean().default(true),
+	playerCount: playerCountSchema.optional(),
 });
 
 export const hostRetryIntentSchema = z.object({
