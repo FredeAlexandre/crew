@@ -9,7 +9,7 @@ import { trickCardKey, trickJuice } from "../../lib/trick-juice.ts";
 import { CardBack, CardFace } from "./Card.tsx";
 import { illegalCopy, playLeadRegion, seatsInPlayOrder, turnCopy } from "./copy.ts";
 import { sortHand } from "./hand-sort.ts";
-import { ChromeLine, HandStrip, PlaySeat, SonarDetailBody, TaskCard } from "./parts.tsx";
+import { HandStrip, PlaySeat, SonarDetailBody, TaskCard } from "./parts.tsx";
 import styles from "./play.module.css";
 import { TaskCatalogCard } from "./TaskCatalogCard.tsx";
 
@@ -59,9 +59,12 @@ export function PlayScene({
 		selectedCard && !selectedCard.legal ? illegalCopy(selectedCard.illegalReason, t) : null;
 	const canPlaySelected = Boolean(view.affordances.canPlay && selectedCard?.legal && !sonarOpen);
 	const canPassSelected = Boolean(view.affordances.canPassDistressCard && selectedCard?.legal);
-	const confirmRail = Boolean(
-		(view.affordances.canPlay && !sonarOpen) || view.affordances.canPassDistressCard,
-	);
+	const showHandDock = view.scene === "play" || view.affordances.canPassDistressCard;
+	const handTucked =
+		view.scene === "play" &&
+		!view.affordances.canPlay &&
+		!view.affordances.canPassDistressCard &&
+		!sonarOpen;
 	const sonarIds = new Set(view.sonarCandidates.map((candidate) => candidate.cardId));
 	const sonarPositions = view.sonarCandidates
 		.filter((candidate) => candidate.cardId === selected)
@@ -118,6 +121,12 @@ export function PlayScene({
 		setWinnerRegion(null);
 		setTrickTransition(null);
 	}, [view.attemptId]);
+
+	useEffect(() => {
+		if (handTucked) {
+			setSelected(null);
+		}
+	}, [handTucked]);
 
 	useLayoutEffect(() => {
 		const prev = prevView.current;
@@ -235,6 +244,16 @@ export function PlayScene({
 		return () => window.removeEventListener("keydown", onKey);
 	}, [sonarOpen, sonarDetailRegion, inspectedTask, inspectedCompletedTricks]);
 
+	function openSonar() {
+		setSonarDetailRegion(null);
+		setInspectedTask(null);
+		setInspectedCompletedTricks(null);
+		if (queuedSonar !== null) {
+			setSelected(queuedSonar.cardId);
+		}
+		setSonarOpen(true);
+	}
+
 	function openSonarDetail(region: TableView["seats"][number]["region"]) {
 		setSonarOpen(false);
 		setInspectedTask(null);
@@ -345,7 +364,12 @@ export function PlayScene({
 	}
 
 	return (
-		<div className={styles.table} data-scene={view.scene} data-overlay={overlay}>
+		<div
+			className={styles.table}
+			data-scene={view.scene}
+			data-overlay={overlay}
+			data-tucked={handTucked ? "true" : "false"}
+		>
 			{overlay !== "none" ? (
 				<div className={styles.overlayLayer} data-region="overlay">
 					<div className={styles.overlay}>
@@ -389,26 +413,13 @@ export function PlayScene({
 								onInspectTask={inspectTask}
 								canSonar={isSelf && sonarEnabled && !sonarOpen}
 								canPass={isSelf && isDraft && view.affordances.canPassTask}
-								onSonar={
-									isSelf
-										? () => {
-												setSonarDetailRegion(null);
-												setInspectedTask(null);
-												setInspectedCompletedTricks(null);
-												if (queuedSonar !== null) {
-													setSelected(queuedSonar.cardId);
-												}
-												setSonarOpen(true);
-											}
-										: undefined
-								}
+								onSonar={isSelf ? openSonar : undefined}
 								onPass={isSelf && isDraft ? passTask : undefined}
 							/>
 						);
 					})}
 				</div>
 				<div className={styles.playWell}>
-					<ChromeLine view={view} />
 					<Well
 						view={view}
 						turn={turn}
@@ -427,22 +438,38 @@ export function PlayScene({
 					/>
 				</div>
 			</div>
-			<div className={styles.handWrap}>
+			<div className={styles.handWrap} data-tucked={handTucked ? "true" : "false"}>
 				{hint && overlay !== "sonar" ? <p className={styles.hint}>{hint}</p> : null}
+				{showHandDock ? (
+					<div className={styles.handDock}>
+						<Button
+							variant="outline"
+							className={styles.handAction}
+							isDisabled={!sonarEnabled || sonarOpen}
+							onPress={openSonar}
+						>
+							{t("sonar")}
+						</Button>
+						{view.affordances.canPassDistressCard ? (
+							<Button isDisabled={!canPassSelected} onPress={passDistressCard}>
+								{t("pass")}
+							</Button>
+						) : (
+							<Button isDisabled={!canPlaySelected} onPress={playCard}>
+								{t("play")}
+							</Button>
+						)}
+					</div>
+				) : null}
 				<HandStrip
 					cards={displayHand}
 					selected={selected}
 					quiet={quietHand}
+					tucked={handTucked}
 					nudged={nudged}
-					onSelect={setSelected}
-					onActivate={quietHand ? undefined : activateCard}
+					onSelect={handTucked ? undefined : setSelected}
+					onActivate={quietHand || handTucked ? undefined : activateCard}
 				/>
-				{confirmRail ? (
-					<div className={styles.handConfirm}>
-						{canPassSelected ? <Button onPress={passDistressCard}>{t("pass")}</Button> : null}
-						{canPlaySelected ? <Button onPress={playCard}>{t("play")}</Button> : null}
-					</div>
-				) : null}
 			</div>
 		</div>
 	);

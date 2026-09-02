@@ -1,15 +1,13 @@
 import type { CardId, SonarPosition } from "@crew/protocol";
-import type { HandCard, SeatView, TableView, TaskView } from "@crew/view-model/fixtures";
+import type { HandCard, SeatView, TaskView } from "@crew/view-model/fixtures";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useRef } from "react";
 import { Button as Pressable } from "react-aria-components";
 import { Button } from "../../components/ui/button.tsx";
-import { Toggle } from "../../components/ui/toggle.tsx";
-import { useSfxMuted } from "../../hooks/use-sfx-muted.ts";
 import { identiconUrl } from "../../lib/avatar.ts";
 import { useI18n } from "../../lib/i18n.tsx";
 import { CardFace } from "./Card.tsx";
-import { seatIdenticonSeed, seatIsEmpty, seatName, sonarPositionCopy, turnCopy } from "./copy.ts";
+import { seatIdenticonSeed, seatIsEmpty, seatName, sonarPositionCopy } from "./copy.ts";
 import { cardIndexFromRects } from "./hand-layout.ts";
 import styles from "./parts.module.css";
 import { type TaskCardSize, TaskCatalogCard } from "./TaskCatalogCard.tsx";
@@ -406,6 +404,7 @@ export function HandStrip({
 	cards,
 	selected,
 	quiet = false,
+	tucked = false,
 	nudged = null,
 	onSelect,
 	onActivate,
@@ -413,6 +412,7 @@ export function HandStrip({
 	cards: HandCard[];
 	selected: CardId | null;
 	quiet?: boolean;
+	tucked?: boolean;
 	nudged?: CardId | null;
 	onSelect?: (cardId: CardId) => void;
 	onActivate?: (cardId: CardId) => void;
@@ -455,7 +455,7 @@ export function HandStrip({
 	}
 
 	function beginPeek(event: ReactPointerEvent<HTMLDivElement>) {
-		if (event.button !== 0 || cards.length === 0) {
+		if (tucked || event.button !== 0 || cards.length === 0) {
 			return;
 		}
 		event.preventDefault();
@@ -511,70 +511,48 @@ export function HandStrip({
 
 	return (
 		<div
-			ref={rootRef}
-			className={quiet ? `${styles.fan} ${styles.fanQuiet}` : styles.fan}
-			data-region="hand"
-			data-count={String(cards.length)}
-			onPointerDown={beginPeek}
-			onPointerMove={movePeek}
-			onPointerUp={endPeek}
-			onPointerCancel={endPeek}
+			className={quiet ? `${styles.fanClip} ${styles.fanQuiet}` : styles.fanClip}
+			data-tucked={tucked ? "true" : "false"}
 		>
-			{cards.map((card, index) => {
-				const raised = selected === card.cardId;
-				return (
-					<div
-						key={card.cardId}
-						className={styles.fanSlot}
-						data-raised={raised ? "true" : "false"}
-						data-nudge={nudged === card.cardId ? "true" : "false"}
-						style={
-							{
-								"--i": index,
-								"--n": cards.length,
-								"--z": raised ? 24 : index + 1,
-							} as CSSProperties
-						}
-					>
-						<CardFace
-							cardId={card.cardId}
-							legal={card.legal}
-							communicated={card.communicated}
-							selected={raised}
-							muted={quiet}
-							revealed={raised}
-						/>
-					</div>
-				);
-			})}
-		</div>
-	);
-}
-
-export function ChromeLine({ view }: { view: TableView }) {
-	const { t } = useI18n();
-	const turn = turnCopy(view, t);
-	const [muted, setMuted] = useSfxMuted();
-	const bits = [
-		view.chrome.missionId
-			? t("mission", { number: view.chrome.missionId.replace(/^m/i, "") })
-			: null,
-		view.chrome.trickId ? t("trick", { number: view.chrome.trickId }) : null,
-		view.chrome.distress.active ? t("distress") : null,
-	].filter((bit): bit is string => bit !== null);
-	return (
-		<div className={styles.chrome} data-region="chrome">
-			{bits.map((bit) => (
-				<span key={bit}>{bit}</span>
-			))}
-			{turn ? <span className={styles.turn}>{turn}</span> : null}
-			<Toggle
-				isSelected={!muted}
-				aria-label={muted ? t("soundOff") : t("soundOn")}
-				onChange={(selected) => setMuted(!selected)}
+			<div
+				ref={rootRef}
+				className={styles.fan}
+				data-region="hand"
+				data-count={String(cards.length)}
+				data-tucked={tucked ? "true" : "false"}
+				onPointerDown={tucked ? undefined : beginPeek}
+				onPointerMove={tucked ? undefined : movePeek}
+				onPointerUp={tucked ? undefined : endPeek}
+				onPointerCancel={tucked ? undefined : endPeek}
 			>
-				{muted ? t("muted") : t("sound")}
-			</Toggle>
+				{cards.map((card, index) => {
+					const raised = selected === card.cardId;
+					return (
+						<div
+							key={card.cardId}
+							className={styles.fanSlot}
+							data-raised={raised ? "true" : "false"}
+							data-nudge={nudged === card.cardId ? "true" : "false"}
+							style={
+								{
+									"--i": index,
+									"--n": cards.length,
+									"--z": raised ? 24 : index + 1,
+								} as CSSProperties
+							}
+						>
+							<CardFace
+								cardId={card.cardId}
+								legal={card.legal}
+								communicated={card.communicated}
+								selected={raised}
+								muted={quiet}
+								revealed={raised}
+							/>
+						</div>
+					);
+				})}
+			</div>
 		</div>
 	);
 }

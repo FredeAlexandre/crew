@@ -18,7 +18,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Language
 
 - [ ] Switch **FR / ES / EN** from the flag. The choice survives a reload.
-- [ ] The whole site follows that language: home, lobby, table (tasks, illegal plays, turn, play/pass, trick hold, sonar, sound), result, profile, and Browse assets.
+- [ ] The whole site follows that language: home, lobby, table (tasks, illegal plays, turn, play/pass, trick hold, sonar), result, profile, and Browse assets.
 
 ## Profile
 
@@ -27,7 +27,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] As a guest: set a name (up to 24 characters; it saves on its own; a generated guest name stays blank until you type something), **Create account** (email and password on this same person), or **Sign in** to an existing account.
 - [ ] Creating an account keeps this person (name, seat, hosted tables). Signing in to another account moves the guest’s name and hosted tables over, then drops the throwaway guest.
 - [ ] Signed in: change password, sign out (you become a new guest), and see **Mission history** of completed attempts (win or fail, date). Guests do not get history.
-- [ ] Theme, SFX volume, and animation prefs in the sheet are stubs (“Coming later”). Mute at the table is real (see Sound).
+- [ ] Theme, SFX volume, and animation prefs in the sheet are stubs (“Coming later”).
 
 ## Lobby
 
@@ -50,7 +50,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] The table stays on the phone screen (no page scroll off the well). Safe areas keep taps above the home indicator. **Play** sits at the bottom of the screen (not under the browser chrome) and stays disabled while chairs are empty.
 - [ ] At ~360×640 with five players in the lobby, chairs stay around the well; the Settings button stays in the center; Play stays on the bottom edge; east/west seats do not cover the well.
 - [ ] On a wider frame in the lobby, opponents sit around the well. You stay at the bottom.
-- [ ] During play, every player’s head sits in one row at the top of the board, for 3, 4, or 5 players. The player who leads the trick is on the far left; the rest follow in play order to their right. Your cards stay at the bottom.
+- [ ] During play, every player’s head sits in one row at the top of the board, for 3, 4, or 5 players. The player who leads the trick is on the far left; the rest follow in play order to their right. Your cards stay at the bottom. The well is only the cards of the current trick — no Mission or Trick labels.
 - [ ] Long names ellipsize instead of overflowing.
 
 ## Presence
@@ -90,10 +90,11 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 
 - [ ] Your hand is a flat overlapping row. A tap hits the **visible** face, not a neighbor hiding under it. Dragging across the row peeks and selects.
 - [ ] Cards are grouped **by number, then by color** (pink, yellow, green, blue, then submarine), so like numbers sit together.
-- [ ] On your turn, tap a legal card: it lifts. Tap it again, or tap **Play**, to play it. A legal play lands in the well with a short place sound.
+- [ ] When it is not your turn to play, only the tops of your cards show at the bottom of the screen. **Sonar** (outline) and **Play** (disabled) sit on that strip.
+- [ ] When it is your turn, the hand slides up so every face is visible. Tap a legal card: it lifts. **Play** enables; tap it, or tap the card again, to play it. A legal play lands in the well with a short place sound.
 - [ ] Illegal cards stay in the row, muted. Selecting one shows why (for example “Must follow suit”). Tapping an illegal card nudges it and ticks; it does not play.
 - [ ] You must follow the led color when you can. A submarine beats every color; the highest submarine wins if more than one is played.
-- [ ] Reduced motion: land, win pulse, sonar pulse, and nudge animations do not run.
+- [ ] Reduced motion: land, win pulse, sonar pulse, nudge, and the hand slide animations do not run.
 
 ## Tricks
 
@@ -107,7 +108,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 
 ## Sonar
 
-- [ ] A small circle before each name is green and pulsing while that player still has sonar, red and still once it has been used. Tap your own green circle to open sonar: pick a color card from your hand, then **Highest / Only / Lowest**. Illegal combinations cannot be confirmed (no submarine; it must really be your highest, only, or lowest of that color).
+- [ ] A small circle before each name is green and pulsing while that player still has sonar, red and still once it has been used. Tap your own green circle, or the outline **Sonar** on the hand, to open sonar: pick a color card from your hand, then **Highest / Only / Lowest**. Illegal combinations cannot be confirmed (no submarine; it must really be your highest, only, or lowest of that color).
 - [ ] You may set sonar **during a trick**. The crew does not see it until the trick ends. You can change or cancel the queued choice until then.
 - [ ] Once revealed, the communicated card stays on that seat (card + highest/only/lowest) until the trick that contains that card ends, then it clears.
 - [ ] Tap the sonar dot or a communicated card to read the reminder (highest / only / lowest). Escape or Close dismisses it.
@@ -115,7 +116,6 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 
 ## Sound
 
-- [ ] Table chrome has **Sound / Muted**. Mute persists across reload. Default is sound on.
 - [ ] Playing a card, an illegal tap, a trick win, and mission won/failed each have a short cue. There is no background music under play.
 
 ## Result

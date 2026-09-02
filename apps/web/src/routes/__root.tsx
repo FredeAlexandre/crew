@@ -65,7 +65,7 @@ function RootShell() {
 				<div
 					className={cn(
 						"grid min-h-dvh w-full max-w-full grid-rows-[auto_minmax(0,1fr)] p-[max(0.5rem,env(safe-area-inset-top,0px))_max(0.5rem,env(safe-area-inset-right,0px))_max(0.7rem,env(safe-area-inset-bottom,0px))_max(0.5rem,env(safe-area-inset-left,0px))] sm:p-5",
-						atTable && "h-dvh max-h-dvh overflow-hidden",
+						atTable && "h-dvh max-h-dvh overflow-hidden pb-0 sm:pb-0",
 						atHome && "relative grid-rows-[minmax(0,1fr)] p-0 sm:p-0",
 					)}
 					data-table={atTable ? "true" : undefined}

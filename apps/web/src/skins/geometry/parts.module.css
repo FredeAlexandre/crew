@@ -373,25 +373,46 @@
 	color: var(--gold);
 }
 
-.fan {
+.fanClip {
 	--card-w: 4.25rem;
 	--card-h: 6.12rem;
 	--lift: 2.75rem;
+	--peek: 1.65rem;
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	height: calc(var(--card-h) + var(--lift));
+	overflow: hidden;
+	justify-self: center;
+	transition: height 320ms ease-out;
+}
+
+.fan {
 	position: relative;
 	width: 100%;
 	max-width: 100%;
 	min-width: 0;
 	height: calc(var(--card-h) + var(--lift));
-	justify-self: center;
 	touch-action: none;
 	user-select: none;
 	cursor: pointer;
 	overflow: visible;
 	isolation: isolate;
+	transition: margin-top 320ms ease-out;
+}
+
+.fanClip[data-tucked="true"] {
+	height: var(--peek);
+}
+
+.fanClip[data-tucked="true"] .fan {
+	margin-top: calc(var(--lift) * -1);
+	pointer-events: none;
+	cursor: default;
 }
 
 @container (min-width: 40rem) {
-	.fan {
+	.fanClip {
 		--card-w: 4.5rem;
 		--card-h: 6.48rem;
 		--lift: 2.95rem;
@@ -457,49 +478,25 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.fanSlot[data-nudge="true"],
-	.fanSlot[data-raised="true"][data-nudge="true"] {
-		animation: none;
-	}
-}
-
 .fanSlot > * {
 	width: 100%;
 }
 
 @media (prefers-reduced-motion: reduce) {
+	.fanClip,
+	.fan,
+	.fanClip[data-tucked="true"] .fan {
+		transition-duration: 80ms;
+	}
+
 	.fanSlot {
 		transition-duration: 80ms;
 	}
-}
 
-.chrome {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.35rem 0.75rem;
-	justify-content: center;
-	color: var(--fog);
-	font-size: 0.88rem;
-	max-width: 100%;
-}
-
-.turn {
-	color: var(--gold);
-}
-
-.mute {
-	min-height: 44px;
-	min-width: 44px;
-	padding: 0 0.7rem;
-	border-color: transparent;
-	color: var(--fog);
-	font: inherit;
-	font-size: 0.88rem;
-}
-
-.mute[data-on="true"] {
-	color: var(--gold);
+	.fanSlot[data-nudge="true"],
+	.fanSlot[data-raised="true"][data-nudge="true"] {
+		animation: none;
+	}
 }
 
 .playSeat {
