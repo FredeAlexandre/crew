@@ -1,7 +1,7 @@
 import { TASK_CATALOG_PUBLIC, type TaskKind, tasksGroupedByKind } from "@crew/view-model/catalog";
 import { createFileRoute } from "@tanstack/react-router";
 import { useI18n } from "../lib/i18n.tsx";
-import { TaskCatalogCard } from "../skins/geometry/TaskCatalogCard.tsx";
+import { TaskCatalogCard, TaskCatalogMeta } from "../skins/geometry/TaskCatalogCard.tsx";
 
 const TASK_KIND_KEYS: Record<TaskKind, { label: string; lede: string }> = {
 	winCards: { label: "taskKindWinCards", lede: "taskKindWinCardsLede" },
@@ -61,10 +61,11 @@ function MissionsRoute() {
 								{t(TASK_KIND_KEYS[group.kind].lede)}
 							</p>
 						</div>
-						<ul className="@min-[28rem]:grid-cols-[repeat(auto-fill,minmax(7.25rem,1fr))] @min-[42rem]:grid-cols-[repeat(auto-fill,minmax(7.75rem,1fr))] m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(6.75rem,1fr))] gap-2.5 p-0 @min-[28rem]:gap-3 @min-[42rem]:gap-3.5">
+						<ul className="@min-[28rem]:grid-cols-[repeat(auto-fill,minmax(6.5rem,1fr))] @min-[42rem]:grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(5.75rem,1fr))] gap-x-2.5 gap-y-3.5 p-0 @min-[28rem]:gap-x-3 @min-[42rem]:gap-x-3.5">
 							{group.tasks.map((task) => (
-								<li key={task.id}>
+								<li key={task.id} className="grid justify-items-center gap-1.5">
 									<TaskCatalogCard task={task} />
+									<TaskCatalogMeta task={task} />
 								</li>
 							))}
 						</ul>

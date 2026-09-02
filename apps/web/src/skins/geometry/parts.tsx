@@ -385,14 +385,22 @@ export function TaskMark({
 	);
 }
 
-export function TaskCard({ task, onTake }: { task: TaskView; onTake?: (task: TaskView) => void }) {
+export function TaskCard({
+	task,
+	onTake,
+	muted = false,
+}: {
+	task: TaskView;
+	onTake?: (task: TaskView) => void;
+	muted?: boolean;
+}) {
 	return (
 		<TaskCatalogCard
 			task={task.spec}
 			size="table"
 			status={task.status}
 			takeable={task.takeable}
-			showMeta
+			muted={muted}
 			region={task.region}
 			prediction={task.prediction}
 			onPress={task.takeable && onTake ? () => onTake(task) : undefined}
