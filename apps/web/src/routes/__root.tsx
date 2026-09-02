@@ -49,7 +49,7 @@ function RootShell() {
 	const { t, locale } = useI18n();
 	const pathname = useRouterState({ select: (state) => state.location.pathname });
 	const atTable = pathname.startsWith("/lobby/");
-	const atHome = pathname === "/";
+	const atLanding = pathname === "/" || pathname === "/play";
 	useEffect(() => {
 		document.title = pageTitle(pathname, t);
 		const meta = document.querySelector('meta[name="description"]');
@@ -66,14 +66,14 @@ function RootShell() {
 					className={cn(
 						"grid min-h-dvh w-full max-w-full grid-rows-[auto_minmax(0,1fr)] p-[max(0.5rem,env(safe-area-inset-top,0px))_max(0.5rem,env(safe-area-inset-right,0px))_max(0.7rem,env(safe-area-inset-bottom,0px))_max(0.5rem,env(safe-area-inset-left,0px))] sm:p-5",
 						atTable && "h-dvh max-h-dvh overflow-hidden pb-0 sm:pb-0",
-						atHome && "relative grid-rows-[minmax(0,1fr)] p-0 sm:p-0",
+						atLanding && "relative grid-rows-[minmax(0,1fr)] p-0 sm:p-0",
 					)}
 					data-table={atTable ? "true" : undefined}
 				>
 					<header
 						className={cn(
 							"mb-1.5 flex min-h-11 items-center justify-between gap-3",
-							atHome &&
+							atLanding &&
 								"pointer-events-none absolute inset-x-0 top-0 z-20 mb-0 justify-end p-[max(0.5rem,env(safe-area-inset-top,0px))_max(0.5rem,env(safe-area-inset-right,0px))_0_max(0.5rem,env(safe-area-inset-left,0px))]",
 						)}
 					>
@@ -85,10 +85,10 @@ function RootShell() {
 							>
 								{t("siteTitle")}
 							</Link>
-						) : atHome ? null : (
+						) : atLanding ? null : (
 							<span />
 						)}
-						<div className={cn("flex items-center gap-2", atHome && "pointer-events-auto")}>
+						<div className={cn("flex items-center gap-2", atLanding && "pointer-events-auto")}>
 							<LanguageFlag />
 							<ProfileControl />
 						</div>
