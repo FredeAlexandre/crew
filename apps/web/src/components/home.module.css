@@ -57,6 +57,23 @@
 	width: min(100%, 22rem);
 }
 
+.choice {
+	display: flex;
+	min-height: 4.25rem;
+	flex-direction: column;
+	gap: 0.2rem;
+	padding-block: 0.85rem;
+	white-space: normal;
+}
+
+.choiceHint {
+	font-size: 0.65rem;
+	font-weight: 600;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	opacity: 0.85;
+}
+
 .codeField {
 	display: grid;
 	gap: 0.45rem;

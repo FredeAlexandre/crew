@@ -5,7 +5,7 @@ import { TextField } from "react-aria-components";
 import { useDisplayName } from "../hooks/use-display-name.ts";
 import { useI18n } from "../lib/i18n.tsx";
 import { extractLobbyCode } from "../lib/lobby-code.ts";
-import { createRoom, joinRoom, roomErrorCopy } from "../lib/rooms.ts";
+import { joinRoom, roomErrorCopy } from "../lib/rooms.ts";
 import { cn } from "../lib/utils.ts";
 import { CrewMark } from "./CrewMark.tsx";
 import styles from "./home.module.css";
@@ -14,29 +14,18 @@ import { Button } from "./ui/button.tsx";
 import { Field, FieldLabel } from "./ui/field.tsx";
 import { Input } from "./ui/input.tsx";
 
-const DEFAULT_PLAYER_COUNT = 4;
-
 export function HomeLanding() {
 	const navigate = useNavigate();
 	const displayName = useDisplayName();
 	const { t } = useI18n();
 	const [code, setCode] = useState("");
 	const [joinOpen, setJoinOpen] = useState(false);
-	const [busy, setBusy] = useState<"idle" | "create" | "join">("idle");
+	const [busy, setBusy] = useState<"idle" | "join">("idle");
 	const [error, setError] = useState<string | null>(null);
 	const blocked = busy !== "idle";
 
-	async function play() {
-		setBusy("create");
-		setError(null);
-		try {
-			await displayName.flush();
-			const ticket = await createRoom(DEFAULT_PLAYER_COUNT);
-			await navigate({ to: "/lobby/$code", params: { code: ticket.code } });
-		} catch (caught) {
-			setError(roomErrorCopy(caught, t));
-			setBusy("idle");
-		}
+	function play() {
+		void navigate({ to: "/play" });
 	}
 
 	async function join() {
@@ -75,7 +64,7 @@ export function HomeLanding() {
 					isDisabled={blocked}
 					onPress={() => void play()}
 				>
-					{busy === "create" ? "…" : t("play")}
+					{t("play")}
 				</Button>
 				{joinOpen ? (
 					<TextField

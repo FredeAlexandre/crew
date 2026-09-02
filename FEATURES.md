@@ -9,7 +9,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Home
 
 - [ ] Open the site and see **Play** and **Join** on a full-screen landing. No name, player count, or extra links on that screen.
-- [ ] **Play** opens a 4-player table.
+- [ ] **Play** asks **Campaign** or **Free play**. Campaign is coming soon. **Free play** opens a 4-player table.
 - [ ] **Join** asks for the short code or the lobby link, then sits you down.
 - [ ] A bad code says there is no lobby with that code.
 - [ ] A flag at the top-right (left of the face) is where language lives, even if you cannot read the rest of the page.
@@ -18,7 +18,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Language
 
 - [ ] Switch **FR / ES / EN** from the flag. The choice survives a reload.
-- [ ] The whole site follows that language: home, lobby, table (tasks, illegal plays, turn, play/pass, trick hold, sonar), result, profile, and Browse assets.
+- [ ] The whole site follows that language: home, mode choice, lobby, table (tasks, illegal plays, turn, play/pass, trick hold, sonar), result, profile, and Browse assets.
 
 ## Profile
 
