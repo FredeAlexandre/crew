@@ -90,7 +90,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Hand and playing a card
 
 - [ ] Your hand is a flat overlapping row. A tap hits the **visible** face, not a neighbor hiding under it. Dragging across the row peeks and selects.
-- [ ] Cards are grouped **by number, then by color** (pink, yellow, green, blue, then submarine), so like numbers sit together.
+- [ ] Cards are grouped **by color, then by number** (pink, yellow, green, blue, then submarine on the far right), so each color sits together from low to high.
 - [ ] When it is not your turn to play, only the tops of your cards show at the bottom of the screen. **Sonar** (outline) and **Play** (disabled) sit on that strip.
 - [ ] When it is your turn, the hand slides up so every face is visible. Tap a legal card: it lifts. **Play** enables; tap it, or tap the card again, to play it. A legal play lands in the well with a short place sound.
 - [ ] Illegal cards stay in the row, muted. Selecting one shows why (for example “Must follow suit”). Tapping an illegal card nudges it and ticks; it does not play.
