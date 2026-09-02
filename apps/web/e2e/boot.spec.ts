@@ -17,6 +17,9 @@ test("home offers play and join", async ({ page }) => {
 	await expect(page.getByRole("textbox", { name: "Name" })).toHaveCount(0);
 	await page.getByRole("button", { name: "Play" }).click();
 	await expect(page.getByRole("heading", { name: "Choose a mode" })).toBeVisible();
-	await expect(page.getByRole("button", { name: /Campaign/ })).toBeDisabled();
+	await expect(page.getByRole("button", { name: /Campaign/ })).toBeEnabled();
 	await expect(page.getByRole("button", { name: "Free play" })).toBeVisible();
+	await page.getByRole("button", { name: /Campaign/ }).click();
+	await expect(page).toHaveURL(/.*\/campaign/);
+	await expect(page.getByRole("heading", { name: "Campaign" })).toBeVisible();
 });

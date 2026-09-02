@@ -44,11 +44,11 @@ export function PlayModeSelect() {
 						styles.choice,
 						"flex h-auto w-full flex-col whitespace-normal text-sm tracking-[0.28em]",
 					)}
-					isDisabled
+					isDisabled={busy}
+					onPress={() => void navigate({ to: "/campaign" })}
 					variant="outline"
 				>
 					<span>{t("campaign")}</span>
-					<span className={styles.choiceHint}>{t("comingSoon")}</span>
 				</Button>
 				<Button
 					className={cn(

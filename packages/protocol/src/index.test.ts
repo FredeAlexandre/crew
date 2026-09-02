@@ -98,6 +98,7 @@ describe("wire schemas", () => {
 		expect(() => intentSchema.parse({ type: "player.rename", displayName: "   " })).toThrow();
 		expect(intentSchema.parse({ type: "host.start" }).type).toBe("host.start");
 		expect(intentSchema.parse({ type: "host.retry" }).type).toBe("host.retry");
+		expect(intentSchema.parse({ type: "host.continue" }).type).toBe("host.continue");
 		expect(intentSchema.parse({ type: "host.fillBots" }).type).toBe("host.fillBots");
 		expect(intentSchema.parse({ type: "host.fillBots", seatId: 2 })).toEqual({
 			type: "host.fillBots",
@@ -164,6 +165,10 @@ describe("wire schemas", () => {
 		expect(isRoomCode("A".repeat(ROOM_CODE_MIN_LENGTH - 1))).toBe(false);
 		expect(playerCountSchema.parse(3)).toBe(3);
 		expect(createRoomRequestSchema.parse({ playerCount: 4 }).playerCount).toBe(4);
+		expect(createRoomRequestSchema.parse({ playerCount: 4 }).mode).toBe("freePlay");
+		expect(createRoomRequestSchema.parse({ playerCount: 4, mode: "campaign" }).mode).toBe(
+			"campaign",
+		);
 		expect(
 			roomTicketSchema.parse({
 				code: "AB12",

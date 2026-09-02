@@ -9,11 +9,25 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Home
 
 - [ ] Open the site and see **Play** and **Join** on a full-screen landing. No name, player count, or extra links on that screen.
-- [ ] **Play** asks **Campaign** or **Free play**. Campaign is coming soon. **Free play** opens a 4-player table.
+- [ ] **Play** asks **Campaign** or **Free play**. **Campaign** opens the campaign page. **Free play** opens a 4-player table.
 - [ ] **Join** asks for the short code or the lobby link, then sits you down.
 - [ ] A bad code says there is no lobby with that code.
 - [ ] A flag at the top-right (left of the face) is where language lives, even if you cannot read the rest of the page.
 - [ ] The disc in the top-right opens profile, sign-in, settings, and **Browse assets**.
+
+## Campaign
+
+- [ ] **Play** → **Campaign** opens the campaign page.
+- [ ] Signed-in players see their past campaigns (progress, status, crew, attempt count, last played date). Guests see an empty list and a reminder to sign in.
+- [ ] **New campaign** opens a campaign lobby (default 4 players).
+- [ ] The campaign lobby settings drawer is **Seats only** (3–5 chairs). Difficulty, captain (always submarine 4), and distress (always available) cannot be changed.
+- [ ] When all chairs are filled and ready, the host taps **Play** to start the story.
+- [ ] Story paragraphs display one at a time with an automatic progress bar. Every client sees the paragraphs together.
+- [ ] When the story finishes, the table enters the **Briefing** scene: the mission challenge and difficulty are shown, and every seat displays a ready mark. Bots auto-ready; each human taps **Ready**.
+- [ ] When every seat is ready, the mission is dealt at that step's difficulty.
+- [ ] If a mission fails, the host can tap **Retry** to replay the story, briefing, and receive a new deal of the same mission.
+- [ ] When a mission is won (missions 1–4), the host sees **Continue** on the result screen to advance to the next mission.
+- [ ] Winning the final mission (mission 5) plays the epilogue story and marks the campaign complete.
 
 ## Language
 

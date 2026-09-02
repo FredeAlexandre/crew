@@ -20,13 +20,15 @@ export function registerRoomRoutes(app: Hono<{ Bindings: Env }>) {
 		if (!parsed.success) {
 			return c.json(errorPayload("illegalIntent", "playerCount must be 3, 4, or 5"), 400);
 		}
-		const { playerCount } = parsed.data;
+		const { playerCount, mode } = parsed.data;
 		const db = createDb(c.env.DB);
 		const code = await insertRoom(db, player.playerId, playerCount);
 		await c.env.ROOM.getByName(code).init({
 			code,
 			hostPlayerId: player.playerId,
 			playerCount,
+			mode,
+			logbookId: mode === "campaign" ? "deep-sea" : undefined,
 		});
 		return c.json({ code, playerCount, wsPath: `/room/${code}` });
 	});

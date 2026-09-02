@@ -3,21 +3,24 @@ import { createDb, rooms } from "@crew/db";
 import { type Fact, intentSchema, type RoomErrorCode } from "@crew/protocol";
 import { eq } from "drizzle-orm";
 import { botPlayDelayMs } from "./bot-delay.ts";
-import { recordPlayerHistory } from "./history.ts";
+import { insertCampaign, recordPlayerHistory } from "./history.ts";
 import { readPlayerHeaders } from "./player-headers.ts";
 import {
+	advanceStory,
 	connect,
 	createTable,
 	disconnect,
 	factsForSeat,
 	handleIntent,
 	isBotPlayerId,
+	isLastCampaignStep,
 	playBotTurn,
 	type RoomSummary,
 	reconnectBlockedUntil,
 	removeLeaving,
 	seatOf,
 	snapshotMessage,
+	startEpilogue,
 	summary,
 	type TableState,
 } from "./table.ts";
@@ -34,7 +37,13 @@ const TABLE_KEY = "table";
  * (`async fetch`). Alchemy only injects DurableObjectBridge for Effect Workers.
  */
 export default class Room extends DurableObject<RoomBindings> {
-	async init(input: { code: string; hostPlayerId: string; playerCount: 3 | 4 | 5 }): Promise<void> {
+	async init(input: {
+		code: string;
+		hostPlayerId: string;
+		playerCount: 3 | 4 | 5;
+		mode?: "freePlay" | "campaign";
+		logbookId?: string;
+	}): Promise<void> {
 		const existing = await this.load();
 		if (existing !== null) {
 			return;
@@ -95,7 +104,7 @@ export default class Room extends DurableObject<RoomBindings> {
 			seq: result.state.seq,
 		});
 		this.fanout(result.state, result.facts, result.reconnect ? player.playerId : null);
-		await this.scheduleBotTurn(result.state);
+		await this.scheduleAlarm(result.state);
 		return new Response(null, { status: 101, webSocket: client });
 	}
 
@@ -107,6 +116,17 @@ export default class Room extends DurableObject<RoomBindings> {
 			await this.save(next);
 			this.fanout(next, [], null);
 		}
+		const now = Date.now();
+		if (
+			next.mode === "campaign" &&
+			next.campaign?.phase === "story" &&
+			next.campaign.paragraphEndsAt > 0 &&
+			now >= next.campaign.paragraphEndsAt
+		) {
+			next = advanceStory(next, now);
+			await this.save(next);
+			this.fanout(next, [], null);
+		}
 		const result = playBotTurn(next);
 		if (result.ok) {
 			const previous = next;
@@ -114,10 +134,14 @@ export default class Room extends DurableObject<RoomBindings> {
 			await this.save(next);
 			if (previous.engine?.phase !== "result" && next.engine?.phase === "result") {
 				await recordPlayerHistory(createDb(this.env.DB), next);
+				if (next.mode === "campaign" && next.engine.result === "won" && isLastCampaignStep(next)) {
+					next = startEpilogue(next, Date.now());
+					await this.save(next);
+				}
 			}
 			this.fanout(next, result.facts, null);
 		}
-		await this.scheduleBotTurn(next, true);
+		await this.scheduleAlarm(next, true);
 	}
 
 	async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer) {
@@ -150,7 +174,7 @@ export default class Room extends DurableObject<RoomBindings> {
 			this.sendError(socket, result.code, result.message);
 			return;
 		}
-		const next = appendHistoryFacts(loaded, result.state, result.facts);
+		let next = appendHistoryFacts(loaded, result.state, result.facts);
 		await this.save(next);
 		if (parsed.data.type === "player.leave") {
 			await this.ctx.storage.setAlarm(Date.now() + 2_000);
@@ -171,6 +195,9 @@ export default class Room extends DurableObject<RoomBindings> {
 		}
 		if (result.state.status === "playing" && loaded.status === "lobby") {
 			await this.markPlaying(result.state.code);
+			if (result.state.mode === "campaign") {
+				await insertCampaign(createDb(this.env.DB), result.state);
+			}
 			this.log({
 				event: "start",
 				playerId,
@@ -180,9 +207,13 @@ export default class Room extends DurableObject<RoomBindings> {
 		}
 		if (loaded.engine?.phase !== "result" && next.engine?.phase === "result") {
 			await recordPlayerHistory(createDb(this.env.DB), next);
+			if (next.mode === "campaign" && next.engine.result === "won" && isLastCampaignStep(next)) {
+				next = startEpilogue(next, Date.now());
+				await this.save(next);
+			}
 		}
 		this.fanout(next, result.facts, null);
-		await this.scheduleBotTurn(next);
+		await this.scheduleAlarm(next);
 	}
 
 	async webSocketClose(ws: WebSocket, code: number, reason: string) {
@@ -248,24 +279,40 @@ export default class Room extends DurableObject<RoomBindings> {
 		await this.ctx.storage.put(TABLE_KEY, state);
 	}
 
-	private async scheduleBotTurn(state: TableState, replace = false) {
+	private async scheduleAlarm(state: TableState, replace = false) {
+		const candidateAlarms: number[] = [];
+		const leavingValues = Object.values(state.leavingUntil ?? {});
+		if (leavingValues.length > 0) {
+			const minLeaving = Math.min(...leavingValues);
+			if (Number.isFinite(minLeaving)) {
+				candidateAlarms.push(minLeaving);
+			}
+		}
 		const seat = state.engine?.currentSeat;
 		const occupant = seat === null || seat === undefined ? null : state.seats[seat];
-		if (occupant === null || occupant === undefined || !isBotPlayerId(occupant.playerId)) {
-			const pending = Object.values(state.leavingUntil ?? {});
-			if (pending.length > 0) {
-				await this.ctx.storage.setAlarm(Math.min(...pending));
-			} else {
-				await this.ctx.storage.deleteAlarm();
-			}
+		if (occupant !== null && occupant !== undefined && isBotPlayerId(occupant.playerId)) {
+			candidateAlarms.push(Date.now() + botPlayDelayMs());
+		}
+		if (
+			state.mode === "campaign" &&
+			state.campaign?.phase === "story" &&
+			state.campaign.paragraphEndsAt > 0
+		) {
+			candidateAlarms.push(state.campaign.paragraphEndsAt);
+		}
+
+		if (candidateAlarms.length === 0) {
+			await this.ctx.storage.deleteAlarm();
 			return;
 		}
-		if (!replace && (await this.ctx.storage.getAlarm()) !== null) return;
-		const botAlarm = Date.now() + botPlayDelayMs();
-		const leavingAlarm = Math.min(...Object.values(state.leavingUntil ?? {}));
-		await this.ctx.storage.setAlarm(
-			Number.isFinite(leavingAlarm) ? Math.min(botAlarm, leavingAlarm) : botAlarm,
-		);
+		const nextAlarm = Math.min(...candidateAlarms);
+		if (!replace) {
+			const current = await this.ctx.storage.getAlarm();
+			if (current !== null && current <= nextAlarm) {
+				return;
+			}
+		}
+		await this.ctx.storage.setAlarm(nextAlarm);
 	}
 
 	private playerIdOf(socket: WebSocket): string | null {

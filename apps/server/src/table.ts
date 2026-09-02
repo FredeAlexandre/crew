@@ -9,6 +9,7 @@ import {
 	DEFAULT_MISSION_DIFFICULTY,
 	DEFAULT_MISSION_ID,
 	type Fact,
+	getLogbook,
 	type HostConfigureIntent,
 	type Intent,
 	type PlayIntent,
@@ -17,7 +18,15 @@ import {
 	type SnapshotEnvelope,
 } from "@crew/protocol";
 import type { TableView } from "@crew/view-model";
-import { type Occupancy, project, projectFacts, projectLobby } from "@crew/view-model/project";
+import {
+	type Occupancy,
+	project,
+	projectBriefing,
+	projectFacts,
+	projectLobby,
+	projectStory,
+} from "@crew/view-model/project";
+import { STORY_PARAGRAPH_MS } from "./campaign-timing.ts";
 
 const DEFAULT_SETUP: TableSetup = {
 	difficulty: DEFAULT_MISSION_DIFFICULTY,
@@ -46,6 +55,18 @@ export type TableSetup = {
 	completedTricksVisible: boolean;
 };
 
+type CampaignPhase = "story" | "briefing";
+
+export type TableCampaignState = {
+	logbookId: string;
+	campaignId: string;
+	stepIndex: number;
+	phase: CampaignPhase;
+	paragraphIndex: number;
+	paragraphEndsAt: number;
+	stepAttempts: number[];
+};
+
 export type TableState = {
 	code: string;
 	hostPlayerId: string;
@@ -55,6 +76,8 @@ export type TableState = {
 	seats: Array<Occupant | null>;
 	setup: TableSetup;
 	engine: EngineState | null;
+	mode: "freePlay" | "campaign";
+	campaign: TableCampaignState | null;
 	/** Server-only authoritative facts for the current attempt, retained for history persistence. */
 	historyFacts: Fact[];
 	/** Wall-clock start retained for the history record; absent on tables created before this field. */
@@ -98,7 +121,15 @@ export function createTable(input: {
 	code: string;
 	hostPlayerId: string;
 	playerCount: PlayerCount;
+	mode?: "freePlay" | "campaign";
+	logbookId?: string;
 }): TableState {
+	const mode = input.mode ?? "freePlay";
+	const logbookId = input.logbookId ?? "deep-sea";
+	const logbook = getLogbook(logbookId);
+	const stepCount = logbook?.steps.length ?? 5;
+	const initialDifficulty =
+		mode === "campaign" ? (logbook?.steps[0]?.difficulty ?? 1) : DEFAULT_MISSION_DIFFICULTY;
 	return {
 		code: input.code,
 		hostPlayerId: input.hostPlayerId,
@@ -106,8 +137,25 @@ export function createTable(input: {
 		status: "lobby",
 		seq: 0,
 		seats: Array.from({ length: input.playerCount }, () => null),
-		setup: { ...DEFAULT_SETUP },
+		setup: {
+			...DEFAULT_SETUP,
+			difficulty: initialDifficulty,
+			...(mode === "campaign" ? { distressDisabled: false } : {}),
+		},
 		engine: null,
+		mode,
+		campaign:
+			mode === "campaign"
+				? {
+						logbookId,
+						campaignId: crypto.randomUUID(),
+						stepIndex: 0,
+						phase: "story",
+						paragraphIndex: 0,
+						paragraphEndsAt: 0,
+						stepAttempts: Array.from({ length: stepCount }, () => 0),
+					}
+				: null,
 		historyFacts: [],
 		kicks: {},
 	};
@@ -158,21 +206,102 @@ function occupancyOf(state: TableState): Occupancy {
 
 export function viewForSeat(state: TableState, viewerSeat: SeatId): TableView {
 	if (state.engine === null) {
-		return projectLobby(
-			occupancyOf(state),
-			viewerSeat,
-			state.seq,
-			seatOf(state, state.hostPlayerId),
-			setupOf(state),
-		);
+		if (state.status === "lobby") {
+			return projectLobby(
+				occupancyOf(state),
+				viewerSeat,
+				state.seq,
+				seatOf(state, state.hostPlayerId),
+				setupOf(state),
+				state.mode,
+			);
+		}
+		if (state.mode === "campaign" && state.campaign !== null) {
+			const logbook = getLogbook(state.campaign.logbookId);
+			const stepCount = logbook?.steps.length ?? 5;
+			const isEpilogue = state.campaign.stepIndex >= stepCount;
+			if (state.campaign.phase === "story") {
+				const storyKeys = isEpilogue
+					? (logbook?.epilogueStoryKeys ?? [])
+					: (logbook?.steps[state.campaign.stepIndex]?.storyKeys ?? []);
+				const challengeKey = isEpilogue
+					? null
+					: (logbook?.steps[state.campaign.stepIndex]?.challengeKey ?? null);
+				const currentStoryKey = storyKeys[state.campaign.paragraphIndex] ?? storyKeys[0] ?? "";
+				const missionId = isEpilogue
+					? "epilogue"
+					: (logbook?.steps[state.campaign.stepIndex]?.id ?? null);
+				const difficulty = isEpilogue
+					? null
+					: (logbook?.steps[state.campaign.stepIndex]?.difficulty ?? null);
+
+				return projectStory(
+					occupancyOf(state),
+					viewerSeat,
+					state.seq,
+					{
+						logbookId: state.campaign.logbookId,
+						stepIndex: state.campaign.stepIndex,
+						stepCount,
+						story: {
+							key: currentStoryKey,
+							paragraphIndex: state.campaign.paragraphIndex,
+							paragraphCount: Math.max(1, storyKeys.length),
+							endsAt: state.campaign.paragraphEndsAt,
+						},
+						challenge: challengeKey,
+					},
+					missionId,
+					difficulty,
+				);
+			}
+			if (state.campaign.phase === "briefing") {
+				const step = logbook?.steps[state.campaign.stepIndex];
+				return projectBriefing(
+					occupancyOf(state),
+					viewerSeat,
+					state.seq,
+					{
+						logbookId: state.campaign.logbookId,
+						stepIndex: state.campaign.stepIndex,
+						stepCount,
+						challenge: step?.challengeKey ?? "",
+					},
+					step?.id ?? "unknown",
+					step?.difficulty ?? 1,
+				);
+			}
+		}
 	}
+	if (state.engine === null) {
+		throw new Error("expected engine when not in lobby or campaign transition");
+	}
+	const engine = state.engine;
+	const logbook = state.campaign ? getLogbook(state.campaign.logbookId) : undefined;
+	const stepCount = logbook?.steps.length ?? 5;
+	const hasMoreSteps = state.campaign ? state.campaign.stepIndex + 1 < stepCount : false;
+	const step = state.campaign ? logbook?.steps[state.campaign.stepIndex] : undefined;
+
 	return {
 		...project(
-			state.engine,
+			engine,
 			viewerSeat,
 			occupancyOf(state),
 			seatOf(state, state.hostPlayerId),
 			setupOf(state).completedTricksVisible,
+			{
+				mode: state.mode,
+				hasMoreSteps,
+				campaign:
+					state.mode === "campaign" && state.campaign
+						? {
+								logbookId: state.campaign.logbookId,
+								stepIndex: state.campaign.stepIndex,
+								stepCount,
+								challenge: step?.challengeKey ?? null,
+							}
+						: null,
+			},
 		),
 		seq: state.seq,
 	};
@@ -307,7 +436,7 @@ export function handleIntent(
 	}
 
 	if (intent.type === "player.ready") {
-		return setReady(state, seatId, intent.ready);
+		return setReady(state, seatId, intent.ready, options);
 	}
 	if (intent.type === "player.leave") {
 		return leave(state, playerId);
@@ -323,6 +452,9 @@ export function handleIntent(
 	}
 	if (intent.type === "host.retry") {
 		return retry(state, playerId, options);
+	}
+	if (intent.type === "host.continue") {
+		return continueCampaign(state, playerId, options);
 	}
 	if (intent.type === "host.fillBots") {
 		return fillBots(state, playerId, intent.seatId);
@@ -417,8 +549,13 @@ function kick(state: TableState, playerId: string, seatId: SeatId, now = Date.no
 	);
 }
 
-function setReady(state: TableState, seatId: SeatId, ready: boolean): TableResult {
-	if (state.status !== "lobby") {
+function setReady(
+	state: TableState,
+	seatId: SeatId,
+	ready: boolean,
+	options?: StartOptions,
+): TableResult {
+	if (state.status !== "lobby" && state.campaign?.phase !== "briefing") {
 		return fail(state, "alreadyStarted", "game already started");
 	}
 	const seats = cloneSeats(state);
@@ -436,7 +573,17 @@ function setReady(state: TableState, seatId: SeatId, ready: boolean): TableResul
 			ready,
 		},
 	);
-	return succeed(pushed.state, [pushed.fact], false);
+	const nextState = pushed.state;
+	const facts: Fact[] = [pushed.fact];
+
+	if (nextState.campaign?.phase === "briefing" && nextState.seats.every((s) => s?.ready)) {
+		const dealt = beginCampaignAttempt(nextState, options);
+		if (dealt.ok) {
+			return succeed(dealt.state, [...facts, ...dealt.facts], false);
+		}
+	}
+
+	return succeed(nextState, facts, false);
 }
 
 function renamePlayer(state: TableState, seatId: SeatId, displayName: string): TableResult {
@@ -472,6 +619,17 @@ function configure(state: TableState, playerId: string, intent: HostConfigureInt
 		return fail(state, "alreadyStarted", "game already started");
 	}
 
+	const setup = setupOf(state);
+	if (state.mode === "campaign") {
+		if (
+			(intent.difficulty !== undefined && intent.difficulty !== setup.difficulty) ||
+			(intent.captainSeat !== undefined && intent.captainSeat !== null) ||
+			(intent.distressDisabled !== undefined && intent.distressDisabled !== false)
+		) {
+			return fail(state, "illegalIntent", "cannot customize campaign parameters");
+		}
+	}
+
 	const nextPlayerCount = intent.playerCount ?? state.playerCount;
 	const resized = resizeSeats(state, nextPlayerCount);
 	if (!resized.ok) {
@@ -487,7 +645,6 @@ function configure(state: TableState, playerId: string, intent: HostConfigureInt
 		}
 	}
 
-	const setup = setupOf(state);
 	if (
 		setup.difficulty === intent.difficulty &&
 		setup.captainSeat === captainSeat &&
@@ -499,9 +656,9 @@ function configure(state: TableState, playerId: string, intent: HostConfigureInt
 	}
 
 	const nextSetup = {
-		difficulty: intent.difficulty,
-		captainSeat,
-		distressDisabled: intent.distressDisabled,
+		difficulty: state.mode === "campaign" ? setup.difficulty : intent.difficulty,
+		captainSeat: state.mode === "campaign" ? null : captainSeat,
+		distressDisabled: state.mode === "campaign" ? false : intent.distressDisabled,
 		completedTricksVisible: intent.completedTricksVisible,
 	};
 	const pushed = pushFact(
@@ -561,6 +718,32 @@ function start(state: TableState, playerId: string, options?: StartOptions): Tab
 		return fail(state, "notReady", "every seat must be filled and ready");
 	}
 
+	if (state.mode === "campaign" && state.campaign !== null) {
+		const now = options?.now ?? Date.now();
+		const logbook = getLogbook(state.campaign.logbookId);
+		const step = logbook?.steps[0];
+		const next: TableState = {
+			...state,
+			status: "playing",
+			engine: null,
+			campaign: {
+				...state.campaign,
+				stepIndex: 0,
+				phase: "story",
+				paragraphIndex: 0,
+				paragraphEndsAt: now + STORY_PARAGRAPH_MS,
+			},
+			seq: state.seq + 1,
+		};
+		const startedFact: Fact = {
+			type: "host.started",
+			attemptId: null,
+			seq: next.seq,
+			missionId: step?.id ?? "deep-sea-1",
+		};
+		return succeed(next, [startedFact], false);
+	}
+
 	return beginAttempt(state, options);
 }
 
@@ -575,7 +758,192 @@ function retry(state: TableState, playerId: string, options?: StartOptions): Tab
 		return fail(state, "alreadyStarted", "mission is still in progress");
 	}
 
+	if (state.mode === "campaign" && state.campaign !== null) {
+		const now = options?.now ?? Date.now();
+		const stepAttempts = [...state.campaign.stepAttempts];
+		stepAttempts[state.campaign.stepIndex] = (stepAttempts[state.campaign.stepIndex] ?? 0) + 1;
+		const next: TableState = {
+			...state,
+			engine: null,
+			campaign: {
+				...state.campaign,
+				phase: "story",
+				paragraphIndex: 0,
+				paragraphEndsAt: now + STORY_PARAGRAPH_MS,
+				stepAttempts,
+			},
+			seq: state.seq + 1,
+		};
+		return succeed(next, [], false);
+	}
+
 	return beginAttempt(state, options);
+}
+
+function continueCampaign(
+	state: TableState,
+	playerId: string,
+	options?: StartOptions,
+): TableResult {
+	if (playerId !== state.hostPlayerId) {
+		return fail(state, "notHost", "only the host can continue");
+	}
+	if (state.mode !== "campaign" || state.campaign === null) {
+		return fail(state, "illegalIntent", "not in campaign mode");
+	}
+	if (state.engine === null || state.engine.phase !== "result") {
+		return fail(state, "wrongPhase", "game is not in result phase");
+	}
+	if (state.engine.result !== "won") {
+		return fail(state, "illegalIntent", "mission is not won");
+	}
+	const logbook = getLogbook(state.campaign.logbookId);
+	const stepCount = logbook?.steps.length ?? 5;
+	if (state.campaign.stepIndex + 1 >= stepCount) {
+		return fail(state, "illegalIntent", "no more steps to continue");
+	}
+
+	const now = options?.now ?? Date.now();
+	const next: TableState = {
+		...state,
+		engine: null,
+		campaign: {
+			...state.campaign,
+			stepIndex: state.campaign.stepIndex + 1,
+			phase: "story",
+			paragraphIndex: 0,
+			paragraphEndsAt: now + STORY_PARAGRAPH_MS,
+		},
+		seq: state.seq + 1,
+	};
+	return succeed(next, [], false);
+}
+
+export function advanceStory(
+	state: TableState,
+	now = Date.now(),
+	options?: StartOptions,
+): TableState {
+	if (state.mode !== "campaign" || state.campaign === null || state.campaign.phase !== "story") {
+		return state;
+	}
+	const logbook = getLogbook(state.campaign.logbookId);
+	const stepCount = logbook?.steps.length ?? 5;
+	const isEpilogue = state.campaign.stepIndex >= stepCount;
+	const storyKeys = isEpilogue
+		? (logbook?.epilogueStoryKeys ?? [])
+		: (logbook?.steps[state.campaign.stepIndex]?.storyKeys ?? []);
+
+	const nextParagraphIndex = state.campaign.paragraphIndex + 1;
+	if (nextParagraphIndex < storyKeys.length) {
+		return {
+			...state,
+			campaign: {
+				...state.campaign,
+				paragraphIndex: nextParagraphIndex,
+				paragraphEndsAt: now + STORY_PARAGRAPH_MS,
+			},
+			seq: state.seq + 1,
+		};
+	}
+
+	if (isEpilogue) {
+		return {
+			...state,
+			status: "done",
+			seq: state.seq + 1,
+		};
+	}
+
+	// Transition to briefing:
+	const seats = state.seats.map((seat) => {
+		if (seat === null) return null;
+		return {
+			...seat,
+			ready: isBotPlayerId(seat.playerId),
+		};
+	});
+
+	const briefingState: TableState = {
+		...state,
+		seats,
+		campaign: {
+			...state.campaign,
+			phase: "briefing",
+			paragraphIndex: 0,
+			paragraphEndsAt: 0,
+		},
+		seq: state.seq + 1,
+	};
+
+	if (briefingState.seats.every((s) => s?.ready)) {
+		const dealt = beginCampaignAttempt(briefingState, options);
+		if (dealt.ok) {
+			return dealt.state;
+		}
+	}
+
+	return briefingState;
+}
+
+export function isLastCampaignStep(state: TableState): boolean {
+	if (state.mode !== "campaign" || state.campaign === null) return false;
+	const logbook = getLogbook(state.campaign.logbookId);
+	const stepCount = logbook?.steps.length ?? 5;
+	return state.campaign.stepIndex >= stepCount - 1;
+}
+
+export function startEpilogue(state: TableState, now = Date.now()): TableState {
+	if (state.mode !== "campaign" || state.campaign === null) return state;
+	const logbook = getLogbook(state.campaign.logbookId);
+	const stepCount = logbook?.steps.length ?? 5;
+	return {
+		...state,
+		engine: null,
+		campaign: {
+			...state.campaign,
+			stepIndex: stepCount,
+			phase: "story",
+			paragraphIndex: 0,
+			paragraphEndsAt: now + STORY_PARAGRAPH_MS,
+		},
+		seq: state.seq + 1,
+	};
+}
+
+function beginCampaignAttempt(state: TableState, options?: StartOptions): TableResult {
+	if (state.mode !== "campaign" || state.campaign === null) {
+		return beginAttempt(state, options);
+	}
+	const logbook = getLogbook(state.campaign.logbookId);
+	const step = logbook?.steps[state.campaign.stepIndex];
+	const difficulty = step?.difficulty ?? 1;
+	const missionId = step?.id ?? `deep-sea-${state.campaign.stepIndex + 1}`;
+	const attemptId = options?.attemptId ?? crypto.randomUUID();
+	const seed = options?.seed ?? randomSeed();
+
+	const created = createAttempt({
+		attemptId,
+		mission: {
+			id: missionId,
+			difficulty,
+			flags: { distressDisabled: false },
+		},
+		playerCount: state.playerCount,
+		seed,
+		captainSeat: null,
+	});
+
+	const started = pushFact(
+		{ ...state, status: "playing", engine: created.state },
+		{
+			type: "host.started",
+			attemptId,
+			missionId,
+		},
+	);
+	const stamped = stampFacts(started.state, created.facts);
+	return succeed(stamped.state, [started.fact, ...stamped.facts], false);
 }
 
 function beginAttempt(state: TableState, options?: StartOptions): TableResult {

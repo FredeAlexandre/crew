@@ -148,10 +148,31 @@ export const affordancesSchema = z.object({
 	canFillBots: z.boolean(),
 	canConfigure: z.boolean(),
 	canRetry: z.boolean(),
+	canContinue: z.boolean().default(false),
 });
 export type Affordances = z.infer<typeof affordancesSchema>;
 
+export const campaignStorySchema = z.object({
+	key: z.string(),
+	paragraphIndex: z.number().int().nonnegative(),
+	paragraphCount: z.number().int().positive(),
+	endsAt: z.number().int(),
+});
+export type CampaignStory = z.infer<typeof campaignStorySchema>;
+
+export const campaignChromeSchema = z.object({
+	logbookId: z.string(),
+	stepIndex: z.number().int().nonnegative(),
+	stepCount: z.number().int().positive(),
+	phase: z.enum(["story", "briefing", "play", "result", "epilogue"]).optional(),
+	story: campaignStorySchema.nullable().optional(),
+	challenge: z.string().nullable().optional(),
+});
+export type CampaignChrome = z.infer<typeof campaignChromeSchema>;
+
 export const chromeSchema = z.object({
+	mode: z.enum(["freePlay", "campaign"]).default("freePlay"),
+	campaign: campaignChromeSchema.nullable().optional(),
 	missionId: missionIdSchema.nullable(),
 	difficulty: z.number().int().nonnegative().nullable(),
 	trickId: trickIdSchema.nullable(),

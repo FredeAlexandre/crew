@@ -54,6 +54,10 @@ export const hostRetryIntentSchema = z.object({
 	type: z.literal("host.retry"),
 });
 
+export const hostContinueIntentSchema = z.object({
+	type: z.literal("host.continue"),
+});
+
 export const hostFillBotsIntentSchema = z.object({
 	type: z.literal("host.fillBots"),
 	seatId: seatIdSchema.optional(),
@@ -119,6 +123,7 @@ export const intentSchema = z.discriminatedUnion("type", [
 	hostStartIntentSchema,
 	hostConfigureIntentSchema,
 	hostRetryIntentSchema,
+	hostContinueIntentSchema,
 	hostFillBotsIntentSchema,
 	hostKickIntentSchema,
 	taskTakeIntentSchema,
@@ -138,6 +143,7 @@ export type PlayerRenameIntent = z.infer<typeof playerRenameIntentSchema>;
 export type HostStartIntent = z.infer<typeof hostStartIntentSchema>;
 export type HostConfigureIntent = z.infer<typeof hostConfigureIntentSchema>;
 export type HostRetryIntent = z.infer<typeof hostRetryIntentSchema>;
+export type HostContinueIntent = z.infer<typeof hostContinueIntentSchema>;
 export type HostFillBotsIntent = z.infer<typeof hostFillBotsIntentSchema>;
 export type HostKickIntent = z.infer<typeof hostKickIntentSchema>;
 export type TaskTakeIntent = z.infer<typeof taskTakeIntentSchema>;
@@ -156,6 +162,7 @@ export type LobbyIntent =
 	| HostStartIntent
 	| HostConfigureIntent
 	| HostRetryIntent
+	| HostContinueIntent
 	| HostFillBotsIntent
 	| HostKickIntent;
 export type PlayIntent = Exclude<Intent, EchoIntent | LobbyIntent>;

@@ -13,6 +13,8 @@ import {
 	type TaskInstanceId,
 } from "@crew/protocol";
 import {
+	type CampaignChrome,
+	type CampaignStory,
 	regionForSeat,
 	relativeSeat,
 	type SeatRegion,
@@ -21,6 +23,12 @@ import {
 	type TrickCard,
 	taskRegionAt,
 } from "./table.ts";
+
+export type ProjectCampaignOptions = {
+	mode?: "freePlay" | "campaign";
+	campaign?: CampaignChrome | null;
+	hasMoreSteps?: boolean;
+};
 
 type OccupancySeat = {
 	playerId: string;
@@ -56,7 +64,9 @@ export function project(
 	occupancy?: Occupancy,
 	hostSeatId?: SeatId | null,
 	completedTricksVisible = false,
+	campaignOptions?: ProjectCampaignOptions,
 ): TableView {
+	const mode = campaignOptions?.mode ?? "freePlay";
 	const playerCount = state.playerCount;
 	const intents = legalIntents(state, viewerSeat);
 	const { scene, overlay } = sceneAndOverlay(state, viewerSeat);
@@ -213,6 +223,8 @@ export function project(
 		scene,
 		overlay,
 		chrome: {
+			mode,
+			...(campaignOptions?.campaign ? { campaign: campaignOptions.campaign } : {}),
 			missionId: state.mission?.id ?? null,
 			difficulty: state.mission?.difficulty ?? null,
 			trickId,
@@ -258,7 +270,16 @@ export function project(
 			canStart: false,
 			canFillBots: false,
 			canConfigure: false,
-			canRetry: state.phase === "result" && hostSeatId === viewerSeat,
+			canRetry:
+				state.phase === "result" &&
+				hostSeatId === viewerSeat &&
+				(mode !== "campaign" || state.result === "failed"),
+			canContinue:
+				mode === "campaign" &&
+				campaignOptions?.hasMoreSteps === true &&
+				state.phase === "result" &&
+				state.result === "won" &&
+				hostSeatId === viewerSeat,
 		},
 		result: state.result === null ? null : { outcome: state.result, reason: state.failReason },
 	};
@@ -279,6 +300,7 @@ export function projectLobby(
 	seq: number,
 	hostSeatId: SeatId | null,
 	setup: LobbySetup = DEFAULT_LOBBY_SETUP,
+	mode: "freePlay" | "campaign" = "freePlay",
 ): TableView {
 	const playerCount = occupancy.length;
 	const seats: TableView["seats"] = [];
@@ -306,6 +328,7 @@ export function projectLobby(
 		scene: "lobby",
 		overlay: "none",
 		chrome: {
+			mode,
 			missionId: null,
 			difficulty: setup.difficulty,
 			trickId: null,
@@ -341,6 +364,186 @@ export function projectLobby(
 			canFillBots: lobbyCanFillBots(occupancy, viewerSeat, hostSeatId),
 			canConfigure: lobbyCanConfigure(occupancy, viewerSeat, hostSeatId),
 			canRetry: false,
+			canContinue: false,
+		},
+		result: null,
+	};
+}
+
+export function projectStory(
+	occupancy: Occupancy,
+	viewerSeat: SeatId,
+	seq: number,
+	campaign: {
+		logbookId: string;
+		stepIndex: number;
+		stepCount: number;
+		story: CampaignStory;
+		challenge?: string | null;
+	},
+	missionId?: string | null,
+	difficulty?: number | null,
+): TableView {
+	const playerCount = occupancy.length;
+	const seats: TableView["seats"] = [];
+	for (let relative = 0; relative < playerCount; relative += 1) {
+		const seatId = ((viewerSeat + relative) % playerCount) as SeatId;
+		seats.push({
+			region: regionForSeat(seatId, viewerSeat, playerCount),
+			seatId,
+			...occupancyFields(occupancy, seatId),
+			isCaptain: false,
+			sonar: { state: "available", communication: null },
+			handCount: 0,
+			wonTrickCount: 0,
+			completedTricks: [],
+			isTurn: false,
+			isLastTrickWinner: false,
+			tasks: [],
+		});
+	}
+	return {
+		attemptId: null,
+		seq,
+		viewerSeat,
+		playerCount,
+		scene: "campaign",
+		overlay: "none",
+		chrome: {
+			mode: "campaign",
+			campaign: {
+				logbookId: campaign.logbookId,
+				stepIndex: campaign.stepIndex,
+				stepCount: campaign.stepCount,
+				phase: "story",
+				story: campaign.story,
+				challenge: campaign.challenge ?? null,
+			},
+			missionId: missionId ?? null,
+			difficulty: difficulty ?? null,
+			trickId: null,
+			turnRegion: null,
+			distress: { active: false, direction: null },
+			sonarAvailable: false,
+			flags: {
+				sonarDisabled: false,
+				discussionAllowed: false,
+				distressDisabled: false,
+				completedTricksVisible: true,
+			},
+		},
+		seats,
+		hand: [],
+		trick: { trickId: null, ledSuit: null, leadRegion: null, cards: [] },
+		centerTasks: [],
+		lastTrick: null,
+		history: [],
+		undealt: { present: playerCount === 3 },
+		sonarCandidates: [],
+		affordances: {
+			canPlay: false,
+			canSonar: false,
+			canTakeTask: false,
+			canPassTask: false,
+			canSkipDistress: false,
+			canActivateDistress: false,
+			canPassDistressCard: false,
+			canPredict: false,
+			canPeekLastTrick: false,
+			canStart: false,
+			canFillBots: false,
+			canConfigure: false,
+			canRetry: false,
+			canContinue: false,
+		},
+		result: null,
+	};
+}
+
+export function projectBriefing(
+	occupancy: Occupancy,
+	viewerSeat: SeatId,
+	seq: number,
+	campaign: {
+		logbookId: string;
+		stepIndex: number;
+		stepCount: number;
+		challenge: string;
+	},
+	missionId: string,
+	difficulty: number,
+): TableView {
+	const playerCount = occupancy.length;
+	const seats: TableView["seats"] = [];
+	for (let relative = 0; relative < playerCount; relative += 1) {
+		const seatId = ((viewerSeat + relative) % playerCount) as SeatId;
+		seats.push({
+			region: regionForSeat(seatId, viewerSeat, playerCount),
+			seatId,
+			...occupancyFields(occupancy, seatId),
+			isCaptain: false,
+			sonar: { state: "available", communication: null },
+			handCount: 0,
+			wonTrickCount: 0,
+			completedTricks: [],
+			isTurn: false,
+			isLastTrickWinner: false,
+			tasks: [],
+		});
+	}
+	return {
+		attemptId: null,
+		seq,
+		viewerSeat,
+		playerCount,
+		scene: "briefing",
+		overlay: "none",
+		chrome: {
+			mode: "campaign",
+			campaign: {
+				logbookId: campaign.logbookId,
+				stepIndex: campaign.stepIndex,
+				stepCount: campaign.stepCount,
+				phase: "briefing",
+				story: null,
+				challenge: campaign.challenge,
+			},
+			missionId,
+			difficulty,
+			trickId: null,
+			turnRegion: null,
+			distress: { active: false, direction: null },
+			sonarAvailable: false,
+			flags: {
+				sonarDisabled: false,
+				discussionAllowed: false,
+				distressDisabled: false,
+				completedTricksVisible: true,
+			},
+		},
+		seats,
+		hand: [],
+		trick: { trickId: null, ledSuit: null, leadRegion: null, cards: [] },
+		centerTasks: [],
+		lastTrick: null,
+		history: [],
+		undealt: { present: playerCount === 3 },
+		sonarCandidates: [],
+		affordances: {
+			canPlay: false,
+			canSonar: false,
+			canTakeTask: false,
+			canPassTask: false,
+			canSkipDistress: false,
+			canActivateDistress: false,
+			canPassDistressCard: false,
+			canPredict: false,
+			canPeekLastTrick: false,
+			canStart: false,
+			canFillBots: false,
+			canConfigure: false,
+			canRetry: false,
+			canContinue: false,
 		},
 		result: null,
 	};

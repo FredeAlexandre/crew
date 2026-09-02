@@ -65,6 +65,7 @@ export const gameHistory = sqliteTable(
 	{
 		attemptId: text("attempt_id").primaryKey(),
 		roomCode: text("room_code").notNull(),
+		campaignId: text("campaign_id").references(() => campaigns.id, { onDelete: "set null" }),
 		missionId: text("mission_id").notNull(),
 		result: text("result", { enum: ["won", "failed"] }).notNull(),
 		failReason: text("fail_reason"),
@@ -80,7 +81,68 @@ export const gameHistory = sqliteTable(
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.notNull(),
 	},
-	(table) => [index("game_history_roomCode_idx").on(table.roomCode)],
+	(table) => [
+		index("game_history_roomCode_idx").on(table.roomCode),
+		index("game_history_campaignId_idx").on(table.campaignId),
+	],
+);
+
+export const campaigns = sqliteTable(
+	"campaigns",
+	{
+		id: text("id").primaryKey(),
+		logbookId: text("logbook_id").notNull(),
+		hostPlayerId: text("host_player_id")
+			.notNull()
+			.references(() => players.id, { onDelete: "cascade" }),
+		roomCode: text("room_code").notNull(),
+		status: text("status", { enum: ["active", "completed"] })
+			.notNull()
+			.default("active"),
+		stepIndex: integer("step_index").notNull().default(0),
+		playerCount: integer("player_count").notNull(),
+		createdAt: integer("created_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+		updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+	},
+	(table) => [index("campaigns_roomCode_idx").on(table.roomCode)],
+);
+
+export const campaignMembers = sqliteTable(
+	"campaign_members",
+	{
+		id: text("id").primaryKey(),
+		campaignId: text("campaign_id")
+			.notNull()
+			.references(() => campaigns.id, { onDelete: "cascade" }),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		displayName: text("display_name").notNull(),
+		seatId: integer("seat_id").notNull(),
+	},
+	(table) => [
+		index("campaign_members_campaignId_idx").on(table.campaignId),
+		index("campaign_members_userId_idx").on(table.userId),
+	],
+);
+
+export const campaignSteps = sqliteTable(
+	"campaign_steps",
+	{
+		id: text("id").primaryKey(),
+		campaignId: text("campaign_id")
+			.notNull()
+			.references(() => campaigns.id, { onDelete: "cascade" }),
+		stepIndex: integer("step_index").notNull(),
+		attempts: integer("attempts").notNull().default(0),
+		status: text("status", { enum: ["current", "won"] }).notNull(),
+		lastAttemptId: text("last_attempt_id"),
+	},
+	(table) => [index("campaign_steps_campaignId_idx").on(table.campaignId)],
 );
 
 export const gameHistoryEvents = sqliteTable(

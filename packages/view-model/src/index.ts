@@ -1,5 +1,7 @@
 export type {
 	Affordances,
+	CampaignChrome,
+	CampaignStory,
 	Chrome,
 	Communication,
 	HandCard,
@@ -19,6 +21,8 @@ export type {
 } from "./table.ts";
 export {
 	affordancesSchema,
+	campaignChromeSchema,
+	campaignStorySchema,
 	chromeSchema,
 	communicationSchema,
 	completedTrickViewSchema,

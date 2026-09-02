@@ -2,6 +2,7 @@ import { env } from "@crew/env/web";
 import {
 	normalizeRoomCode,
 	type PlayerCount,
+	type PlayMode,
 	type RoomErrorCode,
 	type RoomTicket,
 	roomErrorMessageSchema,
@@ -71,13 +72,16 @@ async function readTicket(response: Response): Promise<RoomTicket> {
 	throw new RoomHttpError("unexpected", "unexpected response");
 }
 
-export async function createRoom(playerCount: PlayerCount): Promise<RoomTicket> {
+export async function createRoom(
+	playerCount: PlayerCount,
+	mode: PlayMode = "freePlay",
+): Promise<RoomTicket> {
 	await ensureGuestSession();
 	const response = await fetch(new URL("/rooms", `${serverOrigin()}/`).toString(), {
 		method: "POST",
 		credentials: "include",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ playerCount }),
+		body: JSON.stringify({ playerCount, mode }),
 	});
 	return readTicket(response);
 }

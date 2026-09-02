@@ -132,6 +132,39 @@ const en = {
 	briefing: "Read the mission. Confirm when the table is ready to deal.",
 	campaign: "Campaign",
 	campaignEmpty: "Completed missions will be listed here.",
+	newCampaign: "New campaign",
+	loadingCampaigns: "Loading campaigns…",
+	campaignGuestHint: "Sign in to keep track of your campaigns across devices.",
+	campaignsEmpty: "No campaigns yet. Start a new campaign with your crew!",
+	deepSeaLogbook: "Mission Deep Sea",
+	completed: "Completed",
+	missionHeading: "Mission {number}",
+	attemptsTotal: "{count} attempt(s)",
+	storyProgress: "Story progress",
+	epilogue: "Epilogue",
+	continue: "Continue",
+	unready: "Unready",
+	"logbook.deepSea.title": "Mission Deep Sea",
+	"logbook.deepSea.m1.p1":
+		"Off the coast of Hawaii, the research ship Pyke cuts through the Pacific swell. A seasoned captain is brought aboard to command a newly assembled squad of deep-sea specialists who have never worked the abyssal depths together.",
+	"logbook.deepSea.m1.p2":
+		"Before anyone touches a submersible or tests the abyssal cold, basic operations and communication protocols must become second nature. The training starts here, on deck.",
+	"logbook.deepSea.m1.challenge": "Complete the initial training exercises with your crew.",
+	"logbook.deepSea.m2.p1":
+		"In the briefing room, your employer finally unveils two stone tablets salvaged from the shelf. Their faces blend glyphs from civilizations separated by millennia and vast oceans. The assignment is clear: dive to trace their origin, and return in one piece.",
+	"logbook.deepSea.m2.challenge": "Carry out the first survey dive and investigate the tablets.",
+	"logbook.deepSea.m3.p1":
+		"A benthic habitat anchored on the ocean floor will be home for the next month. Before the descent into total isolation, the crew must verify the three vital lifelines that keep the hull habitable: scrubbed air, steady power, and thermal regulation.",
+	"logbook.deepSea.m3.challenge":
+		"Inspect and balance the station's three vital life-support systems.",
+	"logbook.deepSea.m4.p1":
+		"There is no ferry crew or autopilot escort for this drop. The specialists must pilot the heavy submersible themselves through the twilight zone and down into the midnight abyss. Entering the cold black water under manual control is the real initiation.",
+	"logbook.deepSea.m4.challenge": "Pilot the submersible down through the dark abyss.",
+	"logbook.deepSea.m5.p1":
+		"You dock at habitat Kench and seal the pressure locks. Taking command means touring its five structural wings, inspecting the bulkheads, transmitting the first status telemetry to the Pyke above, and trusting that the metal walls hold back the immense trench pressure.",
+	"logbook.deepSea.m5.challenge": "Secure habitat Kench and complete the station commissioning.",
+	"logbook.deepSea.epilogue.p1":
+		"Training is behind you, and the first station watch on habitat Kench ends in quiet satisfaction. The crew has proven its mettle in the deep, and the life support hums steadily. The real search across the ocean trenches lies ahead.",
 	missionHistory: "Mission history",
 	loadingHistory: "Loading history…",
 	historyEmpty: "Your completed attempts will appear here.",
@@ -512,6 +545,42 @@ const fr: Record<MessageKey, string> = {
 	briefing: "Lisez la mission. Confirmez lorsque la table est prête à distribuer.",
 	campaign: "Campagne",
 	campaignEmpty: "Les missions terminées apparaîtront ici.",
+	newCampaign: "Nouvelle campagne",
+	loadingCampaigns: "Chargement des campagnes…",
+	campaignGuestHint: "Connectez-vous pour conserver vos campagnes.",
+	campaignsEmpty: "Aucune campagne pour l'instant. Lancez une nouvelle campagne !",
+	deepSeaLogbook: "Mission Sous-Marine",
+	completed: "Terminée",
+	missionHeading: "Mission {number}",
+	attemptsTotal: "{count} tentative(s)",
+	storyProgress: "Progression de l'histoire",
+	epilogue: "Épilogue",
+	continue: "Continuer",
+	unready: "Non prêt",
+	"logbook.deepSea.title": "Mission Sous-Marine",
+	"logbook.deepSea.m1.p1":
+		"Au large d'Hawaï, le navire océanographique Pyke fend la houle du Pacifique. Un capitaine chevronné prend la tête d'une équipe de spécialistes qui n'ont encore jamais exploré ensemble les grandes profondeurs.",
+	"logbook.deepSea.m1.p2":
+		"Avant de monter dans un submersible ou d'affronter le froid des abysses, les opérations de base et les protocoles de communication doivent devenir instinctifs. L'entraînement commence ici, sur le pont.",
+	"logbook.deepSea.m1.challenge":
+		"Complétez les premiers exercices d'entraînement avec votre équipage.",
+	"logbook.deepSea.m2.p1":
+		"Dans la salle de briefing, votre commanditaire dévoile enfin deux tablettes de pierre repêchées sur le plateau. Leurs gravures mêlent des symboles de civilisations séparées par des millénaires et des océans. Votre mission : plonger pour découvrir leur source, et revenir intacts.",
+	"logbook.deepSea.m2.challenge":
+		"Menez la première plongée de reconnaissance et examinez les tablettes.",
+	"logbook.deepSea.m3.p1":
+		"Un habitat benthique ancré sur le plancher océanique sera votre foyer pour le mois à venir. Avant de descendre dans l'isolement total, l'équipage doit vérifier les trois systèmes vitaux de la station : l'air purifié, l'alimentation électrique et la régulation thermique.",
+	"logbook.deepSea.m3.challenge":
+		"Inspectez et équilibrez les trois systèmes de survie vitaux de la station.",
+	"logbook.deepSea.m4.p1":
+		"Aucun équipage de navette ni pilote automatique ne vous escortera pour cette descente. Les spécialistes doivent manœuvrer le lourd sous-marin à travers la zone crépusculaire jusqu'aux abysses insondables. Plonger dans ces eaux noires en pilotage manuel est le véritable baptême.",
+	"logbook.deepSea.m4.challenge": "Pilotez le sous-marin à travers les abysses obscurs.",
+	"logbook.deepSea.m5.p1":
+		"Vous vous amarrez à l'habitat Kench et scellez les sas de pression. Prendre le commandement implique de visiter ses cinq ailes, d'inspecter les cloisons, d'émettre le premier rapport télémétrique vers le Pyke en surface, et de prier pour que la coque résiste à la pression des fosses.",
+	"logbook.deepSea.m5.challenge":
+		"Sécurisez l'habitat Kench et terminez la mise en service de la station.",
+	"logbook.deepSea.epilogue.p1":
+		"L'entraînement est terminé, et le premier quart à bord de l'habitat Kench s'achève dans une satisfaction tranquille. L'équipage a prouvé sa valeur dans les profondeurs et les systèmes tournent sans faille. La véritable quête à travers les abysses ne fait que commencer.",
 	missionHistory: "Historique des missions",
 	loadingHistory: "Chargement de l’historique…",
 	historyEmpty: "Vos tentatives terminées apparaîtront ici.",
@@ -891,6 +960,42 @@ const es: Record<MessageKey, string> = {
 	briefing: "Lee la misión. Confirma cuando la mesa esté lista para repartir.",
 	campaign: "Campaña",
 	campaignEmpty: "Las misiones completadas aparecerán aquí.",
+	newCampaign: "Nueva campaña",
+	loadingCampaigns: "Cargando campañas…",
+	campaignGuestHint: "Inicia sesión para guardar tus campañas.",
+	campaignsEmpty: "Aún no hay campañas. ¡Inicia una nueva campaña!",
+	deepSeaLogbook: "Misión Mar Profundo",
+	completed: "Completada",
+	missionHeading: "Misión {number}",
+	attemptsTotal: "{count} intento(s)",
+	storyProgress: "Progreso de la historia",
+	epilogue: "Epílogo",
+	continue: "Continuar",
+	unready: "No listo",
+	"logbook.deepSea.title": "Misión Mar Profundo",
+	"logbook.deepSea.m1.p1":
+		"Frente a las costas de Hawái, el barco de investigación Pyke surca el oleaje del Pacífico. Un capitán experimentado asume el mando de un equipo de especialistas que nunca han descendido juntos a las profundidades.",
+	"logbook.deepSea.m1.p2":
+		"Antes de subir a un sumergible o desafiar el frío del abismo, los protocolos básicos y la comunicación deben volverse instintivos. El entrenamiento comienza aquí, en la cubierta.",
+	"logbook.deepSea.m1.challenge":
+		"Completa los primeros ejercicios de entrenamiento con tu tripulación.",
+	"logbook.deepSea.m2.p1":
+		"En la sala de reuniones, su patrocinador revela dos tablillas de piedra recuperadas del lecho marino. Sus grabados mezclan símbolos de civilizaciones separadas por milenios y océanos. La misión es clara: descender para hallar su origen y regresar a salvo.",
+	"logbook.deepSea.m2.challenge":
+		"Realiza la primera inmersión de reconocimiento e investiga las tablillas.",
+	"logbook.deepSea.m3.p1":
+		"Un hábitat bentónico anclado en el fondo marino será su hogar durante el próximo mes. Antes de descender al aislamiento total, la tripulación debe verificar los tres sistemas vitales: aire limpio, energía constante y calefacción térmica.",
+	"logbook.deepSea.m3.challenge":
+		"Inspecciona y equilibra los tres sistemas vitales de soporte vital de la estación.",
+	"logbook.deepSea.m4.p1":
+		"No hay tripulación de enlace ni piloto automático para este descenso. Los especialistas deben pilotar el pesado sumergible a través de la zona de penumbra hasta el abismo de medianoche. Entrar en las aguas negras bajo control manual es la verdadera prueba.",
+	"logbook.deepSea.m4.challenge": "Pilota el sumergible a través del abismo oscuro.",
+	"logbook.deepSea.m5.p1":
+		"Atracas en el hábitat Kench y aseguras las esclusas de presión. Tomar el mando exige recorrer sus cinco alas, inspeccionar los mamparos, transmitir el primer informe al Pyke en la superficie y confiar en que el casco resista la inmensa presión.",
+	"logbook.deepSea.m5.challenge":
+		"Asegura el hábitat Kench y completa la puesta en marcha de la estación.",
+	"logbook.deepSea.epilogue.p1":
+		"El entrenamiento ha concluido y la primera guardia en el hábitat Kench termina con serena satisfacción. La tripulación ha demostrado su temple en el abismo y los sistemas vitales funcionan con precisión. La verdadera búsqueda en las fosas oceánicas apenas comienza.",
 	missionHistory: "Historial de misiones",
 	loadingHistory: "Cargando historial…",
 	historyEmpty: "Tus intentos completados aparecerán aquí.",

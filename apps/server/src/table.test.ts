@@ -1,6 +1,7 @@
 import { pickSeatIntent } from "@crew/engine";
 import { describe, expect, it, vi } from "vitest";
 import {
+	advanceStory,
 	connect,
 	createTable,
 	disconnect,
@@ -634,3 +635,174 @@ function forceResult(state: ReturnType<typeof fresh>) {
 		},
 	};
 }
+
+describe("campaign table", () => {
+	function freshCampaign() {
+		return createTable({ code: "CAMP", hostPlayerId: "p0", playerCount: 3, mode: "campaign" });
+	}
+
+	it("campaign start does not deal and enters story phase", () => {
+		const seated = sitAll(freshCampaign());
+		const readied = readyAll(seated);
+		const started = mustOk(
+			handleIntent(readied, "p0", { type: "host.start" }, { now: 1_000 }),
+		).state;
+
+		expect(started.status).toBe("playing");
+		expect(started.engine).toBeNull();
+		expect(started.campaign?.phase).toBe("story");
+		expect(started.campaign?.stepIndex).toBe(0);
+		expect(started.campaign?.paragraphIndex).toBe(0);
+		expect(started.campaign?.paragraphEndsAt).toBe(9_000);
+
+		const view = viewForSeat(started, 0);
+		expect(view.scene).toBe("campaign");
+		expect(view.chrome.mode).toBe("campaign");
+		expect(view.chrome.campaign?.phase).toBe("story");
+	});
+
+	it("advances story paragraphs and transitions to briefing where bots auto-ready", () => {
+		const seated = sitAll(freshCampaign());
+		const readied = readyAll(seated);
+		const started = mustOk(
+			handleIntent(readied, "p0", { type: "host.start" }, { now: 1_000 }),
+		).state;
+
+		// Mission 1 has 2 paragraphs
+		const para2 = advanceStory(started, 9_000);
+		expect(para2.campaign?.paragraphIndex).toBe(1);
+		expect(para2.campaign?.phase).toBe("story");
+
+		// After paragraph 2, transitions to briefing
+		const briefing = advanceStory(para2, 17_000);
+		expect(briefing.campaign?.phase).toBe("briefing");
+		expect(briefing.engine).toBeNull();
+		// Humans have ready cleared
+		expect(briefing.seats[0]?.ready).toBe(false);
+		expect(briefing.seats[1]?.ready).toBe(false);
+		expect(briefing.seats[2]?.ready).toBe(false);
+
+		const view = viewForSeat(briefing, 0);
+		expect(view.scene).toBe("briefing");
+		expect(view.chrome.campaign?.challenge).toBeDefined();
+	});
+
+	it("briefing ready deals at step difficulty", () => {
+		const seated = sitAll(freshCampaign());
+		const readied = readyAll(seated);
+		const started = mustOk(
+			handleIntent(readied, "p0", { type: "host.start" }, { now: 1_000 }),
+		).state;
+		const briefing = advanceStory(advanceStory(started, 9_000), 17_000);
+
+		const r0 = mustOk(handleIntent(briefing, "p0", { type: "player.ready", ready: true })).state;
+		expect(r0.engine).toBeNull();
+		const r1 = mustOk(handleIntent(r0, "p1", { type: "player.ready", ready: true })).state;
+		expect(r1.engine).toBeNull();
+
+		// Once everyone is ready, deals
+		const dealt = mustOk(
+			handleIntent(r1, "p2", { type: "player.ready", ready: true }, { seed: 1, attemptId: "c1" }),
+		).state;
+		expect(dealt.engine).not.toBeNull();
+		expect(dealt.engine?.mission?.difficulty).toBe(1);
+		expect(dealt.engine?.mission?.flags?.distressDisabled).toBe(false);
+		expect(viewForSeat(dealt, 0).scene).toBe("taskDraft");
+	});
+
+	it("retry stays on step and increments stepAttempts", () => {
+		const seated = sitAll(freshCampaign());
+		const readied = readyAll(seated);
+		const started = mustOk(
+			handleIntent(readied, "p0", { type: "host.start" }, { now: 1_000 }),
+		).state;
+		const briefing = advanceStory(advanceStory(started, 9_000), 17_000);
+		const r0 = mustOk(handleIntent(briefing, "p0", { type: "player.ready", ready: true })).state;
+		const r1 = mustOk(handleIntent(r0, "p1", { type: "player.ready", ready: true })).state;
+		const dealt = mustOk(
+			handleIntent(r1, "p2", { type: "player.ready", ready: true }, { seed: 1, attemptId: "c1" }),
+		).state;
+
+		const failed = forceResult(dealt);
+		const retried = mustOk(
+			handleIntent(failed, "p0", { type: "host.retry" }, { now: 25_000 }),
+		).state;
+		expect(retried.engine).toBeNull();
+		expect(retried.campaign?.stepIndex).toBe(0);
+		expect(retried.campaign?.stepAttempts[0]).toBe(1);
+		expect(retried.campaign?.phase).toBe("story");
+		expect(retried.campaign?.paragraphIndex).toBe(0);
+	});
+
+	it("continue advances stepIndex", () => {
+		const seated = sitAll(freshCampaign());
+		const readied = readyAll(seated);
+		const started = mustOk(
+			handleIntent(readied, "p0", { type: "host.start" }, { now: 1_000 }),
+		).state;
+		const briefing = advanceStory(advanceStory(started, 9_000), 17_000);
+		const r0 = mustOk(handleIntent(briefing, "p0", { type: "player.ready", ready: true })).state;
+		const r1 = mustOk(handleIntent(r0, "p1", { type: "player.ready", ready: true })).state;
+		const dealt = mustOk(
+			handleIntent(r1, "p2", { type: "player.ready", ready: true }, { seed: 1, attemptId: "c1" }),
+		).state;
+
+		if (dealt.engine === null) {
+			throw new Error("expected engine");
+		}
+		const won = {
+			...dealt,
+			engine: {
+				...dealt.engine,
+				phase: "result" as const,
+				result: "won" as const,
+			},
+		};
+		const continued = mustOk(
+			handleIntent(won, "p0", { type: "host.continue" }, { now: 30_000 }),
+		).state;
+		expect(continued.engine).toBeNull();
+		expect(continued.campaign?.stepIndex).toBe(1);
+		expect(continued.campaign?.phase).toBe("story");
+
+		// Non-host cannot continue
+		const nonHost = handleIntent(won, "p1", { type: "host.continue" });
+		expect(nonHost.ok).toBe(false);
+	});
+
+	it("configure cannot change difficulty or captain or distress in campaign", () => {
+		const seated = sitAll(freshCampaign());
+		const badDiff = handleIntent(seated, "p0", {
+			type: "host.configure",
+			difficulty: 8,
+			captainSeat: null,
+			distressDisabled: false,
+			completedTricksVisible: true,
+		});
+		expect(badDiff.ok).toBe(false);
+		if (!badDiff.ok) {
+			expect(badDiff.code).toBe("illegalIntent");
+		}
+
+		const badDistress = handleIntent(seated, "p0", {
+			type: "host.configure",
+			difficulty: 1,
+			captainSeat: null,
+			distressDisabled: true,
+			completedTricksVisible: true,
+		});
+		expect(badDistress.ok).toBe(false);
+
+		const allowed = mustOk(
+			handleIntent(seated, "p0", {
+				type: "host.configure",
+				difficulty: 1,
+				captainSeat: null,
+				distressDisabled: false,
+				completedTricksVisible: true,
+				playerCount: 4,
+			}),
+		);
+		expect(allowed.state.playerCount).toBe(4);
+	});
+});

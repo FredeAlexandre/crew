@@ -1,7 +1,7 @@
 import type { createDb } from "@crew/db";
 import type { Fact } from "@crew/protocol";
 import { describe, expect, it } from "vitest";
-import { recordPlayerHistory } from "./history.ts";
+import { insertCampaign, recordPlayerHistory } from "./history.ts";
 import type { TableState } from "./table.ts";
 
 function resultState(): TableState {
@@ -29,6 +29,8 @@ function resultState(): TableState {
 			attemptId: "attempt-1",
 			mission: { id: "m1", difficulty: 1 },
 		} as TableState["engine"],
+		mode: "freePlay",
+		campaign: null,
 		historyFacts: [
 			{
 				type: "host.started",
@@ -87,5 +89,96 @@ describe("recordPlayerHistory", () => {
 		await recordPlayerHistory(db, state);
 
 		expect(selected).toBe(false);
+	});
+
+	it("attaches campaignId to game_history and updates campaign step on result", async () => {
+		let insertedGame: unknown = null;
+		const updates: Record<string, unknown> = {};
+		const db = {
+			select: () => ({
+				from: () => ({
+					where: async () => [{ id: "account-1" }],
+				}),
+			}),
+			insert: () => ({
+				values: (values: unknown) => {
+					if (typeof values === "object" && values !== null && "campaignId" in values) {
+						insertedGame = values;
+					}
+					return { onConflictDoNothing: async () => undefined };
+				},
+			}),
+			update: (table: unknown) => ({
+				set: (values: unknown) => {
+					const name = String(
+						(table as { [key: symbol]: unknown })[Symbol.for("drizzle:Name")] ?? "table",
+					);
+					updates[name] = values;
+					return {
+						where: async () => undefined,
+					};
+				},
+			}),
+		} as unknown as ReturnType<typeof createDb>;
+
+		const state = resultState();
+		state.mode = "campaign";
+		state.campaign = {
+			logbookId: "deep-sea",
+			campaignId: "camp-123",
+			stepIndex: 0,
+			phase: "briefing",
+			paragraphIndex: 0,
+			paragraphEndsAt: 0,
+			stepAttempts: [0, 0, 0, 0, 0],
+		};
+
+		await recordPlayerHistory(db, state);
+
+		expect(insertedGame).not.toBeNull();
+		const game = insertedGame as Record<string, unknown>;
+		expect(game.campaignId).toBe("camp-123");
+		const stepUpdate = updates.campaign_steps as Record<string, unknown>;
+		expect(stepUpdate).toBeDefined();
+		expect(stepUpdate.status).toBe("won");
+		expect(stepUpdate.attempts).toBe(1);
+	});
+
+	it("persists campaign row, human members, and steps on insertCampaign", async () => {
+		const inserts: Record<string, unknown[]> = {};
+		const db = {
+			insert: (table: unknown) => ({
+				values: (values: unknown) => {
+					const name = String(
+						(table as { [key: symbol]: unknown })[Symbol.for("drizzle:Name")] ?? "table",
+					);
+					inserts[name] = Array.isArray(values) ? values : [values];
+					return { onConflictDoNothing: async () => undefined };
+				},
+			}),
+		} as unknown as ReturnType<typeof createDb>;
+
+		const state = resultState();
+		state.mode = "campaign";
+		state.campaign = {
+			logbookId: "deep-sea",
+			campaignId: "camp-456",
+			stepIndex: 0,
+			phase: "story",
+			paragraphIndex: 0,
+			paragraphEndsAt: 0,
+			stepAttempts: [0, 0, 0, 0, 0],
+		};
+
+		await insertCampaign(db, state);
+
+		// Members skip bot:2
+		const members = inserts.campaign_members as Array<{ userId: string }>;
+		expect(members).toBeDefined();
+		expect(members.map((m) => m.userId)).toEqual(["account-1", "guest-1"]);
+
+		// Steps create 5 steps
+		const steps = inserts.campaign_steps as Array<{ stepIndex: number }>;
+		expect(steps).toHaveLength(5);
 	});
 });

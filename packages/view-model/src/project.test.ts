@@ -2,7 +2,7 @@ import { apply, createAttempt, legalIntents } from "@crew/engine";
 import { CARD_IDS, type CardId, type TaskPublic } from "@crew/protocol";
 import { describe, expect, it } from "vitest";
 import { lobbyThreeEmpty } from "./fixtures.ts";
-import { project, projectFacts, projectLobby } from "./project.ts";
+import { project, projectBriefing, projectFacts, projectLobby, projectStory } from "./project.ts";
 import { tableViewSchema } from "./table.ts";
 import {
 	failWithImpossibleTask,
@@ -406,6 +406,100 @@ describe("occupancy", () => {
 		expect(view.seats.find((seat) => seat.seatId === 1)?.displayName).toBe("Bea");
 		expect(view.seats.find((seat) => seat.seatId === 2)?.displayName).toBeNull();
 		expect(view.hand.map((card) => card.cardId)).toEqual(state.hands[0]);
+	});
+
+	it("hides campaign chrome in campaign lobby, but sets chrome.mode", () => {
+		const lobby = projectLobby([], 0, 1, 0, undefined, "campaign");
+		expect(lobby.chrome.mode).toBe("campaign");
+		expect(lobby.chrome.campaign).toBeUndefined();
+		expect(lobby.scene).toBe("lobby");
+		expect(tableViewSchema.parse(lobby)).toEqual(lobby);
+	});
+
+	it("projects campaign story scene with story keys and timing", () => {
+		const occupancy = [
+			{ playerId: "p0", displayName: "Alex", connected: true, ready: false },
+			{ playerId: "p1", displayName: "Bea", connected: true, ready: false },
+			{ playerId: "p2", displayName: "Cam", connected: true, ready: false },
+		];
+		const story = projectStory(
+			occupancy,
+			0,
+			1,
+			{
+				logbookId: "deep-sea",
+				stepIndex: 0,
+				stepCount: 5,
+				story: {
+					key: "logbook.deepSea.m1.p1",
+					paragraphIndex: 0,
+					paragraphCount: 2,
+					endsAt: 10_000,
+				},
+				challenge: "logbook.deepSea.m1.challenge",
+			},
+			"deep-sea-1",
+			1,
+		);
+		expect(story.scene).toBe("campaign");
+		expect(story.chrome.mode).toBe("campaign");
+		expect(story.chrome.campaign?.phase).toBe("story");
+		expect(story.chrome.campaign?.story?.key).toBe("logbook.deepSea.m1.p1");
+		expect(story.chrome.campaign?.story?.endsAt).toBe(10_000);
+		expect(story.chrome.difficulty).toBe(1);
+		expect(story.affordances.canStart).toBe(false);
+		expect(tableViewSchema.parse(story)).toEqual(story);
+	});
+
+	it("projects briefing scene with challenge and readiness", () => {
+		const occupancy = [
+			{ playerId: "p0", displayName: "Alex", connected: true, ready: true },
+			{ playerId: "p1", displayName: "Bea", connected: true, ready: false },
+			{ playerId: "p2", displayName: "Cam", connected: true, ready: false },
+		];
+		const briefing = projectBriefing(
+			occupancy,
+			0,
+			2,
+			{
+				logbookId: "deep-sea",
+				stepIndex: 0,
+				stepCount: 5,
+				challenge: "logbook.deepSea.m1.challenge",
+			},
+			"deep-sea-1",
+			1,
+		);
+		expect(briefing.scene).toBe("briefing");
+		expect(briefing.chrome.mode).toBe("campaign");
+		expect(briefing.chrome.campaign?.phase).toBe("briefing");
+		expect(briefing.chrome.campaign?.challenge).toBe("logbook.deepSea.m1.challenge");
+		expect(briefing.seats[0]?.ready).toBe(true);
+		expect(briefing.seats[1]?.ready).toBe(false);
+		expect(tableViewSchema.parse(briefing)).toEqual(briefing);
+	});
+
+	it("computes canContinue for host when campaign mission is won and more steps exist", () => {
+		const ended = failWithImpossibleTask(startAttempt(4, 11));
+		const won = { ...ended, result: "won" as const };
+		const hostView = project(won, 0, undefined, 0, false, {
+			mode: "campaign",
+			hasMoreSteps: true,
+		});
+		expect(hostView.affordances.canContinue).toBe(true);
+		expect(hostView.affordances.canRetry).toBe(false);
+
+		const nonHostView = project(won, 1, undefined, 0, false, {
+			mode: "campaign",
+			hasMoreSteps: true,
+		});
+		expect(nonHostView.affordances.canContinue).toBe(false);
+
+		const lastStepView = project(won, 0, undefined, 0, false, {
+			mode: "campaign",
+			hasMoreSteps: false,
+		});
+		expect(lastStepView.affordances.canContinue).toBe(false);
 	});
 });
 
