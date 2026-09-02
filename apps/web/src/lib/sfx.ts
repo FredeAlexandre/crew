@@ -54,7 +54,6 @@ export type SfxBackend = {
 let backend: SfxBackend | null = null;
 let memoryMuted: boolean | null = null;
 const heard = new Set<string>();
-const muteListeners = new Set<() => void>();
 
 export function isSfxMuted(): boolean {
 	if (memoryMuted !== null) {
@@ -78,16 +77,6 @@ export function setSfxMuted(muted: boolean): void {
 	} catch {
 		// persistence is best-effort; the session flag still holds
 	}
-	for (const listener of muteListeners) {
-		listener();
-	}
-}
-
-export function subscribeSfxMute(listener: () => void): () => void {
-	muteListeners.add(listener);
-	return () => {
-		muteListeners.delete(listener);
-	};
 }
 
 export function attachSfxBackend(next: SfxBackend | null): void {
