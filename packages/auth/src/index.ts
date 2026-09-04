@@ -5,6 +5,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { anonymous } from "better-auth/plugins";
 import { convertAnonymous } from "./convert.ts";
+import { sessionCookieAttributes } from "./cookies.ts";
 import { mergeAnonymousAccount } from "./merge.ts";
 
 export function createAuth() {
@@ -31,12 +32,7 @@ export function createAuth() {
 		secret: env.BETTER_AUTH_SECRET,
 		baseURL: env.BETTER_AUTH_URL,
 		advanced: {
-			defaultCookieAttributes: {
-				sameSite: "none",
-				secure: true,
-				httpOnly: true,
-				partitioned: true,
-			},
+			defaultCookieAttributes: sessionCookieAttributes(env.BETTER_AUTH_URL),
 		},
 	});
 }

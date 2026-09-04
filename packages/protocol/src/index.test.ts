@@ -98,6 +98,10 @@ describe("wire schemas", () => {
 		expect(() => intentSchema.parse({ type: "player.rename", displayName: "   " })).toThrow();
 		expect(intentSchema.parse({ type: "host.start" }).type).toBe("host.start");
 		expect(intentSchema.parse({ type: "host.retry" }).type).toBe("host.retry");
+		expect(intentSchema.parse({ type: "host.retry", keepTasks: true })).toEqual({
+			type: "host.retry",
+			keepTasks: true,
+		});
 		expect(intentSchema.parse({ type: "host.fillBots" }).type).toBe("host.fillBots");
 		expect(intentSchema.parse({ type: "host.fillBots", seatId: 2 })).toEqual({
 			type: "host.fillBots",

@@ -322,7 +322,7 @@ export function handleIntent(
 		return configure(state, playerId, intent);
 	}
 	if (intent.type === "host.retry") {
-		return retry(state, playerId, options);
+		return retry(state, playerId, intent.keepTasks === true, options);
 	}
 	if (intent.type === "host.fillBots") {
 		return fillBots(state, playerId, intent.seatId);
@@ -564,7 +564,12 @@ function start(state: TableState, playerId: string, options?: StartOptions): Tab
 	return beginAttempt(state, options);
 }
 
-function retry(state: TableState, playerId: string, options?: StartOptions): TableResult {
+function retry(
+	state: TableState,
+	playerId: string,
+	keepTasks: boolean,
+	options?: StartOptions,
+): TableResult {
 	if (playerId !== state.hostPlayerId) {
 		return fail(state, "notHost", "only the host can retry");
 	}
@@ -575,10 +580,14 @@ function retry(state: TableState, playerId: string, options?: StartOptions): Tab
 		return fail(state, "alreadyStarted", "mission is still in progress");
 	}
 
-	return beginAttempt(state, options);
+	return beginAttempt(state, options, keepTasks ? state.engine : null);
 }
 
-function beginAttempt(state: TableState, options?: StartOptions): TableResult {
+function beginAttempt(
+	state: TableState,
+	options?: StartOptions,
+	reuse?: EngineState | null,
+): TableResult {
 	const attemptId = options?.attemptId ?? crypto.randomUUID();
 	const seed = options?.seed ?? randomSeed();
 	const setup = setupOf(state);
@@ -592,6 +601,12 @@ function beginAttempt(state: TableState, options?: StartOptions): TableResult {
 		playerCount: state.playerCount,
 		seed,
 		captainSeat: setup.captainSeat,
+		...(reuse
+			? {
+					tasks: reuse.tasks.map((task) => task.spec),
+					taskDrawPile: reuse.taskDrawPile,
+				}
+			: {}),
 	});
 	const started = pushFact(
 		{ ...state, status: "playing", engine: created.state },

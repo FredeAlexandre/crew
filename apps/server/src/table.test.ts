@@ -514,6 +514,18 @@ describe("table play", () => {
 		expect(retried.facts.some((fact) => fact.type === "task.offeredTurn")).toBe(true);
 		expect(viewForSeat(retried.state, 0).scene).toBe("taskDraft");
 		expect(viewForSeat(retried.state, 0).affordances.canRetry).toBe(false);
+
+		const originalIds = (ended.engine?.tasks ?? []).map((task) => task.spec.id);
+		const sameTasks = mustOk(
+			handleIntent(
+				ended,
+				"p0",
+				{ type: "host.retry", keepTasks: true },
+				{ seed: 3, attemptId: "a3" },
+			),
+		);
+		expect(sameTasks.state.engine?.tasks.map((task) => task.spec.id)).toEqual(originalIds);
+		expect(sameTasks.state.engine?.tasks.every((task) => task.ownerSeat === null)).toBe(true);
 	});
 });
 

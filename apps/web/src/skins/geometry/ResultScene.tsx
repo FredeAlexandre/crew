@@ -15,7 +15,7 @@ export function ResultScene({
 	enter = false,
 }: {
 	view: TableView;
-	onRetry?: () => void;
+	onRetry?: (keepTasks: boolean) => void;
 	enter?: boolean;
 }) {
 	const { t } = useI18n();
@@ -115,7 +115,10 @@ export function ResultScene({
 			</div>
 			{view.affordances.canRetry && onRetry ? (
 				<div className={styles.boardActions}>
-					<Button onPress={onRetry}>{t("retry")}</Button>
+					<Button onPress={() => onRetry(true)}>{t("retrySameTasks")}</Button>
+					<Button variant="outline" onPress={() => onRetry(false)}>
+						{t("retryNewTasks")}
+					</Button>
 				</div>
 			) : null}
 		</div>

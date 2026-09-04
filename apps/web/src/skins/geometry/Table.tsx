@@ -55,7 +55,9 @@ export function GeometryTable({ view, lobby, sendIntent }: GeometryTableProps) {
 				<ResultScene
 					view={view}
 					enter={enteredResult}
-					onRetry={sendIntent ? () => sendIntent({ type: "host.retry" }) : undefined}
+					onRetry={
+						sendIntent ? (keepTasks) => sendIntent({ type: "host.retry", keepTasks }) : undefined
+					}
 				/>
 			);
 			break;

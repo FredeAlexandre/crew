@@ -8,6 +8,10 @@ import type Room from "../../apps/server/src/room.ts";
 
 const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), "../db/src/migrations");
 
+/** Declared local ports. Vite must use these, not `serverWorker.url`, which can be a fallback port if 3000 is already taken. */
+const LOCAL_SERVER_PORT = 3000;
+const LOCAL_WEB_PORT = 3001;
+
 function previewPrNumber(stage: string): string | undefined {
 	return /^pr-(\d+)$/.exec(stage)?.[1];
 }
@@ -37,7 +41,7 @@ export const server = Cloudflare.Worker("server", {
 		ROOM: Cloudflare.DurableObject<Room>("Room"),
 	},
 	dev: {
-		port: 3000,
+		port: LOCAL_SERVER_PORT,
 	},
 });
 
@@ -62,10 +66,13 @@ export default Alchemy.Stack(
 				notFoundHandling: "single-page-application",
 			},
 			env: {
-				VITE_SERVER_URL: serverWorker.url.as<string>(),
+				VITE_SERVER_URL:
+					domain === undefined
+						? `http://localhost:${LOCAL_SERVER_PORT}`
+						: serverWorker.url.as<string>(),
 			},
 			dev: {
-				port: 3001,
+				port: LOCAL_WEB_PORT,
 			},
 		});
 

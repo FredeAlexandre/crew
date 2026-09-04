@@ -52,6 +52,7 @@ export const hostConfigureIntentSchema = z.object({
 
 export const hostRetryIntentSchema = z.object({
 	type: z.literal("host.retry"),
+	keepTasks: z.boolean().optional(),
 });
 
 export const hostFillBotsIntentSchema = z.object({
