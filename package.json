@@ -24,6 +24,7 @@
 		}
 	},
 	"scripts": {
+		"worktree:setup": "node scripts/worktree-setup.ts",
 		"dev": "nub run --node --filter @crew/infra dev",
 		"dev:web": "nub run --filter web dev:bare",
 		"dev:server": "nub run --filter server dev:bare",

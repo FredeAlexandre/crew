@@ -33,7 +33,11 @@
 	},
 	"overrides": [
 		{
-			"includes": ["packages/engine/playground/**", "packages/view-model/playground/**"],
+			"includes": [
+				"packages/engine/playground/**",
+				"packages/view-model/playground/**",
+				"scripts/**"
+			],
 			"linter": {
 				"rules": {
 					"suspicious": {
