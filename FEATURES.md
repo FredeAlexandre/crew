@@ -74,8 +74,9 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 
 ## Task draft
 
-- [ ] Face-up tasks sit in the center. On your draft turn you tap a task to take it, or **Pass**. A task you cannot take (for example one the captain is not allowed) looks disabled.
+- [ ] Face-up tasks sit in the center. On your draft turn you tap a task to take it, or **Pass** (Pass sits just above those task cards, not in the head row). A task you cannot take (for example one the captain is not allowed) looks disabled.
 - [ ] After you take an “I will win X tricks” card, you name that number. Open cards show it to the crew; hidden cards keep it until the result.
+- [ ] When the mission dealt no more task cards than players, you may pass only while more teammates still sit behind you than leftover tasks, so the captain cannot be handed a task again.
 - [ ] Tasks at seats (yours and others) are illustrated cards, the same shape as playing cards. Tap one to open a larger Task overlay; Escape or Close dismisses it.
 - [ ] A trick-sum card shows the target for this crew size, not the 3/4/5 options together.
 - [ ] Completed tasks read as done; failed tasks as failed. Takeable tasks in the center are marked so they look takeable.
@@ -124,7 +125,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] Won or Failed is obvious. A short **mission review** says why: every task completed, or a task became impossible, or the crew ran out of cards.
 - [ ] Failed tasks name the owner. A count shows how many tasks were completed, and leftover unfinished work is mentioned when the mission ended early.
 - [ ] A scrollable **match history** lists every trick: who won it and which cards were played. This appears after both wins and failures.
-- [ ] Only the **host** sees **Retry**. Retry deals the **same mission again** (new cards), same seats. Guests do not get Retry.
+- [ ] Only the **host** sees retry. They choose **same tasks** (keep the drawn task cards; owners are drafted again) or **new tasks** (draw a fresh set). Playing cards are always dealt again. Same seats. Guests do not get Retry.
 
 ## Catalog
 

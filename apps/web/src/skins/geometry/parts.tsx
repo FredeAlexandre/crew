@@ -3,7 +3,6 @@ import type { HandCard, SeatView, TaskView } from "@crew/view-model/fixtures";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useRef } from "react";
 import { Button as Pressable } from "react-aria-components";
-import { Button } from "../../components/ui/button.tsx";
 import { identiconUrl } from "../../lib/avatar.ts";
 import { useI18n } from "../../lib/i18n.tsx";
 import { CardFace } from "./Card.tsx";
@@ -198,9 +197,7 @@ export function PlaySeat({
 	onSonarDetail,
 	onInspectTask,
 	canSonar,
-	canPass,
 	onSonar,
-	onPass,
 	chairClassName,
 	params,
 }: {
@@ -209,9 +206,7 @@ export function PlaySeat({
 	onSonarDetail?: () => void;
 	onInspectTask?: (task: TaskView) => void;
 	canSonar?: boolean;
-	canPass?: boolean;
 	onSonar?: () => void;
-	onPass?: () => void;
 	chairClassName?: string;
 	params?: TaskRenderParams;
 }) {
@@ -270,13 +265,6 @@ export function PlaySeat({
 								onPress={onSonarDetail}
 							/>
 						) : null}
-					</div>
-				) : null}
-				{self && canPass && onPass ? (
-					<div className={styles.seatActions}>
-						<Button variant="outline" size="sm" onPress={onPass}>
-							{t("pass")}
-						</Button>
 					</div>
 				) : null}
 			</div>

@@ -159,15 +159,16 @@ export function PlayScene({
 		return () => window.clearTimeout(timer);
 	}, [landKeys]);
 
+	const countingDown = heldCards !== null && trickTransition !== null && !trickTransition.paused;
+
 	useEffect(() => {
-		if (heldCards === null || trickTransition === null || trickTransition.paused) {
+		if (!countingDown) {
 			return;
 		}
 		const startedAt = performance.now();
-		const startingRemaining = trickTransition.remaining;
 		let frame = 0;
 		function tick(now: number) {
-			const remaining = Math.max(0, startingRemaining - (now - startedAt));
+			const remaining = Math.max(0, TRICK_TRANSITION_MS - (now - startedAt));
 			if (remaining === 0) {
 				setHeldCards(null);
 				setWinnerRegion(null);
@@ -178,13 +179,16 @@ export function PlayScene({
 				if (current === null || current.paused) {
 					return current;
 				}
+				if (current.remaining === remaining) {
+					return current;
+				}
 				return { ...current, remaining };
 			});
 			frame = window.requestAnimationFrame(tick);
 		}
 		frame = window.requestAnimationFrame(tick);
 		return () => window.cancelAnimationFrame(frame);
-	}, [heldCards, trickTransition]);
+	}, [countingDown]);
 
 	function toggleTrickTransition() {
 		if (trickTransition === null) {
@@ -415,9 +419,7 @@ export function PlayScene({
 								onSonarDetail={() => openSonarDetail(seat.region)}
 								onInspectTask={inspectTask}
 								canSonar={isSelf && sonarEnabled && !sonarOpen}
-								canPass={isSelf && isDraft && view.affordances.canPassTask}
 								onSonar={isSelf ? openSonar : undefined}
-								onPass={isSelf && isDraft ? passTask : undefined}
 							/>
 						);
 					})}
@@ -438,6 +440,7 @@ export function PlayScene({
 										sendIntent({ type: "task.take", taskInstanceId: task.instanceId })
 								: undefined
 						}
+						onPass={isDraft && view.affordances.canPassTask && sendIntent ? passTask : undefined}
 					/>
 				</div>
 			</div>
@@ -488,6 +491,7 @@ function Well({
 	trickTransition,
 	onToggleTrickTransition,
 	onTake,
+	onPass,
 }: {
 	view: TableView;
 	turn: string | null;
@@ -498,6 +502,7 @@ function Well({
 	trickTransition: TrickTransition | null;
 	onToggleTrickTransition: () => void;
 	onTake?: (task: TaskView) => void;
+	onPass?: () => void;
 }) {
 	const { t } = useI18n();
 	if (view.scene === "taskDraft") {
@@ -509,6 +514,11 @@ function Well({
 					<p className={styles.draftPrompt}>
 						{turn}. {t("takeTask")}
 					</p>
+				) : null}
+				{onPass ? (
+					<Button className={styles.draftPass} variant="outline" size="sm" onPress={onPass}>
+						{t("pass")}
+					</Button>
 				) : null}
 				<div className={styles.taskRow}>
 					{view.centerTasks.map((task) => (

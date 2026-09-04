@@ -120,10 +120,26 @@ export function canPass(state: EngineState, _seat: SeatId): boolean {
 	if (pendingPredictionTask(state, _seat) !== undefined) {
 		return false;
 	}
-	if (state.draftActs >= state.playerCount) {
+	if (state.centerTaskIds.length === 0) {
 		return false;
 	}
-	return state.centerTaskIds.length > 0;
+	const captain = state.captainSeat;
+	const current = state.currentSeat;
+	if (captain === null || current === null || state.playerCount === 0) {
+		return false;
+	}
+	return state.centerTaskIds.length < seatsBeforeCaptain(current, captain, state.playerCount);
+}
+
+/** Seats still to act before the draft wraps back to the captain. */
+function seatsBeforeCaptain(current: SeatId, captain: SeatId, playerCount: number): number {
+	let count = 0;
+	let seat = nextSeat(current, playerCount);
+	while (seat !== captain) {
+		count += 1;
+		seat = nextSeat(seat, playerCount);
+	}
+	return count;
 }
 
 function afterDraftAction(state: EngineState, facts: Fact[]): IllegalReason | null {

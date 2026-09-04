@@ -509,8 +509,7 @@
 }
 
 .seatHead,
-.seatBody,
-.seatActions {
+.seatBody {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: flex-start;
@@ -628,14 +627,6 @@
 	color: var(--fog);
 	font-size: 0.9rem;
 	text-align: center;
-}
-
-.seatActions {
-	gap: 0.35rem;
-	position: relative;
-	z-index: 4;
-	width: 100%;
-	justify-content: center;
 }
 
 .playSeat .avatarWrap {

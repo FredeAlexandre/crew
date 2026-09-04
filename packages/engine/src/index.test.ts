@@ -69,6 +69,29 @@ describe("createAttempt", () => {
 		expect(state.phase).toBe("taskDraft");
 		expect(state.currentSeat).toBe(state.captainSeat);
 	});
+
+	it("reuses provided task specs instead of drawing", () => {
+		const first = createAttempt({
+			attemptId: "a1",
+			mission: { id: "m1", difficulty: 4 },
+			playerCount: 4,
+			seed: 1,
+		}).state;
+		const second = createAttempt({
+			attemptId: "a2",
+			mission: { id: "m1", difficulty: 4 },
+			playerCount: 4,
+			seed: 99,
+			tasks: first.tasks.map((task) => task.spec),
+			taskDrawPile: first.taskDrawPile,
+		}).state;
+		expect(second.tasks.map((task) => task.spec.id)).toEqual(
+			first.tasks.map((task) => task.spec.id),
+		);
+		expect(second.tasks.every((task) => task.ownerSeat === null)).toBe(true);
+		expect(second.hands).not.toEqual(first.hands);
+		expect(second.taskDrawPile).toEqual(first.taskDrawPile);
+	});
 });
 
 describe("apply", () => {

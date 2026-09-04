@@ -1,11 +1,11 @@
-import type { AttemptId, Fact, SeatId } from "@crew/protocol";
+import type { AttemptId, Fact, SeatId, TaskId } from "@crew/protocol";
 import { dealHands, giveCardToSeat, handForcesRedeal, seatWithCard } from "./deal.ts";
 import { DECK, seats } from "./deck.ts";
 import { replaceImpossibleTasks } from "./draft.ts";
 import { emit } from "./emit.ts";
 import { createRng, type Rng, shuffle } from "./rng.ts";
 import type { ApplyOk, EngineState, MissionDef, PlayerCount } from "./state.ts";
-import { TASK_BY_ID } from "./tasks/catalog.ts";
+import { TASK_BY_ID, type TaskSpec } from "./tasks/catalog.ts";
 import { drawTasks } from "./tasks/draw.ts";
 
 export type CreateAttemptConfig = {
@@ -14,6 +14,9 @@ export type CreateAttemptConfig = {
 	playerCount: PlayerCount;
 	seed: number;
 	captainSeat?: SeatId | null;
+	/** Reuse these specs instead of drawing a new set (retry with the same task cards). */
+	tasks?: readonly TaskSpec[];
+	taskDrawPile?: readonly TaskId[];
 };
 
 function dealPlayingCards(
@@ -84,24 +87,42 @@ export function createAttempt(config: CreateAttemptConfig): ApplyOk {
 	}));
 	state.distressPassed = seats(config.playerCount).map(() => null);
 
-	const drawn = drawTasks(rng, config.playerCount, config.mission.difficulty);
-	state.taskDrawPile = drawn.remaining;
-	state.nextInstance = 0;
-	for (const spec of drawn.drawn) {
-		const instanceId = `${config.attemptId}:${state.nextInstance}`;
-		state.nextInstance += 1;
-		state.tasks.push({
-			instanceId,
-			ownerSeat: null,
-			status: "open",
-			progress: 0,
-			spec: TASK_BY_ID[spec.id] ?? spec,
-			prediction: null,
-		});
-		state.centerTaskIds.push(instanceId);
+	const kept = config.tasks;
+	if (kept !== undefined) {
+		state.taskDrawPile = [...(config.taskDrawPile ?? [])];
+		state.nextInstance = 0;
+		for (const spec of kept) {
+			const instanceId = `${config.attemptId}:${state.nextInstance}`;
+			state.nextInstance += 1;
+			state.tasks.push({
+				instanceId,
+				ownerSeat: null,
+				status: "open",
+				progress: 0,
+				spec: TASK_BY_ID[spec.id] ?? spec,
+				prediction: null,
+			});
+			state.centerTaskIds.push(instanceId);
+		}
+	} else {
+		const drawn = drawTasks(rng, config.playerCount, config.mission.difficulty);
+		state.taskDrawPile = drawn.remaining;
+		state.nextInstance = 0;
+		for (const spec of drawn.drawn) {
+			const instanceId = `${config.attemptId}:${state.nextInstance}`;
+			state.nextInstance += 1;
+			state.tasks.push({
+				instanceId,
+				ownerSeat: null,
+				status: "open",
+				progress: 0,
+				spec: TASK_BY_ID[spec.id] ?? spec,
+				prediction: null,
+			});
+			state.centerTaskIds.push(instanceId);
+		}
+		replaceImpossibleTasks(state, facts);
 	}
-
-	replaceImpossibleTasks(state, facts);
 	let redeals = 0;
 	while (needsOfficialRedeal(state) && redeals < 32) {
 		dealPlayingCards(state, rng, config.playerCount, config.captainSeat);
@@ -137,7 +158,7 @@ export function createAttempt(config: CreateAttemptConfig): ApplyOk {
 		})),
 	});
 
-	state.passAllowed = state.centerTaskIds.length < config.playerCount;
+	state.passAllowed = state.centerTaskIds.length <= config.playerCount;
 	state.draftActs = 0;
 	state.currentSeat = state.captainSeat;
 	if (state.currentSeat !== null) {
