@@ -96,6 +96,7 @@ export default class Room extends DurableObject<RoomBindings> {
 		});
 		this.fanout(result.state, result.facts, result.reconnect ? player.playerId : null);
 		await this.scheduleBotTurn(result.state);
+		this.tryRecordHistory(result.state);
 		return new Response(null, { status: 101, webSocket: client });
 	}
 
@@ -109,13 +110,10 @@ export default class Room extends DurableObject<RoomBindings> {
 		}
 		const result = playBotTurn(next);
 		if (result.ok) {
-			const previous = next;
-			next = appendHistoryFacts(previous, result.state, result.facts);
+			next = appendHistoryFacts(next, result.state, result.facts);
 			await this.save(next);
-			if (previous.engine?.phase !== "result" && next.engine?.phase === "result") {
-				await recordPlayerHistory(createDb(this.env.DB), next);
-			}
 			this.fanout(next, result.facts, null);
+			this.tryRecordHistory(next);
 		}
 		await this.scheduleBotTurn(next, true);
 	}
@@ -178,11 +176,9 @@ export default class Room extends DurableObject<RoomBindings> {
 				seq: result.state.seq,
 			});
 		}
-		if (loaded.engine?.phase !== "result" && next.engine?.phase === "result") {
-			await recordPlayerHistory(createDb(this.env.DB), next);
-		}
 		this.fanout(next, result.facts, null);
 		await this.scheduleBotTurn(next);
+		this.tryRecordHistory(next);
 	}
 
 	async webSocketClose(ws: WebSocket, code: number, reason: string) {
@@ -277,7 +273,35 @@ export default class Room extends DurableObject<RoomBindings> {
 		socket.send(JSON.stringify({ type: "error", code, message }));
 	}
 
-	private log(fields: { event: string; playerId: string; attemptId: string | null; seq: number }) {
+	/** Persist after fanout so a D1 failure cannot freeze the table. */
+	private tryRecordHistory(state: TableState) {
+		if (state.engine?.phase !== "result") {
+			return;
+		}
+		this.ctx.waitUntil(this.recordHistory(state));
+	}
+
+	private async recordHistory(state: TableState) {
+		try {
+			await recordPlayerHistory(createDb(this.env.DB), state);
+		} catch (error) {
+			this.log({
+				event: "history.failed",
+				playerId: state.hostPlayerId,
+				attemptId: state.engine?.attemptId ?? null,
+				seq: state.seq,
+				error: error instanceof Error ? error.message : "unknown",
+			});
+		}
+	}
+
+	private log(fields: {
+		event: string;
+		playerId: string;
+		attemptId: string | null;
+		seq: number;
+		error?: string;
+	}) {
 		console.log(
 			JSON.stringify({
 				roomId: this.ctx.id.name ?? this.ctx.id.toString(),
