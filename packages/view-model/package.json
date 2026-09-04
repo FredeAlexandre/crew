@@ -19,6 +19,10 @@
 		"./catalog": {
 			"types": "./src/catalog.ts",
 			"default": "./src/catalog.ts"
+		},
+		"./replay": {
+			"types": "./src/replay.ts",
+			"default": "./src/replay.ts"
 		}
 	},
 	"scripts": {

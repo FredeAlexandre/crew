@@ -18,6 +18,8 @@ import { Route as PlayingCardsRouteImport } from './routes/playing-cards'
 import { Route as AssetsIndexRouteImport } from './routes/assets.index'
 import { Route as AssetsMissionsRouteImport } from './routes/assets.missions'
 import { Route as AssetsPlayingCardsRouteImport } from './routes/assets.playing-cards'
+import { Route as HistoryIndexRouteImport } from './routes/history.index'
+import { Route as HistoryAttemptIdRouteImport } from './routes/history.$attemptId'
 import { Route as LobbyCodeRouteImport } from './routes/lobby.$code'
 
 const IndexRoute = IndexRouteImport.update({
@@ -65,6 +67,16 @@ const AssetsPlayingCardsRoute = AssetsPlayingCardsRouteImport.update({
   path: '/playing-cards',
   getParentRoute: () => AssetsRoute,
 } as any)
+const HistoryIndexRoute = HistoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => HistoryRoute,
+} as any)
+const HistoryAttemptIdRoute = HistoryAttemptIdRouteImport.update({
+  id: '/$attemptId',
+  path: '/$attemptId',
+  getParentRoute: () => HistoryRoute,
+} as any)
 const LobbyCodeRoute = LobbyCodeRouteImport.update({
   id: '/lobby/$code',
   path: '/lobby/$code',
@@ -74,38 +86,43 @@ const LobbyCodeRoute = LobbyCodeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/assets': typeof AssetsRouteWithChildren
-  '/history': typeof HistoryRoute
+  '/history': typeof HistoryRouteWithChildren
   '/missions': typeof MissionsRoute
   '/play': typeof PlayRoute
   '/playing-cards': typeof PlayingCardsRoute
   '/assets/missions': typeof AssetsMissionsRoute
   '/assets/playing-cards': typeof AssetsPlayingCardsRoute
+  '/history/$attemptId': typeof HistoryAttemptIdRoute
   '/lobby/$code': typeof LobbyCodeRoute
   '/assets/': typeof AssetsIndexRoute
+  '/history/': typeof HistoryIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/history': typeof HistoryRoute
   '/missions': typeof MissionsRoute
   '/play': typeof PlayRoute
   '/playing-cards': typeof PlayingCardsRoute
   '/assets/missions': typeof AssetsMissionsRoute
   '/assets/playing-cards': typeof AssetsPlayingCardsRoute
+  '/history/$attemptId': typeof HistoryAttemptIdRoute
   '/lobby/$code': typeof LobbyCodeRoute
   '/assets': typeof AssetsIndexRoute
+  '/history': typeof HistoryIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/assets': typeof AssetsRouteWithChildren
-  '/history': typeof HistoryRoute
+  '/history': typeof HistoryRouteWithChildren
   '/missions': typeof MissionsRoute
   '/play': typeof PlayRoute
   '/playing-cards': typeof PlayingCardsRoute
   '/assets/missions': typeof AssetsMissionsRoute
   '/assets/playing-cards': typeof AssetsPlayingCardsRoute
+  '/history/$attemptId': typeof HistoryAttemptIdRoute
   '/lobby/$code': typeof LobbyCodeRoute
   '/assets/': typeof AssetsIndexRoute
+  '/history/': typeof HistoryIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -118,19 +135,22 @@ export interface FileRouteTypes {
     | '/playing-cards'
     | '/assets/missions'
     | '/assets/playing-cards'
+    | '/history/$attemptId'
     | '/lobby/$code'
     | '/assets/'
+    | '/history/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/history'
     | '/missions'
     | '/play'
     | '/playing-cards'
     | '/assets/missions'
     | '/assets/playing-cards'
+    | '/history/$attemptId'
     | '/lobby/$code'
     | '/assets'
+    | '/history'
   id:
     | '__root__'
     | '/'
@@ -141,14 +161,16 @@ export interface FileRouteTypes {
     | '/playing-cards'
     | '/assets/missions'
     | '/assets/playing-cards'
+    | '/history/$attemptId'
     | '/lobby/$code'
     | '/assets/'
+    | '/history/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AssetsRoute: typeof AssetsRouteWithChildren
-  HistoryRoute: typeof HistoryRoute
+  HistoryRoute: typeof HistoryRouteWithChildren
   MissionsRoute: typeof MissionsRoute
   PlayRoute: typeof PlayRoute
   PlayingCardsRoute: typeof PlayingCardsRoute
@@ -220,6 +242,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssetsPlayingCardsRouteImport
       parentRoute: typeof AssetsRoute
     }
+    '/history/': {
+      id: '/history/'
+      path: '/'
+      fullPath: '/history/'
+      preLoaderRoute: typeof HistoryIndexRouteImport
+      parentRoute: typeof HistoryRoute
+    }
+    '/history/$attemptId': {
+      id: '/history/$attemptId'
+      path: '/$attemptId'
+      fullPath: '/history/$attemptId'
+      preLoaderRoute: typeof HistoryAttemptIdRouteImport
+      parentRoute: typeof HistoryRoute
+    }
     '/lobby/$code': {
       id: '/lobby/$code'
       path: '/lobby/$code'
@@ -245,10 +281,23 @@ const AssetsRouteChildren: AssetsRouteChildren = {
 const AssetsRouteWithChildren =
   AssetsRoute._addFileChildren(AssetsRouteChildren)
 
+interface HistoryRouteChildren {
+  HistoryAttemptIdRoute: typeof HistoryAttemptIdRoute
+  HistoryIndexRoute: typeof HistoryIndexRoute
+}
+
+const HistoryRouteChildren: HistoryRouteChildren = {
+  HistoryAttemptIdRoute: HistoryAttemptIdRoute,
+  HistoryIndexRoute: HistoryIndexRoute,
+}
+
+const HistoryRouteWithChildren =
+  HistoryRoute._addFileChildren(HistoryRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AssetsRoute: AssetsRouteWithChildren,
-  HistoryRoute: HistoryRoute,
+  HistoryRoute: HistoryRouteWithChildren,
   MissionsRoute: MissionsRoute,
   PlayRoute: PlayRoute,
   PlayingCardsRoute: PlayingCardsRoute,

@@ -18,6 +18,9 @@ function pageTitle(pathname: string, t: (key: string) => string): string {
 	if (pathname.startsWith("/assets")) {
 		return t("assetsPageTitle");
 	}
+	if (pathname.startsWith("/history/")) {
+		return t("replayPageTitle");
+	}
 	if (pathname.startsWith("/history")) {
 		return t("historyPageTitle");
 	}
@@ -51,7 +54,7 @@ function RootComponent() {
 function RootShell() {
 	const { t, locale } = useI18n();
 	const pathname = useRouterState({ select: (state) => state.location.pathname });
-	const atTable = pathname.startsWith("/lobby/");
+	const atTable = pathname.startsWith("/lobby/") || pathname.startsWith("/history/");
 	const atLanding = pathname === "/" || pathname === "/play";
 	useEffect(() => {
 		document.title = pageTitle(pathname, t);

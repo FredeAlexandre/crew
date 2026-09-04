@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import {
 	groupHistoryByDay,
 	type HistoryEntry,
@@ -5,6 +6,7 @@ import {
 	missionNumber,
 } from "../lib/history-group.ts";
 import { type Locale, type Translate, useI18n } from "../lib/i18n.tsx";
+import { cn } from "../lib/utils.ts";
 
 export function PlayerHistory({ history }: { history: HistoryEntry[] }) {
 	const { t, locale } = useI18n();
@@ -14,7 +16,7 @@ export function PlayerHistory({ history }: { history: HistoryEntry[] }) {
 			{groups.map((group) => (
 				<section
 					key={group.day}
-					className="grid gap-2"
+					className="grid gap-3"
 					aria-labelledby={`history-day-${group.day}`}
 				>
 					<h2
@@ -23,19 +25,35 @@ export function PlayerHistory({ history }: { history: HistoryEntry[] }) {
 					>
 						{dayHeading(group.day, locale, t)}
 					</h2>
-					<ul className="m-0 grid list-none p-0">
+					<ul className="m-0 grid list-none gap-3 p-0">
 						{group.entries.map((entry) => (
-							<li
-								key={entry.attemptId}
-								className="grid grid-cols-[1fr_auto_auto] items-baseline gap-3 border-b border-border/70 py-2.5 text-sm last:border-0"
-							>
-								<span>{t("mission", { number: missionNumber(entry.missionId) })}</span>
-								<span className={entry.result === "won" ? "text-primary" : "text-destructive"}>
-									{entry.result === "won" ? t("won") : t("missionFailed")}
-								</span>
-								<time className="text-muted-foreground tabular-nums" dateTime={entry.completedAt}>
-									{formatTime(entry.completedAt, locale)}
-								</time>
+							<li key={entry.attemptId}>
+								<Link
+									to="/history/$attemptId"
+									params={{ attemptId: entry.attemptId }}
+									className={cn(
+										"grid gap-2 border-2 border-foreground/25 bg-card p-4 text-inherit no-underline transition-colors",
+										"hover:border-primary focus-visible:border-primary focus-visible:outline-none",
+									)}
+									aria-label={t("historyOpenReplay", {
+										number: missionNumber(entry.missionId),
+									})}
+								>
+									<div className="flex items-baseline justify-between gap-3">
+										<span className="font-heading text-lg font-semibold tracking-wider uppercase">
+											{t("mission", { number: missionNumber(entry.missionId) })}
+										</span>
+										<span className={entry.result === "won" ? "text-primary" : "text-destructive"}>
+											{entry.result === "won" ? t("won") : t("missionFailed")}
+										</span>
+									</div>
+									<div className="flex flex-wrap items-baseline justify-between gap-2 text-sm text-muted-foreground">
+										<span>{t("historyPlayers", { count: entry.playerCount })}</span>
+										<time className="tabular-nums" dateTime={entry.completedAt}>
+											{formatTime(entry.completedAt, locale)}
+										</time>
+									</div>
+								</Link>
 							</li>
 						))}
 					</ul>
