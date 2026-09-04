@@ -94,6 +94,14 @@ export function HomeLanding() {
 				>
 					{busy === "join" ? "…" : t("join")}
 				</Button>
+				<Button
+					className="h-12 w-full text-sm tracking-[0.28em]"
+					isDisabled={blocked}
+					onPress={() => void navigate({ to: "/history" })}
+					variant="outline"
+				>
+					{t("history")}
+				</Button>
 			</div>
 			{error ? (
 				<Alert variant="destructive" className={cn(styles.error, "text-center")}>

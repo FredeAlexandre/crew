@@ -8,10 +8,18 @@ export default defineConfig({
 		host: "127.0.0.1",
 		port: 3001,
 		proxy: {
-			"/api": "http://localhost:3000",
+			"/api": {
+				target: "http://localhost:3000",
+				changeOrigin: true,
+			},
+			"/rooms": {
+				target: "http://localhost:3000",
+				changeOrigin: true,
+			},
 			"/room": {
 				target: "http://localhost:3000",
 				ws: true,
+				changeOrigin: true,
 			},
 		},
 	},

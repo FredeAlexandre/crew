@@ -18,6 +18,9 @@ function pageTitle(pathname: string, t: (key: string) => string): string {
 	if (pathname.startsWith("/assets")) {
 		return t("assetsPageTitle");
 	}
+	if (pathname.startsWith("/history")) {
+		return t("historyPageTitle");
+	}
 	return t("siteTitle");
 }
 

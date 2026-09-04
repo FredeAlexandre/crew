@@ -1,9 +1,10 @@
 import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react";
 
-type IdentitySheetIntent = "signin";
+type IdentitySheetIntent = "signin" | "create";
 
 type IdentitySheetApi = {
 	openSignIn: () => void;
+	openCreateAccount: () => void;
 	intent: IdentitySheetIntent | null;
 	clearIntent: () => void;
 };
@@ -15,12 +16,15 @@ export function IdentitySheetProvider({ children }: { children: ReactNode }) {
 	const openSignIn = useCallback(() => {
 		setIntent("signin");
 	}, []);
+	const openCreateAccount = useCallback(() => {
+		setIntent("create");
+	}, []);
 	const clearIntent = useCallback(() => {
 		setIntent(null);
 	}, []);
 	const value = useMemo(
-		() => ({ openSignIn, intent, clearIntent }),
-		[openSignIn, intent, clearIntent],
+		() => ({ openSignIn, openCreateAccount, intent, clearIntent }),
+		[openSignIn, openCreateAccount, intent, clearIntent],
 	);
 	return <IdentitySheetContext.Provider value={value}>{children}</IdentitySheetContext.Provider>;
 }

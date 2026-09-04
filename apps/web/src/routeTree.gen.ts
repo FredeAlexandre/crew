@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AssetsRouteImport } from './routes/assets'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as MissionsRouteImport } from './routes/missions'
 import { Route as PlayRouteImport } from './routes/play'
 import { Route as PlayingCardsRouteImport } from './routes/playing-cards'
@@ -27,6 +28,11 @@ const IndexRoute = IndexRouteImport.update({
 const AssetsRoute = AssetsRouteImport.update({
   id: '/assets',
   path: '/assets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MissionsRoute = MissionsRouteImport.update({
@@ -68,6 +74,7 @@ const LobbyCodeRoute = LobbyCodeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/assets': typeof AssetsRouteWithChildren
+  '/history': typeof HistoryRoute
   '/missions': typeof MissionsRoute
   '/play': typeof PlayRoute
   '/playing-cards': typeof PlayingCardsRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/history': typeof HistoryRoute
   '/missions': typeof MissionsRoute
   '/play': typeof PlayRoute
   '/playing-cards': typeof PlayingCardsRoute
@@ -90,6 +98,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/assets': typeof AssetsRouteWithChildren
+  '/history': typeof HistoryRoute
   '/missions': typeof MissionsRoute
   '/play': typeof PlayRoute
   '/playing-cards': typeof PlayingCardsRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/assets'
+    | '/history'
     | '/missions'
     | '/play'
     | '/playing-cards'
@@ -113,6 +123,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/history'
     | '/missions'
     | '/play'
     | '/playing-cards'
@@ -124,6 +135,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/assets'
+    | '/history'
     | '/missions'
     | '/play'
     | '/playing-cards'
@@ -136,6 +148,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AssetsRoute: typeof AssetsRouteWithChildren
+  HistoryRoute: typeof HistoryRoute
   MissionsRoute: typeof MissionsRoute
   PlayRoute: typeof PlayRoute
   PlayingCardsRoute: typeof PlayingCardsRoute
@@ -156,6 +169,13 @@ declare module '@tanstack/react-router' {
       path: '/assets'
       fullPath: '/assets'
       preLoaderRoute: typeof AssetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/missions': {
@@ -228,6 +248,7 @@ const AssetsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AssetsRoute: AssetsRouteWithChildren,
+  HistoryRoute: HistoryRoute,
   MissionsRoute: MissionsRoute,
   PlayRoute: PlayRoute,
   PlayingCardsRoute: PlayingCardsRoute,

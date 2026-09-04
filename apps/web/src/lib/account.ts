@@ -1,4 +1,3 @@
-import { env } from "@crew/env/web";
 import { authClient } from "./auth-client.ts";
 import type { Translate } from "./i18n.tsx";
 import { ensureGuestSession } from "./rooms.ts";
@@ -16,36 +15,27 @@ class AccountError extends Error {
 	}
 }
 
-function authOrigin() {
-	return env.VITE_SERVER_URL.replace(/\/$/, "");
-}
-
-type AuthErrorBody = {
-	code?: string;
+type AuthFetchError = {
+	status?: number;
+	statusText?: string;
 	message?: string;
-	error?: { code?: string; message?: string };
+	code?: string;
 };
 
-async function readAuthError(response: Response, fallback: string): Promise<AccountError> {
-	const body: unknown = await response.json().catch(() => null);
-	if (typeof body === "object" && body !== null) {
-		const parsed = body as AuthErrorBody;
-		const code = parsed.code ?? parsed.error?.code ?? "unexpected";
-		const message = parsed.message ?? parsed.error?.message ?? fallback;
-		return new AccountError(code, message);
-	}
-	return new AccountError("unexpected", fallback);
+function errorFromFetch(error: AuthFetchError, fallback: string): AccountError {
+	const code = error.code ?? error.statusText ?? "unexpected";
+	const message = error.message ?? fallback;
+	return new AccountError(code, message);
 }
 
 export async function convertAnonymousAccount(email: string, password: string): Promise<void> {
-	const response = await fetch(new URL("/api/auth/convert-anonymous", `${authOrigin()}/`), {
+	await ensureGuestSession();
+	const result = await authClient.$fetch("/convert-anonymous", {
 		method: "POST",
-		credentials: "include",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ email, password }),
+		body: { email, password },
 	});
-	if (!response.ok) {
-		throw await readAuthError(response, "createAccountFailed");
+	if (result.error) {
+		throw errorFromFetch(result.error, "createAccountFailed");
 	}
 	await authClient.getSession();
 }

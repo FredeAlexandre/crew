@@ -1,16 +1,10 @@
-import { env } from "@crew/env/web";
+import { apiOrigin } from "./api-origin.ts";
+import type { HistoryEntry } from "./history-group.ts";
 
-export type HistoryEntry = {
-	missionId: string;
-	attemptId: string;
-	result: "won" | "failed";
-	roomCode: string;
-	playerCount: number;
-	completedAt: string;
-};
+export type { HistoryEntry } from "./history-group.ts";
 
 export async function readPlayerHistory(): Promise<HistoryEntry[]> {
-	const response = await fetch(new URL("/history", `${env.VITE_SERVER_URL.replace(/\/$/, "")}/`), {
+	const response = await fetch(new URL("/api/history", `${apiOrigin()}/`), {
 		credentials: "include",
 	});
 	if (!response.ok) {

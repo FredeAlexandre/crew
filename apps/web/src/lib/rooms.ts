@@ -1,4 +1,3 @@
-import { env } from "@crew/env/web";
 import {
 	normalizeRoomCode,
 	type PlayerCount,
@@ -7,6 +6,7 @@ import {
 	roomErrorMessageSchema,
 	roomTicketSchema,
 } from "@crew/protocol";
+import { apiOrigin } from "./api-origin.ts";
 import { authClient } from "./auth-client.ts";
 import { normalizeDisplayName } from "./display-name.ts";
 import type { Translate } from "./i18n.tsx";
@@ -23,10 +23,6 @@ class RoomHttpError extends Error {
 	}
 }
 
-function serverOrigin() {
-	return env.VITE_SERVER_URL.replace(/\/$/, "");
-}
-
 export async function ensureGuestSession(): Promise<{ displayName: string }> {
 	let session = await authClient.getSession();
 	if (!session.data?.user) {
@@ -36,7 +32,10 @@ export async function ensureGuestSession(): Promise<{ displayName: string }> {
 		}
 		session = await authClient.getSession();
 	}
-	return { displayName: session.data?.user.name ?? "" };
+	if (!session.data?.user) {
+		throw new RoomHttpError("unauthenticated", "sign in first");
+	}
+	return { displayName: session.data.user.name ?? "" };
 }
 
 export async function persistDisplayName(raw: string): Promise<string | null> {
@@ -73,7 +72,7 @@ async function readTicket(response: Response): Promise<RoomTicket> {
 
 export async function createRoom(playerCount: PlayerCount): Promise<RoomTicket> {
 	await ensureGuestSession();
-	const response = await fetch(new URL("/rooms", `${serverOrigin()}/`).toString(), {
+	const response = await fetch(new URL("/rooms", `${apiOrigin()}/`).toString(), {
 		method: "POST",
 		credentials: "include",
 		headers: { "Content-Type": "application/json" },
@@ -85,7 +84,7 @@ export async function createRoom(playerCount: PlayerCount): Promise<RoomTicket> 
 export async function joinRoom(code: string): Promise<RoomTicket> {
 	await ensureGuestSession();
 	const response = await fetch(
-		new URL(`/rooms/${normalizeRoomCode(code)}/join`, `${serverOrigin()}/`).toString(),
+		new URL(`/rooms/${normalizeRoomCode(code)}/join`, `${apiOrigin()}/`).toString(),
 		{
 			method: "POST",
 			credentials: "include",
