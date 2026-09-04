@@ -266,10 +266,6 @@
 	font-size: 0.9rem;
 }
 
-.draftPass {
-	min-height: 36px;
-}
-
 .taskRow {
 	display: flex;
 	flex-wrap: wrap;

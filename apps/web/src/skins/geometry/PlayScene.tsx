@@ -58,9 +58,10 @@ export function PlayScene({
 	const selectedCard = view.hand.find((card) => card.cardId === selected);
 	const hint =
 		selectedCard && !selectedCard.legal ? illegalCopy(selectedCard.illegalReason, t) : null;
+	const isDraft = view.scene === "taskDraft";
 	const canPlaySelected = Boolean(view.affordances.canPlay && selectedCard?.legal && !sonarOpen);
 	const canPassSelected = Boolean(view.affordances.canPassDistressCard && selectedCard?.legal);
-	const showHandDock = view.scene === "play" || view.affordances.canPassDistressCard;
+	const showHandDock = view.scene === "play" || view.affordances.canPassDistressCard || isDraft;
 	const handTucked =
 		view.scene === "play" &&
 		!view.affordances.canPlay &&
@@ -91,7 +92,6 @@ export function PlayScene({
 		view.chrome.flags.completedTricksVisible &&
 		view.overlay === "none" &&
 		!sonarOpen;
-	const isDraft = view.scene === "taskDraft";
 	const quietHand = isDraft || view.scene === "deal";
 	const turn = isDraft ? turnCopy(view, t) : null;
 	const shownTrickCards = heldCards ?? view.trick.cards;
@@ -440,7 +440,6 @@ export function PlayScene({
 										sendIntent({ type: "task.take", taskInstanceId: task.instanceId })
 								: undefined
 						}
-						onPass={isDraft && view.affordances.canPassTask && sendIntent ? passTask : undefined}
 					/>
 				</div>
 			</div>
@@ -448,22 +447,30 @@ export function PlayScene({
 				{hint && overlay !== "sonar" ? <p className={styles.hint}>{hint}</p> : null}
 				{showHandDock ? (
 					<div className={styles.handDock}>
-						<Button
-							variant="outline"
-							className={styles.handAction}
-							isDisabled={!sonarEnabled || sonarOpen}
-							onPress={openSonar}
-						>
-							{t("sonar")}
-						</Button>
-						{view.affordances.canPassDistressCard ? (
-							<Button isDisabled={!canPassSelected} onPress={passDistressCard}>
+						{isDraft ? (
+							<Button isDisabled={!view.affordances.canPassTask} onPress={passTask}>
 								{t("pass")}
 							</Button>
 						) : (
-							<Button isDisabled={!canPlaySelected} onPress={playCard}>
-								{t("play")}
-							</Button>
+							<>
+								<Button
+									variant="outline"
+									className={styles.handAction}
+									isDisabled={!sonarEnabled || sonarOpen}
+									onPress={openSonar}
+								>
+									{t("sonar")}
+								</Button>
+								{view.affordances.canPassDistressCard ? (
+									<Button isDisabled={!canPassSelected} onPress={passDistressCard}>
+										{t("pass")}
+									</Button>
+								) : (
+									<Button isDisabled={!canPlaySelected} onPress={playCard}>
+										{t("play")}
+									</Button>
+								)}
+							</>
 						)}
 					</div>
 				) : null}
@@ -491,7 +498,6 @@ function Well({
 	trickTransition,
 	onToggleTrickTransition,
 	onTake,
-	onPass,
 }: {
 	view: TableView;
 	turn: string | null;
@@ -502,7 +508,6 @@ function Well({
 	trickTransition: TrickTransition | null;
 	onToggleTrickTransition: () => void;
 	onTake?: (task: TaskView) => void;
-	onPass?: () => void;
 }) {
 	const { t } = useI18n();
 	if (view.scene === "taskDraft") {
@@ -514,11 +519,6 @@ function Well({
 					<p className={styles.draftPrompt}>
 						{turn}. {t("takeTask")}
 					</p>
-				) : null}
-				{onPass ? (
-					<Button className={styles.draftPass} variant="outline" size="sm" onPress={onPass}>
-						{t("pass")}
-					</Button>
 				) : null}
 				<div className={styles.taskRow}>
 					{view.centerTasks.map((task) => (

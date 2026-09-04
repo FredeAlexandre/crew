@@ -74,7 +74,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 
 ## Task draft
 
-- [ ] Face-up tasks sit in the center. On your draft turn you tap a task to take it, or **Pass** (Pass sits just above those task cards, not in the head row). A task you cannot take (for example one the captain is not allowed) looks disabled.
+- [ ] Face-up tasks sit in the center. On your draft turn you tap a task to take it, or **Pass**. **Pass** sits just above your playing cards, where **Sonar** / **Play** sit during play — not above the task cards. A task you cannot take (for example one the captain is not allowed) looks disabled.
 - [ ] After you take an “I will win X tricks” card, you name that number. Open cards show it to the crew; hidden cards keep it until the result.
 - [ ] When the mission dealt no more task cards than players, you may pass only while more teammates still sit behind you than leftover tasks, so the captain cannot be handed a task again.
 - [ ] Tasks at seats (yours and others) are illustrated cards, the same shape as playing cards. Tap one to open a larger Task overlay; Escape or Close dismisses it.
