@@ -10,12 +10,13 @@ rules oracle (`packages/engine`). Shipped player behavior in
 Nub is the package manager and runner. Do not use pnpm.
 
 ```bash
-nub install
-cp apps/server/.env.example apps/server/.env
-cp apps/web/.env.example apps/web/.env
+nub run worktree:setup
 ```
 
-Put a 32-byte secret in `apps/server/.env` as `BETTER_AUTH_SECRET`. Then:
+That installs dependencies and writes local `.env` files. A new
+`apps/server/.env` gets a generated `BETTER_AUTH_SECRET`. If this is a T3 Code
+worktree and the primary project already has `.env` files, those are copied
+instead. T3 Code runs the same command when it creates a worktree. Then:
 
 ```bash
 nub run db:generate   # after schema changes

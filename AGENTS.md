@@ -11,9 +11,9 @@ a rulebook file.
 ## Commands
 
 ```text
-nub install
-nub run dev      # Alchemy: web :3001, worker :3000
-nub run check    # biome, tsc, knip, cruiser, unit tests
+nub run worktree:setup  # deps + local .env
+nub run dev             # Alchemy: web :3001, worker :3000
+nub run check           # biome, tsc, knip, cruiser, unit tests
 nub run test
 ```
 
