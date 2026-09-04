@@ -2,6 +2,15 @@ import { type createDb, gameHistory, gameHistoryEvents, playerHistory, user } fr
 import { and, desc, eq, inArray } from "drizzle-orm";
 import type { TableState } from "./table.ts";
 
+/** D1 rejects a query with more than 100 bound parameters. */
+const D1_MAX_BOUND_PARAMETERS = 100;
+/** Columns written per `game_history_events` row. */
+const GAME_HISTORY_EVENT_COLUMNS = 5;
+
+export const GAME_HISTORY_EVENT_CHUNK = Math.floor(
+	D1_MAX_BOUND_PARAMETERS / GAME_HISTORY_EVENT_COLUMNS,
+);
+
 /** Record a completed attempt for signed-in people seated at this table. */
 export async function recordPlayerHistory(db: ReturnType<typeof createDb>, state: TableState) {
 	const engine = state.engine;
@@ -59,18 +68,16 @@ export async function recordPlayerHistory(db: ReturnType<typeof createDb>, state
 				: { startedAt: new Date(state.historyStartedAt) }),
 		})
 		.onConflictDoNothing();
-	await db
-		.insert(gameHistoryEvents)
-		.values(
-			facts.map((fact) => ({
-				id: crypto.randomUUID(),
-				attemptId: engine.attemptId,
-				seq: fact.seq,
-				type: fact.type,
-				payload: JSON.stringify(fact),
-			})),
-		)
-		.onConflictDoNothing();
+	const eventRows = facts.map((fact) => ({
+		id: crypto.randomUUID(),
+		attemptId: engine.attemptId,
+		seq: fact.seq,
+		type: fact.type,
+		payload: JSON.stringify(fact),
+	}));
+	for (const batch of chunk(eventRows, GAME_HISTORY_EVENT_CHUNK)) {
+		await db.insert(gameHistoryEvents).values(batch).onConflictDoNothing();
+	}
 	await db
 		.insert(playerHistory)
 		.values(
@@ -136,4 +143,12 @@ export async function readPlayerGame(
 			payload: JSON.parse(event.payload) as unknown,
 		})),
 	};
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+	const batches: T[][] = [];
+	for (let index = 0; index < items.length; index += size) {
+		batches.push(items.slice(index, index + size));
+	}
+	return batches;
 }

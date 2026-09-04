@@ -17,11 +17,9 @@ import {
 	DISPLAY_NAME_DEBOUNCE_MS,
 	DISPLAY_NAME_MAX,
 } from "../lib/display-name.ts";
-import { type HistoryEntry, readPlayerHistory } from "../lib/history.ts";
 import { type Translate, useI18n } from "../lib/i18n.tsx";
 import { persistDisplayName } from "../lib/rooms.ts";
 import { useIdentitySheet } from "./identity-sheet.tsx";
-import { PlayerHistory } from "./PlayerHistory.tsx";
 import { Alert, AlertDescription } from "./ui/alert.tsx";
 import { Button } from "./ui/button.tsx";
 import {
@@ -58,8 +56,6 @@ export function ProfileControl() {
 	const [password, setPassword] = useState("");
 	const [currentPassword, setCurrentPassword] = useState("");
 	const [newPassword, setNewPassword] = useState("");
-	const [history, setHistory] = useState<HistoryEntry[]>([]);
-	const [historyLoading, setHistoryLoading] = useState(false);
 	const [nameSaver] = useState(() =>
 		createDebouncedAction(async (value) => {
 			await persistDisplayName(value);
@@ -69,16 +65,6 @@ export function ProfileControl() {
 	refetchRef.current = identity.refetch;
 
 	const [open, setOpen] = useState(false);
-	useEffect(() => {
-		if (!open || identity.user?.isAnonymous !== false) {
-			return;
-		}
-		setHistoryLoading(true);
-		void readPlayerHistory()
-			.then(setHistory)
-			.catch(() => setHistory([]))
-			.finally(() => setHistoryLoading(false));
-	}, [open, identity.user?.id, identity.user?.isAnonymous]);
 	const skipHomeResetRef = useRef(false);
 	const user = identity.user;
 	const isAnonymous = user?.isAnonymous !== false;
@@ -262,7 +248,6 @@ export function ProfileControl() {
 						>
 							{t("browseAssets")}
 						</Link>
-						{!isAnonymous ? <PlayerHistory history={history} loading={historyLoading} /> : null}
 					</FieldGroup>
 				) : null}
 				{mode === "create" ? (

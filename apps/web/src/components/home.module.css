@@ -24,10 +24,10 @@
 		),
 		radial-gradient(
 			90% 50% at 50% 110%,
-			color-mix(in oklch, var(--suit-blue), transparent 70%) 0%,
+			color-mix(in oklch, var(--suit-blue), transparent 78%) 0%,
 			transparent 55%
 		),
-		linear-gradient(180deg, #071018 0%, #0c1410 48%, #05080a 100%);
+		linear-gradient(180deg, #100e08 0%, #161208 48%, #080705 100%);
 }
 
 .backdrop::before {

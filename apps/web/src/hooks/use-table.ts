@@ -1,4 +1,3 @@
-import { env } from "@crew/env/web";
 import {
 	type CardId,
 	type DistressDirection,
@@ -9,6 +8,7 @@ import {
 } from "@crew/protocol";
 import type { TableView } from "@crew/view-model/fixtures";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { apiOrigin } from "../lib/api-origin.ts";
 import type { TableError } from "../lib/rooms.ts";
 import { parseServerFrame } from "./parse-server-frame.ts";
 
@@ -138,7 +138,7 @@ export function useTable(code: string | null): {
 }
 
 function roomSocketUrl(code: string): string {
-	const http = env.VITE_SERVER_URL.replace(/\/$/, "");
+	const http = apiOrigin();
 	const ws = http.replace(/^http/i, "ws");
 	return `${ws}/room/${code}`;
 }

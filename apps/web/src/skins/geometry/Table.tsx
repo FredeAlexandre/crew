@@ -12,9 +12,10 @@ type GeometryTableProps = {
 	view: TableView;
 	lobby?: LobbyActions;
 	sendIntent?: (intent: ClientIntent) => void;
+	replay?: boolean;
 };
 
-export function GeometryTable({ view, lobby, sendIntent }: GeometryTableProps) {
+export function GeometryTable({ view, lobby, sendIntent, replay = false }: GeometryTableProps) {
 	const prevScene = useRef(view.scene);
 	const enteredResult = view.scene === "result" && prevScene.current !== "result";
 
@@ -48,7 +49,7 @@ export function GeometryTable({ view, lobby, sendIntent }: GeometryTableProps) {
 		case "taskDraft":
 		case "deal":
 		case "play":
-			scene = <PlayScene view={view} sendIntent={sendIntent} />;
+			scene = <PlayScene view={view} sendIntent={sendIntent} replay={replay} />;
 			break;
 		case "result":
 			scene = (

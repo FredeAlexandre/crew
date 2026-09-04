@@ -8,9 +8,10 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 
 ## Home
 
-- [ ] Open the site and see **Play** and **Join** on a full-screen landing. No name, player count, or extra links on that screen.
+- [ ] Open the site and see **Play**, **Join**, and **History** on a full-screen landing. No name, player count, or extra links on that screen.
 - [ ] **Play** asks **Campaign** or **Free play**. Campaign is coming soon. **Free play** opens a 4-player table.
 - [ ] **Join** asks for the short code or the lobby link, then sits you down.
+- [ ] **History** (outline, under Join) opens completed attempts as cards grouped by day, each with a stroke around it. Signed-in people see win or fail, how many sat, and the time. Tap a card to watch that attempt again. Guests are asked to create an account or sign in. This is not in the profile disc.
 - [ ] A bad code says there is no lobby with that code.
 - [ ] A flag at the top-right (left of the face) is where language lives, even if you cannot read the rest of the page.
 - [ ] The disc in the top-right opens profile, sign-in, settings, and **Browse assets**.
@@ -18,7 +19,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 ## Language
 
 - [ ] Switch **FR / ES / EN** from the flag. The choice survives a reload.
-- [ ] The whole site follows that language: home, mode choice, lobby, table (tasks, illegal plays, turn, play/pass, trick hold, sonar), result, profile, and Browse assets.
+- [ ] The whole site follows that language: home, mode choice, lobby, table (tasks, illegal plays, turn, play/pass, trick hold, sonar), result, profile, history, replay, and Browse assets.
 
 ## Profile
 
@@ -26,7 +27,7 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] Every player gets a stable cartoon face generated from their identity. The same person shows the same face on every device. There is no photo upload.
 - [ ] As a guest: set a name (up to 24 characters; it saves on its own; a generated guest name stays blank until you type something), **Create account** (email and password on this same person), or **Sign in** to an existing account.
 - [ ] Creating an account keeps this person (name, seat, hosted tables). Signing in to another account moves the guest’s name and hosted tables over, then drops the throwaway guest.
-- [ ] Signed in: change password, sign out (you become a new guest), and see **Mission history** of completed attempts (win or fail, date). Guests do not get history.
+- [ ] Signed in: change password and sign out (you become a new guest).
 - [ ] Theme, SFX volume, and animation prefs in the sheet are stubs (“Coming later”).
 
 ## Lobby
@@ -126,6 +127,12 @@ This is not a technical changelog. The engine is the rulebook. This file is the 
 - [ ] Failed tasks name the owner. A count shows how many tasks were completed, and leftover unfinished work is mentioned when the mission ended early.
 - [ ] A scrollable **match history** lists every trick: who won it and which cards were played. This appears after both wins and failures.
 - [ ] Only the **host** sees retry. They choose **same tasks** (keep the drawn task cards; owners are drafted again) or **new tasks** (draw a fresh set). Playing cards are always dealt again. Same seats. Guests do not get Retry.
+
+## Replay
+
+- [ ] Opening a History card plays that attempt locally on the same table as live play. You do not sit down or send moves.
+- [ ] A timeline overlay has a progress bar of the recording. Square marks are rounds and share one color. Each finished task has its own color on a circular mark.
+- [ ] Replay starts at normal speed. Play and pause are available. Speed is **x1**, **x1.5**, or **x2**.
 
 ## Catalog
 

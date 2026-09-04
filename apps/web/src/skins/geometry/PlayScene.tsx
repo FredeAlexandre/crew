@@ -22,9 +22,11 @@ const TRICK_TRANSITION_MS = 2_000;
 export function PlayScene({
 	view,
 	sendIntent,
+	replay = false,
 }: {
 	view: TableView;
 	sendIntent?: (intent: ClientIntent) => void;
+	replay?: boolean;
 }) {
 	const [selected, setSelected] = useState<CardId | null>(null);
 	const [sonarOpen, setSonarOpen] = useState(false);
@@ -61,8 +63,10 @@ export function PlayScene({
 	const isDraft = view.scene === "taskDraft";
 	const canPlaySelected = Boolean(view.affordances.canPlay && selectedCard?.legal && !sonarOpen);
 	const canPassSelected = Boolean(view.affordances.canPassDistressCard && selectedCard?.legal);
-	const showHandDock = view.scene === "play" || view.affordances.canPassDistressCard || isDraft;
+	const showHandDock =
+		!replay && (view.scene === "play" || view.affordances.canPassDistressCard || isDraft);
 	const handTucked =
+		!replay &&
 		view.scene === "play" &&
 		!view.affordances.canPlay &&
 		!view.affordances.canPassDistressCard &&
@@ -72,6 +76,7 @@ export function PlayScene({
 		.filter((candidate) => candidate.cardId === selected)
 		.map((candidate) => candidate.position);
 	const sonarEnabled =
+		!replay &&
 		view.scene === "play" &&
 		view.overlay === "none" &&
 		view.chrome.sonarAvailable &&
@@ -88,7 +93,7 @@ export function PlayScene({
 			? null
 			: (shownSeats.find((seat) => seat.region === sonarDetailRegion) ?? null);
 	const canInspectCompletedTricks =
-		view.scene === "play" &&
+		(view.scene === "play" || replay) &&
 		view.chrome.flags.completedTricksVisible &&
 		view.overlay === "none" &&
 		!sonarOpen;
@@ -137,10 +142,10 @@ export function PlayScene({
 		if (juice.landKeys.length > 0) {
 			setLandKeys(juice.landKeys);
 		}
-		if (juice.playWin) {
+		if (juice.playWin && !replay) {
 			playCue("win", `win:${view.attemptId ?? "none"}:${view.lastTrick?.trickId ?? "x"}`);
 		}
-		if (juice.holdCards && heldCards === null) {
+		if (!replay && juice.holdCards && heldCards === null) {
 			setHeldCards(juice.holdCards);
 			setWinnerRegion(juice.winnerRegion);
 			setTrickTransition({ remaining: TRICK_TRANSITION_MS, paused: false });
@@ -149,7 +154,7 @@ export function PlayScene({
 			setWinnerRegion(null);
 			setTrickTransition(null);
 		}
-	}, [view]);
+	}, [replay, view]);
 
 	useEffect(() => {
 		if (landKeys.length === 0) {
