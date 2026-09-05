@@ -28,9 +28,9 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: nubjs/setup-nub@v0
-      - run: nub ci
+      - run: nub ci || (sleep 5 && nub ci) || (sleep 15 && nub ci)
       - name: Write preview env
         working-directory: packages/infra
         env:
@@ -93,11 +93,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: nubjs/setup-nub@v0
-      - run: nub ci
+      - run: nub ci || (sleep 5 && nub ci) || (sleep 15 && nub ci)
       - name: Refuse to destroy production
         run: |
           case "${STAGE}" in
