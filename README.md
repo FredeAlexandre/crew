@@ -106,7 +106,7 @@ TypeScript · React · Hono · Cloudflare Workers / Durable Objects / D1 · Vite
 
 ## Attribution
 
-Unofficial fan project. Not affiliated with Kosmos or the designers of *The Crew*. UI and card art are original.
+Unofficial fan project. Not affiliated with Kosmos or the designers of *The Crew*. UI and card art are original. Code and original art are [MIT](LICENSE); the game itself is not.
 
 ## Local
 

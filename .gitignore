@@ -18,6 +18,9 @@ local.db-*
 !.env.example
 !.env.*.example
 
+# Jujutsu (colocated checkout; `.jj/` has its own gitignore too)
+.jj
+
 # IDEs and editors
 .vscode/*
 !.vscode/settings.json
