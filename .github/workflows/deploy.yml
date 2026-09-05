@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: nubjs/setup-nub@v0
-      - run: nub ci || (sleep 5 && nub ci) || (sleep 15 && nub ci)
+      - run: nub ci
       - run: nub run check
       - name: Write production env
         working-directory: packages/infra
