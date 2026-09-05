@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="Crew">
+  <circle cx="40" cy="40" r="37" fill="#0a1218" stroke="#f7d665" stroke-width="2.2"/>
+  <circle cx="40" cy="40" r="31.5" fill="none" stroke="#635928" stroke-width="1"/>
+  <circle cx="40" cy="8.5" r="2.4" fill="#e07a9a"/>
+  <circle cx="71.5" cy="40" r="2.4" fill="#e0c36a"/>
+  <circle cx="40" cy="71.5" r="2.4" fill="#6fb38a"/>
+  <circle cx="8.5" cy="40" r="2.4" fill="#6a9fd6"/>
+  <path d="M18 44.5c6.5-3.2 14-5 22-5s15.5 1.8 22 5c-2.2-9-10.2-16.5-22-16.5S20.2 35.5 18 44.5Z" fill="#f6d152"/>
+  <path d="M28 42.5h24l-5.5 7H33.5Z" fill="#0c0b0a"/>
+  <circle cx="40" cy="38.2" r="3.1" fill="#0c0b0a"/>
+  <path d="M40 22.5v8.5" stroke="#f6d256" stroke-width="1.6" stroke-linecap="round"/>
+</svg>
